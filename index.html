@@ -290,21 +290,21 @@
               <button class="btn btn-rosa" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
             </div>
           </div>
-          <div class="table-wrap"><thead><tr><th>Foto</th><th>Nome</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
         </div>
       </section>
 
       <section id="page-celulas" class="page">
         <div class="card">
           <div class="card-header"><h2>Gestão de Células</h2><button class="btn btn-rosa" onclick="abrirModalAbrirCelula()">+ Abrir Nova Célula</button></div>
-          <div class="table-wrap"><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Cidade / Bairro</th><th>Discípulas</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-celulas"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Cidade / Bairro</th><th>Discípulas</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-celulas"></tbody></table></div>
         </div>
       </section>
 
       <section id="page-desistencias" class="page">
         <div class="card">
           <div class="card-header"><h2>Histórico de Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Desistência</button></div>
-          <div class="table-wrap"><thead><tr><th>Nome</th><th>Célula de Origem</th><th>Data</th><th>Motivo Pastoral</th><th>Registrado por</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Célula de Origem</th><th>Data</th><th>Motivo Pastoral</th><th>Registrado por</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
         </div>
       </section>
 
@@ -352,7 +352,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Inicialização do Supabase Client
     const SUPABASE_URL = 'https://ttagzaaumksnubhhymkq.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_69vFXrFHkdrXeSEvoh8Jzw_bzbour78';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -412,23 +411,39 @@
       element.parentElement.classList.toggle('open');
     }
 
-    function navegar(page) {
+    // Função de navegação exposta globalmente
+    window.navegar = function(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      const el = document.getElementById('page-' + page); if (el) el.classList.add('active');
+      
+      const el = document.getElementById('page-' + page); 
+      if (el) el.classList.add('active');
+      
       const nav = document.querySelector(`.nav-item[data-page="${page}"]`); 
       if (nav) {
         nav.classList.add('active');
         const parentAccordion = nav.closest('.nav-accordion');
         if (parentAccordion) parentAccordion.classList.add('open');
       }
-      const titles = { dashboard: 'Dashboard G12', lideres: 'Líderes & Células', discipulas: 'Discípulas & Jornada Espiritual', celulas: 'Abertura & Fechamento de Células', desistencias: 'Histórico de Desistências', mapa: 'Mapa Geográfico', aniversariantes: 'Aniversariantes', relatorios: 'Relatórios Pastorais' };
+      
+      const titles = { 
+        dashboard: 'Dashboard G12', 
+        lideres: 'Líderes & Células', 
+        discipulas: 'Discípulas & Jornada Espiritual', 
+        celulas: 'Abertura & Fechamento de Células', 
+        desistencias: 'Histórico de Desistências', 
+        mapa: 'Mapa Geográfico', 
+        aniversariantes: 'Aniversariantes', 
+        relatorios: 'Relatórios Pastorais' 
+      };
+      
       document.getElementById('page-title').textContent = titles[page] || page;
       if (page === 'mapa') setTimeout(initMapa, 100);
       if (page === 'aniversariantes') { document.getElementById('mes-aniversario').value = new Date().getMonth(); renderAniversariantes(); }
       if (page === 'relatorios') prepararFiltrosRelatorio();
       document.getElementById('sidebar').classList.remove('open');
     }
+
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
     function renderDashboard() {
@@ -656,12 +671,18 @@
     async function initApp() {
       await carregarDB();
       renderDashboard(); renderArvoreCompleta(); renderDiscipulas(); renderCelulas(); renderDesistencias();
-      document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => navegar(item.dataset.page)));
+      
+      // Vinculação dinâmica rigorosa dos eventos de clique nas abas
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.onclick = () => {
+          const page = item.getAttribute('data-page');
+          if (page) window.navegar(page);
+        };
+      });
     }
 
     document.getElementById('login-form').addEventListener('submit', login);
 
-    // Verificar se já está logado na sessão atual
     if (sessionStorage.getItem('logado') === '1') {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
