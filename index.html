@@ -28,7 +28,24 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--cinza-claro); color: var(--preto); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-    #app { min-height: 100vh; }
+    #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, #12080e 0%, #1f0c18 35%, #3a1228 70%, #4a1535 100%); position: relative; overflow: hidden; padding: 24px; }
+    #login-screen::before { content: ''; position: absolute; width: 700px; height: 700px; background: radial-gradient(circle, rgba(208,57,124,0.22) 0%, transparent 68%); top: -280px; right: -180px; border-radius: 50%; pointer-events: none; }
+    .login-card { background: rgba(255,255,255,0.98); border-radius: 28px; padding: 44px 40px 36px; width: 100%; max-width: 420px; box-shadow: var(--sombra-forte); position: relative; z-index: 2; text-align: center; border: 1px solid rgba(255,255,255,0.6); }
+    .login-logos { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 24px; }
+    .login-logos img { height: 78px; object-fit: contain; filter: drop-shadow(0 3px 10px rgba(0,0,0,0.12)); }
+    .login-card h1 { font-family: 'Playfair Display', serif; font-size: 1.65rem; color: var(--rosa); margin-bottom: 6px; }
+    .login-card .subtitle { font-size: 0.84rem; color: var(--cinza-medio); margin-bottom: 30px; line-height: 1.5; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--cinza); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.6px; }
+    .form-group input { width: 100%; padding: 14px 16px; border: 1.5px solid #E8E4E6; border-radius: 14px; font-size: 0.98rem; background: #FAFAFB; font-family: inherit; }
+    .form-group input:focus { outline: none; border-color: var(--rosa); background: #fff; box-shadow: 0 0 0 4px rgba(208,57,124,0.12); }
+    .btn-primary { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%); color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all var(--trans); margin-top: 10px; font-family: inherit; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(208,57,124,0.38); }
+    .error-msg { background: #FEF2F2; color: #B91C1C; padding: 12px 14px; border-radius: 12px; font-size: 0.88rem; margin-bottom: 16px; display: none; border: 1px solid #FECACA; text-align: left; }
+    .login-footer { margin-top: 28px; font-size: 0.73rem; color: #A0A0A0; line-height: 1.6; }
+    .login-footer strong { color: var(--cinza); }
+
+    #app { display: none; min-height: 100vh; }
     
     .sidebar { 
       position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-collapsed-w); 
@@ -84,6 +101,8 @@
     .topbar h1 { font-family: 'Playfair Display', serif; font-size: 1.65rem; color: var(--preto); }
     .topbar .user-info { display: flex; align-items: center; gap: 12px; background: white; padding: 7px 14px 7px 7px; border-radius: 50px; box-shadow: var(--sombra); border: 1px solid rgba(0,0,0,0.03); }
     .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--rosa-escuro)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; }
+    .btn-logout { background: transparent; border: none; color: var(--cinza-medio); cursor: pointer; font-size: 0.82rem; padding: 4px 8px; font-weight: 500; font-family: inherit; }
+    .btn-logout:hover { color: var(--erro); }
 
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 16px; margin-bottom: 28px; }
     .stat-card { background: white; border-radius: var(--radius); padding: 22px 20px 20px; box-shadow: var(--sombra); position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
@@ -151,6 +170,26 @@
   </style>
 </head>
 <body>
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logos">
+        <img src="logo-macrocelula.png" alt="Macrocélula Aleluia" />
+        <img src="pibb.png" alt="PIBB" style="height:56px;" />
+      </div>
+      <h1>Macrocélula Aleluia</h1>
+      <p class="subtitle">Gestão Pastoral &amp; Discipular • Modelo G12<br>Ministério Mulheres de Fé • PIBB</p>
+      <div class="error-msg" id="login-error"></div>
+      <form id="login-form" autocomplete="off">
+        <div class="form-group"><label>Usuário / E-mail</label><input type="text" id="login-user" name="username" placeholder="rosane" autocomplete="off" required /></div>
+        <div class="form-group"><label>Senha</label><input type="password" id="login-pass" name="password" placeholder="••••••••" autocomplete="new-password" required /></div>
+        <button type="submit" class="btn-primary">Entrar no Sistema</button>
+      </form>
+      <div class="login-footer"><strong>Liderança:</strong> Rosane Aleluia<br>Ministério Mulheres de Fé — Pra. Elane Souza Pereira<br>PIBB — Ap. Milton Ebenézer &amp; Ap. Naiara Souza</div>
+    </div>
+  </div>
+
+  <!-- APLICATIVO PRINCIPAL -->
   <div id="app">
     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     <aside class="sidebar" id="sidebar">
@@ -228,6 +267,7 @@
         <div class="user-info">
           <div class="user-avatar">RA</div>
           <div><div style="font-weight:650;font-size:0.88rem;">Rosane Aleluia</div><div style="font-size:0.72rem;color:#999;">Líder Macrocélula</div></div>
+          <button class="btn-logout" onclick="logout()">Sair</button>
         </div>
       </div>
 
@@ -250,21 +290,21 @@
               <button class="btn btn-rosa" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
             </div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
+          <div class="table-wrap"><thead><tr><th>Foto</th><th>Nome</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
         </div>
       </section>
 
       <section id="page-celulas" class="page">
         <div class="card">
           <div class="card-header"><h2>Gestão de Células</h2><button class="btn btn-rosa" onclick="abrirModalAbrirCelula()">+ Abrir Nova Célula</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Cidade / Bairro</th><th>Discípulas</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-celulas"></tbody></table></div>
+          <div class="table-wrap"><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Cidade / Bairro</th><th>Discípulas</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-celulas"></tbody></table></div>
         </div>
       </section>
 
       <section id="page-desistencias" class="page">
         <div class="card">
           <div class="card-header"><h2>Histórico de Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Desistência</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Célula de Origem</th><th>Data</th><th>Motivo Pastoral</th><th>Registrado por</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
+          <div class="table-wrap"><thead><tr><th>Nome</th><th>Célula de Origem</th><th>Data</th><th>Motivo Pastoral</th><th>Registrado por</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
         </div>
       </section>
 
@@ -318,6 +358,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let db = { lideres: [], discipulas: [], desistencias: [], movimentacoes: [] };
+    const USUARIO_PADRAO = 'rosane', SENHA_PADRAO = 'aleluia2024';
 
     async function carregarDB() {
       try {
@@ -335,6 +376,36 @@
       } catch (err) {
         console.error('Erro ao carregar dados do Supabase:', err);
       }
+    }
+
+    function login(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-user').value.trim().toLowerCase();
+      const pass = document.getElementById('login-pass').value;
+      const err = document.getElementById('login-error');
+      err.style.display = 'none';
+
+      if (!['rosane', 'rosane@aleluia', 'rosane.aleluia'].includes(user)) {
+        err.textContent = 'Usuário não encontrado.'; err.style.display = 'block'; return;
+      }
+      if (pass !== SENHA_PADRAO) {
+        err.textContent = 'Senha incorreta.'; err.style.display = 'block'; return;
+      }
+      entrarNoApp(user);
+    }
+
+    function entrarNoApp(user) {
+      sessionStorage.setItem('logado', '1');
+      sessionStorage.setItem('usuario', user);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      initApp();
+    }
+
+    function logout() {
+      sessionStorage.removeItem('logado');
+      sessionStorage.removeItem('usuario');
+      location.reload();
     }
 
     function toggleAccordion(element) {
@@ -588,7 +659,14 @@
       document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => navegar(item.dataset.page)));
     }
 
-    window.onload = initApp;
+    document.getElementById('login-form').addEventListener('submit', login);
+
+    // Verificar se já está logado na sessão atual
+    if (sessionStorage.getItem('logado') === '1') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      initApp();
+    }
   </script>
 </body>
 </html>
