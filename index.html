@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Macrocélula Aleluia | Gestão Pastoral G12</title>
+  <link rel="icon" href="logo-macrocelula.png" type="image/png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --rosa: #D0397C; --rosa-escuro: #A82A61; --rosa-claro: #FDF2F7; --rosa-medio: #F9D6E6;
+      --dourado: #C9A227; --dourado-claro: #F8F0D8;
+      --preto: #1A1A1A; --cinza: #5A5A5A; --cinza-medio: #8A8A8A; --cinza-claro: #F7F7F9;
+      --branco: #FFFFFF; --sucesso: #059669; --aviso: #D97706; --erro: #DC2626;
+      --sombra: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(208,57,124,0.08);
+      --sombra-hover: 0 8px 30px rgba(208,57,124,0.15);
+      --sombra-forte: 0 20px 50px rgba(0,0,0,0.18);
+      --radius: 18px; --radius-sm: 12px;
+      --sidebar-w: 272px;
+      --sidebar-collapsed-w: 72px;
+      --trans: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--cinza-claro); color: var(--preto); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+    #app { min-height: 100vh; }
+    
+    .sidebar { 
+      position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-collapsed-w); 
+      background: #FFFFFF; color: var(--preto); z-index: 100; display: flex; flex-direction: column; 
+      transition: width var(--trans), box-shadow var(--trans); border-right: 1px solid #EAEAEA; 
+      box-shadow: 4px 0 16px rgba(0,0,0,0.04); overflow: hidden; white-space: nowrap;
+    }
+    .sidebar:hover { width: var(--sidebar-w); box-shadow: 6px 0 24px rgba(0,0,0,0.12); }
+
+    .sidebar-header {
+      padding: 20px 14px; text-align: center; border-bottom: 1px solid #F0F0F2; background: #FFFFFF;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90px;
+    }
+    .sidebar-header img { height: 40px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08)); transition: height var(--trans); }
+    .sidebar:hover .sidebar-header img { height: 70px; }
+    .sidebar-header-text { opacity: 0; transition: opacity var(--trans); margin-top: 6px; }
+    .sidebar:hover .sidebar-header-text { opacity: 1; }
+    .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--rosa); margin-bottom: 2px; font-weight: 700; }
+    .sidebar-header p { font-size: 0.65rem; color: var(--cinza-medio); text-transform: uppercase; font-weight: 600; }
+
+    .nav-menu { flex: 1; padding: 14px 10px; overflow-y: auto; overflow-x: hidden; }
+    .nav-accordion { margin-bottom: 6px; }
+    .accordion-header {
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 12px;
+      border-radius: 10px; color: var(--cinza-medio); font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; transition: background var(--trans); opacity: 0;
+    }
+    .sidebar:hover .accordion-header { opacity: 1; }
+    .accordion-header:hover { background: var(--cinza-claro); color: var(--preto); }
+    .accordion-icon { transition: transform 0.25s ease; font-size: 0.65rem; }
+    .nav-accordion.open .accordion-icon { transform: rotate(180deg); }
+    .accordion-content { display: none; margin-top: 2px; }
+    .nav-accordion.open .accordion-content { display: block; }
+
+    .nav-item { 
+      display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px; 
+      color: var(--cinza); cursor: pointer; transition: all var(--trans); margin-bottom: 3px; font-size: 0.88rem; font-weight: 500; height: 44px;
+    }
+    .nav-item:hover { background: var(--rosa-claro); color: var(--rosa-escuro); }
+    .nav-item.active { background: var(--rosa-claro); color: var(--rosa); font-weight: 600; box-shadow: inset 3.5px 0 0 var(--rosa); }
+    .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; color: inherit; }
+    .nav-item span { opacity: 0; transition: opacity var(--trans); }
+    .sidebar:hover .nav-item span { opacity: 1; }
+
+    .sidebar-footer { padding: 14px; border-top: 1px solid #F0F0F2; font-size: 0.68rem; text-align: center; color: var(--cinza-medio); background: #FFFFFF; opacity: 0; transition: opacity var(--trans); }
+    .sidebar:hover .sidebar-footer { opacity: 1; }
+    .sidebar-footer img { height: 24px; opacity: 0.85; margin-bottom: 4px; }
+
+    .main-content { margin-left: var(--sidebar-collapsed-w); min-height: 100vh; padding: 28px 32px 48px; background: var(--cinza-claro); transition: margin-left var(--trans); }
+    .sidebar:hover ~ .main-content { margin-left: var(--sidebar-w); }
+    
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+    .topbar h1 { font-family: 'Playfair Display', serif; font-size: 1.65rem; color: var(--preto); }
+    .topbar .user-info { display: flex; align-items: center; gap: 12px; background: white; padding: 7px 14px 7px 7px; border-radius: 50px; box-shadow: var(--sombra); border: 1px solid rgba(0,0,0,0.03); }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--rosa-escuro)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: white; border-radius: var(--radius); padding: 22px 20px 20px; box-shadow: var(--sombra); position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3.5px; background: linear-gradient(90deg, var(--rosa), var(--dourado)); }
+    .stat-card .label { font-size: 0.72rem; color: var(--cinza-medio); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+    .stat-card .value { font-size: 1.9rem; font-weight: 800; color: var(--preto); line-height: 1; }
+    .stat-card .icon { position: absolute; right: 16px; top: 18px; font-size: 1.7rem; opacity: 0.12; }
+
+    .card { background: white; border-radius: var(--radius); box-shadow: var(--sombra); padding: 26px; margin-bottom: 22px; border: 1px solid rgba(0,0,0,0.02); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
+    .card-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--preto); }
+
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; border-radius: 11px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; transition: all var(--trans); font-family: inherit; white-space: nowrap; }
+    .btn-rosa { background: var(--rosa); color: white; }
+    .btn-rosa:hover { background: var(--rosa-escuro); box-shadow: 0 4px 14px rgba(208,57,124,0.3); }
+    .btn-dourado { background: linear-gradient(135deg, #D4AF37, var(--dourado)); color: #1a1a1a; }
+    .btn-outline { background: transparent; border: 1.5px solid #E5E5E5; color: var(--cinza); }
+    .btn-sm { padding: 7px 13px; font-size: 0.8rem; border-radius: 9px; }
+    .btn-danger { background: #FEF2F2; color: var(--erro); border: 1.5px solid #FECACA; }
+
+    .table-wrap { overflow-x: auto; border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; padding: 13px 16px; background: var(--rosa-claro); color: var(--rosa-escuro); font-weight: 650; font-size: 0.72rem; text-transform: uppercase; }
+    td { padding: 15px 16px; border-bottom: 1px solid #F3F3F5; vertical-align: middle; }
+    tr:hover td { background: #FAFAFB; }
+    .badge { display: inline-block; padding: 4px 11px; border-radius: 20px; font-size: 0.72rem; font-weight: 650; }
+    .badge-success { background: #ECFDF5; color: #047857; } .badge-warning { background: #FFFBEB; color: #B45309; }
+    .badge-danger { background: #FEF2F2; color: #B91C1C; } .badge-info { background: #EFF6FF; color: #1D4ED8; }
+    .badge-rosa { background: var(--rosa-claro); color: var(--rosa-escuro); }
+
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .form-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--cinza); margin-bottom: 7px; }
+    .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #E8E4E6; border-radius: 11px; font-size: 0.92rem; background: #FAFAFB; font-family: inherit; }
+    .form-field textarea { resize: vertical; min-height: 84px; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 8, 12, 0.55); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: white; border-radius: 22px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
+    .modal-header { padding: 22px 26px; border-bottom: 1px solid #F0F0F2; display: flex; justify-content: space-between; align-items: center; }
+    .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
+    .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
+
+    .tree-node { margin-left: 22px; border-left: 2px solid var(--rosa-medio); padding-left: 18px; margin-bottom: 6px; }
+    .tree-node.root { margin-left: 0; border-left: none; padding-left: 0; }
+    .tree-card { background: white; border: 1px solid #F0F0F2; border-radius: 14px; padding: 13px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; }
+    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .tree-info h4 { font-size: 0.95rem; margin-bottom: 3px; font-weight: 650; } .tree-info span { font-size: 0.76rem; color: var(--cinza-medio); }
+
+    #mapa-container { height: 480px; border-radius: 16px; overflow: hidden; border: 1px solid #EFEFEF; }
+    .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; }
+    .empty-state { text-align: center; padding: 52px 20px; color: #A0A0A0; }
+
+    .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; background: var(--rosa); color: white; border: none; width: 46px; height: 46px; border-radius: 14px; cursor: pointer; align-items: center; justify-content: center; }
+    @media (max-width: 900px) {
+      .sidebar { width: var(--sidebar-w); transform: translateX(-100%); } 
+      .sidebar.open { transform: translateX(0); }
+      .sidebar .sidebar-header-text, .sidebar .accordion-header, .sidebar .nav-item span, .sidebar .sidebar-footer { opacity: 1; }
+      .main-content { margin-left: 0; padding: 72px 16px 36px; } 
+      .menu-toggle { display: flex; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    }
+    .page { display: none; } .page.active { display: block; }
+    .bday-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: linear-gradient(135deg, #FFFBF5, #FFF8EE); border-radius: 14px; border: 1px solid #F5E6B8; margin-bottom: 10px; }
+    .search-input { padding: 10px 16px 10px 40px; border: 1.5px solid #E8E4E6; border-radius: 12px; width: 240px; font-size: 0.9rem; background: #FAFAFB; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="logo-macrocelula.png" alt="Logo" />
+        <div class="sidebar-header-text">
+          <h2>Macrocélula Aleluia</h2>
+          <p>Gestão Pastoral G12</p>
+        </div>
+      </div>
+      <nav class="nav-menu">
+        <div class="nav-item active" data-page="dashboard">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span>Dashboard G12</span>
+        </div>
+        <div class="nav-accordion open">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span>Gestão Pastoral</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <div class="nav-item" data-page="lideres">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <span>Líderes &amp; Células</span>
+            </div>
+            <div class="nav-item" data-page="discipulas">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              <span>Discípulas</span>
+            </div>
+            <div class="nav-item" data-page="celulas">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <span>Abertura / Fechamento</span>
+            </div>
+          </div>
+        </div>
+        <div class="nav-accordion open">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span>Acompanhamento</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <div class="nav-item" data-page="desistencias">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              <span>Histórico Desistências</span>
+            </div>
+            <div class="nav-item" data-page="aniversariantes">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"/></svg>
+              <span>Aniversariantes</span>
+            </div>
+          </div>
+        </div>
+        <div class="nav-accordion open">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span>Análise &amp; Visão</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <div class="nav-item" data-page="mapa">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Mapa Geográfico</span>
+            </div>
+            <div class="nav-item" data-page="relatorios">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Relatórios</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div class="sidebar-footer"><img src="pibb.png" alt="PIBB" /><br>PIBB • Ministério Mulheres de Fé</div>
+    </aside>
+
+    <main class="main-content">
+      <div class="topbar">
+        <h1 id="page-title">Dashboard G12</h1>
+        <div class="user-info">
+          <div class="user-avatar">RA</div>
+          <div><div style="font-weight:650;font-size:0.88rem;">Rosane Aleluia</div><div style="font-size:0.72rem;color:#999;">Líder Macrocélula</div></div>
+        </div>
+      </div>
+
+      <section id="page-dashboard" class="page active">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="card"><div class="card-header"><h2>Árvore Geracional</h2><button class="btn btn-rosa btn-sm" onclick="navegar('lideres')">Ver Completa</button></div><div id="tree-preview"></div></div>
+        <div class="card"><div class="card-header"><h2>Últimas Movimentações</h2></div><div id="ultimas-mov"></div></div>
+      </section>
+
+      <section id="page-lideres" class="page">
+        <div class="card"><div class="card-header"><h2>Hierarquia Pastoral G12</h2><button class="btn btn-rosa" onclick="abrirModalLider()">+ Nova Líder / Célula</button></div><div id="arvore-completa"></div></div>
+      </section>
+
+      <section id="page-discipulas" class="page">
+        <div class="card">
+          <div class="card-header">
+            <h2>Discípulas da Rede</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <input type="text" id="busca-discipula" class="search-input" placeholder="Buscar por nome..." oninput="filtrarDiscipulas()" />
+              <button class="btn btn-rosa" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="page-celulas" class="page">
+        <div class="card">
+          <div class="card-header"><h2>Gestão de Células</h2><button class="btn btn-rosa" onclick="abrirModalAbrirCelula()">+ Abrir Nova Célula</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Cidade / Bairro</th><th>Discípulas</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-celulas"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="page-desistencias" class="page">
+        <div class="card">
+          <div class="card-header"><h2>Histórico de Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Desistência</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Célula de Origem</th><th>Data</th><th>Motivo Pastoral</th><th>Registrado por</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="page-mapa" class="page">
+        <div class="card"><div class="card-header"><h2>Mapa Geográfico das Células</h2><span style="font-size:0.82rem;color:#999;">Pins = localização das células</span></div><div id="mapa-container"></div></div>
+      </section>
+
+      <section id="page-aniversariantes" class="page">
+        <div class="card">
+          <div class="card-header">
+            <h2>Aniversariantes do Mês</h2>
+            <select id="mes-aniversario" onchange="renderAniversariantes()" style="padding:10px 14px;border:1.5px solid #E8E4E6;border-radius:11px;font-size:0.9rem;background:#FAFAFB;">
+              <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option><option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+              <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option><option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+            </select>
+          </div>
+          <div id="lista-aniversariantes"></div>
+        </div>
+      </section>
+
+      <section id="page-relatorios" class="page">
+        <div class="card">
+          <div class="card-header"><h2>Relatórios Pastorais</h2><button class="btn btn-dourado" onclick="gerarRelatorioPDF()">🖨 Gerar PDF</button></div>
+          <div class="form-row">
+            <div class="form-field"><label>Cidade</label><select id="filtro-cidade"><option value="">Todas</option></select></div>
+            <div class="form-field"><label>Bairro</label><select id="filtro-bairro"><option value="">Todos</option></select></div>
+            <div class="form-field"><label>Líder</label><select id="filtro-lider"><option value="">Todas</option></select></div>
+            <div class="form-field"><label>Pendências</label><select id="filtro-pendencia"><option value="">Todas</option><option value="nao-batizada">Não Batizadas</option><option value="sem-uv">Sem UV</option><option value="nao-assidua">Não Assíduas</option></select></div>
+          </div>
+          <button class="btn btn-rosa" style="margin-bottom:20px;" onclick="aplicarFiltrosRelatorio()">Aplicar Filtros</button>
+          <div id="resultado-relatorio"></div>
+          <div style="margin-top:28px;padding-top:22px;border-top:1px solid #F0F0F2;"><h3 style="margin-bottom:16px;font-size:1.05rem;">Árvore Geracional Discipular</h3><div id="arvore-relatorio"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header"><h3 id="modal-title">Título</h3><button class="modal-close" onclick="fecharModal()">×</button></div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Inicialização do Supabase Client
+    const SUPABASE_URL = 'https://ttagzaaumksnubhhymkq.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_69vFXrFHkdrXeSEvoh8Jzw_bzbour78';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let db = { lideres: [], discipulas: [], desistencias: [], movimentacoes: [] };
+
+    async function carregarDB() {
+      try {
+        const [resLideres, resDiscipulas, resDesistencias, resMov] = await Promise.all([
+          supabaseClient.from('lideres').select('*'),
+          supabaseClient.from('discipulas').select('*'),
+          supabaseClient.from('desistencias').select('*'),
+          supabaseClient.from('movimentacoes').select('*').order('id', { ascending: false })
+        ]);
+
+        db.lideres = resLideres.data || [];
+        db.discipulas = resDiscipulas.data || [];
+        db.desistencias = resDesistencias.data || [];
+        db.movimentacoes = resMov.data || [];
+      } catch (err) {
+        console.error('Erro ao carregar dados do Supabase:', err);
+      }
+    }
+
+    function toggleAccordion(element) {
+      element.parentElement.classList.toggle('open');
+    }
+
+    function navegar(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const el = document.getElementById('page-' + page); if (el) el.classList.add('active');
+      const nav = document.querySelector(`.nav-item[data-page="${page}"]`); 
+      if (nav) {
+        nav.classList.add('active');
+        const parentAccordion = nav.closest('.nav-accordion');
+        if (parentAccordion) parentAccordion.classList.add('open');
+      }
+      const titles = { dashboard: 'Dashboard G12', lideres: 'Líderes & Células', discipulas: 'Discípulas & Jornada Espiritual', celulas: 'Abertura & Fechamento de Células', desistencias: 'Histórico de Desistências', mapa: 'Mapa Geográfico', aniversariantes: 'Aniversariantes', relatorios: 'Relatórios Pastorais' };
+      document.getElementById('page-title').textContent = titles[page] || page;
+      if (page === 'mapa') setTimeout(initMapa, 100);
+      if (page === 'aniversariantes') { document.getElementById('mes-aniversario').value = new Date().getMonth(); renderAniversariantes(); }
+      if (page === 'relatorios') prepararFiltrosRelatorio();
+      document.getElementById('sidebar').classList.remove('open');
+    }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function renderDashboard() {
+      const totalRede = db.discipulas.length + db.lideres.length, soDiscipulas = db.discipulas.length;
+      const uv = db.discipulas.filter(d => d.uv && d.uv !== '—').length, cap = db.discipulas.filter(d => d.capacitacao > 0).length;
+      const naoBat = db.discipulas.filter(d => !d.batizada).length, desist = db.desistencias.length;
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card"><div class="label">Total da Rede</div><div class="value">${totalRede}</div><div class="icon">👥</div></div>
+        <div class="stat-card"><div class="label">Discípulas</div><div class="value">${soDiscipulas}</div><div class="icon">💜</div></div>
+        <div class="stat-card"><div class="label">Universidade da Vida</div><div class="value">${uv}</div><div class="icon">📖</div></div>
+        <div class="stat-card"><div class="label">Capacitação Destino</div><div class="value">${cap}</div><div class="icon">🎯</div></div>
+        <div class="stat-card"><div class="label">Não Batizadas</div><div class="value">${naoBat}</div><div class="icon">💧</div></div>
+        <div class="stat-card"><div class="label">Desistências</div><div class="value">${desist}</div><div class="icon">📉</div></div>`;
+      document.getElementById('tree-preview').innerHTML = renderArvoreHTML();
+      document.getElementById('ultimas-mov').innerHTML = db.movimentacoes.slice(0,5).map(m => `<div style="padding:12px 0;border-bottom:1px solid #F5F5F7;display:flex;gap:14px;"><span style="font-size:0.78rem;color:#AAA;min-width:88px;font-weight:500;">${formatDate(m.data)}</span><span style="font-size:0.9rem;">${m.texto}</span></div>`).join('') || '<p style="color:#999;padding:12px 0;">Nenhuma movimentação recente.</p>';
+    }
+
+    function renderArvoreHTML() {
+      function build(parentId) {
+        const children = db.lideres.filter(l => l.parent_id === parentId && l.ativa);
+        if (!children.length) return '';
+        return children.map(l => {
+          const qtd = db.discipulas.filter(d => d.lider_id === l.id).length;
+          return `<div class="tree-node"><div class="tree-card"><div class="tree-avatar">${iniciais(l.nome)}</div><div class="tree-info"><h4>${l.nome}</h4><span>${l.geracao} • ${l.celular_que_lidera} • ${qtd} discípulas</span></div></div>${build(l.id)}</div>`;
+        }).join('');
+      }
+      const root = db.lideres.find(l => l.parent_id === null || l.parent_id === undefined);
+      if (!root) return '<p style="color:#999;">Nenhuma líder cadastrada.</p>';
+      return `<div class="tree-node root"><div class="tree-card" style="border:2px solid var(--dourado);background:linear-gradient(135deg,#FFFEF8,#FFFBF0);"><div class="tree-avatar" style="background:linear-gradient(135deg,var(--dourado),#E8C547);">${iniciais(root.nome)}</div><div class="tree-info"><h4>${root.nome}</h4><span>👑 ${root.geracao} • ${root.celular_que_lidera}</span></div></div>${build(root.id)}</div>`;
+    }
+    function renderArvoreCompleta() { document.getElementById('arvore-completa').innerHTML = renderArvoreHTML(); }
+
+    function renderDiscipulas(filtro = '') {
+      let lista = db.discipulas;
+      if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro.toLowerCase()));
+      document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
+        const lider = db.lideres.find(l => l.id === d.lider_id);
+        const assBadge = d.assiduidade === 'Assídua' ? 'badge-success' : d.assiduidade === 'Não Assídua' ? 'badge-warning' : 'badge-danger';
+        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '—'}</td><td><span class="badge ${assBadge}">${d.assiduidade}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao?'Nível '+d.capacitacao:'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
+      }).join('') || '<tr><td colspan="8" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula encontrada.</td></tr>';
+    }
+    function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
+
+    function renderCelulas() {
+      document.getElementById('tabela-celulas').innerHTML = db.lideres.filter(l => l.ativa).map(l => {
+        const qtd = db.discipulas.filter(d => d.lider_id === l.id).length;
+        return `<tr><td><strong>${l.celular_que_lidera}</strong></td><td>${l.nome}</td><td><span class="badge badge-rosa">${l.geracao}</span></td><td>${l.cidade} / ${l.bairro}</td><td>${qtd}</td><td><span class="badge badge-success">Ativa</span></td><td><button class="btn btn-outline btn-sm" onclick="editarLider(${l.id})">Editar</button> ${l.parent_id !== null ? `<button class="btn btn-danger btn-sm" onclick="fecharCelula(${l.id})">Fechar</button>` : ''}</td></tr>`;
+      }).join('');
+    }
+
+    function renderDesistencias() {
+      document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `<tr><td><strong>${d.nome}</strong></td><td>${d.celular_origem}</td><td>${formatDate(d.data)}</td><td>${d.motivo}</td><td>${d.registrado_por}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;padding:36px;">Nenhum registro.</td></tr>';
+    }
+
+    let mapInstance = null;
+    function initMapa() {
+      if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+      mapInstance = L.map('mapa-container').setView([-23.55, -46.63], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapInstance);
+      db.lideres.filter(l => l.ativa && l.lat && l.lng).forEach(l => {
+        const qtd = db.discipulas.filter(d => d.lider_id === l.id).length;
+        L.marker([l.lat, l.lng]).addTo(mapInstance).bindPopup(`<strong>${l.celular_que_lidera}</strong><br>${l.nome}<br>${l.bairro} • ${qtd} discípulas`);
+      });
+    }
+
+    function renderAniversariantes() {
+      const mes = parseInt(document.getElementById('mes-aniversario').value);
+      const lista = db.discipulas.filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T12:00:00').getMonth() === mes);
+      const c = document.getElementById('lista-aniversariantes');
+      if (!lista.length) { c.innerHTML = '<div class="empty-state"><p>Nenhum aniversariante neste mês.</p></div>'; return; }
+      c.innerHTML = lista.map(p => { const d = new Date(p.data_nascimento + 'T12:00:00'); return `<div class="bday-card"><div class="foto-disc">${iniciais(p.nome)}</div><div><strong>${p.nome}</strong><br><span style="color:#999;font-size:0.88rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</span></div></div>`; }).join('');
+    }
+
+    function prepararFiltrosRelatorio() {
+      const cidades = [...new Set([...db.lideres.map(l => l.cidade), ...db.discipulas.map(d => d.cidade)])].filter(Boolean);
+      const bairros = [...new Set([...db.lideres.map(l => l.bairro), ...db.discipulas.map(d => d.bairro)])].filter(Boolean);
+      document.getElementById('filtro-cidade').innerHTML = '<option value="">Todas</option>' + cidades.map(c => `<option>${c}</option>`).join('');
+      document.getElementById('filtro-bairro').innerHTML = '<option value="">Todos</option>' + bairros.map(b => `<option>${b}</option>`).join('');
+      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas</option>' + db.lideres.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+      document.getElementById('arvore-relatorio').innerHTML = renderArvoreHTML();
+    }
+    function aplicarFiltrosRelatorio() {
+      const cidade = document.getElementById('filtro-cidade').value, bairro = document.getElementById('filtro-bairro').value, liderId = document.getElementById('filtro-lider').value, pend = document.getElementById('filtro-pendencia').value;
+      let lista = [...db.discipulas];
+      if (cidade) lista = lista.filter(d => d.cidade === cidade); if (bairro) lista = lista.filter(d => d.bairro === bairro); if (liderId) lista = lista.filter(d => d.lider_id == liderId);
+      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada); if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Pré-Encontro'); if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Assídua');
+      document.getElementById('resultado-relatorio').innerHTML = `<p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Cidade</th><th>Bairro</th><th>Assiduidade</th><th>Batismo</th><th>UV</th></tr></thead><tbody>${lista.map(d => `<tr><td>${d.nome}</td><td>${d.cidade||'—'}</td><td>${d.bairro||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td><td>${d.uv||'—'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}</tbody></table></div>`;
+    }
+    function gerarRelatorioPDF() { window.print(); }
+
+    function abrirModal(title, bodyHTML, footerHTML) {
+      document.getElementById('modal-title').textContent = title; document.getElementById('modal-body').innerHTML = bodyHTML; document.getElementById('modal-footer').innerHTML = footerHTML;
+      document.getElementById('modal').classList.add('active');
+    }
+    function fecharModal() { document.getElementById('modal').classList.remove('active'); }
+
+    function abrirModalDiscipula(id = null) {
+      const d = id ? db.discipulas.find(x => x.id === id) : null;
+      const optionsLider = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.id}" ${d && d.lider_id===l.id?'selected':''}>${l.nome} (${l.celular_que_lidera})</option>`).join('');
+      abrirModal(d ? 'Editar Discípula' : 'Nova Discípula', `
+        <div class="form-row"><div class="form-field"><label>Nome completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" value="${d?.data_nascimento||''}" /></div><div class="form-field"><label>Líder / Célula</label><select id="f-lider">${optionsLider}</select></div></div>
+        <div class="form-row"><div class="form-field"><label>Cidade</label><input id="f-cidade" value="${d?.cidade||''}" /></div><div class="form-field"><label>Bairro</label><input id="f-bairro" value="${d?.bairro||''}" /></div></div>
+        <div class="form-field"><label>Endereço</label><input id="f-end" value="${d?.endereco||''}" /></div>
+        <div class="form-row"><div class="form-field"><label>Assiduidade na Célula</label><select id="f-ass"><option ${d?.assiduidade==='Assídua'?'selected':''}>Assídua</option><option ${d?.assiduidade==='Não Assídua'?'selected':''}>Não Assídua</option><option ${d?.assiduidade==='Não Frequenta'?'selected':''}>Não Frequenta</option></select></div>
+        <div class="form-field"><label>Frequência aos Cultos</label><select id="f-culto"><option ${d?.frequencia_culto==='Semanal'?'selected':''}>Semanal</option><option ${d?.frequencia_culto==='Quinzenal'?'selected':''}>Quinzenal</option><option ${d?.frequencia_culto==='Raramente'?'selected':''}>Raramente</option><option ${d?.frequencia_culto==='Não Frequenta'?'selected':''}>Não Frequenta</option></select></div></div>
+        <div class="form-row"><div class="form-field"><label>Batizada?</label><select id="f-bat"><option value="1" ${d?.batizada?'selected':''}>Sim</option><option value="0" ${!d?.batizada?'selected':''}>Não</option></select></div>
+        <div class="form-field"><label>Universidade da Vida</label><select id="f-uv"><option value="">—</option><option ${d?.uv==='Pré-Encontro'?'selected':''}>Pré-Encontro</option><option ${d?.uv==='Encontro'?'selected':''}>Encontro</option><option ${d?.uv==='Pós-Encontro'?'selected':''}>Pós-Encontro</option><option ${d?.uv==='Conclusão'?'selected':''}>Conclusão</option></select></div>
+        <div class="form-field"><label>Capacitação Destino</label><select id="f-cap"><option value="0">Nenhum</option><option value="1" ${d?.capacitacao===1?'selected':''}>Nível 1</option><option value="2" ${d?.capacitacao===2?'selected':''}>Nível 2</option><option value="3" ${d?.capacitacao===3?'selected':''}>Nível 3</option></select></div></div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id||'null'})">Salvar</button>`);
+    }
+
+    async function salvarDiscipula(id) {
+      const obj = {
+        nome: document.getElementById('f-nome').value.trim(),
+        telefone: document.getElementById('f-tel').value.trim(),
+        data_nascimento: document.getElementById('f-nasc').value || null,
+        lider_id: parseInt(document.getElementById('f-lider').value),
+        cidade: document.getElementById('f-cidade').value.trim(),
+        bairro: document.getElementById('f-bairro').value.trim(),
+        endereco: document.getElementById('f-end').value.trim(),
+        assiduidade: document.getElementById('f-ass').value,
+        frequencia_culto: document.getElementById('f-culto').value,
+        batizada: document.getElementById('f-bat').value === '1',
+        uv: document.getElementById('f-uv').value,
+        capacitacao: parseInt(document.getElementById('f-cap').value),
+        reencontro: false,
+        foto: null
+      };
+      if (!obj.nome) return alert('Nome é obrigatório');
+
+      if (id) {
+        await supabaseClient.from('discipulas').update(obj).eq('id', id);
+      } else {
+        await supabaseClient.from('discipulas').insert([obj]);
+        await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova discípula cadastrada: ${obj.nome}` }]);
+      }
+      fecharModal(); await carregarDB(); renderDiscipulas(); renderDashboard();
+    }
+    function editarDiscipula(id) { abrirModalDiscipula(id); }
+
+    function abrirModalLider(id = null) {
+      const l = id ? db.lideres.find(x => x.id === id) : null;
+      const optionsParent = db.lideres.filter(x => x.ativa && (!l || x.id !== l.id)).map(x => `<option value="${x.id}" ${l && l.parent_id===x.id?'selected':''}>${x.nome} (${x.celular_que_lidera})</option>`).join('');
+      abrirModal(l ? 'Editar Líder / Célula' : 'Nova Líder / Célula', `
+        <div class="form-row"><div class="form-field"><label>Nome da Líder</label><input id="fl-nome" value="${l?.nome||''}" /></div><div class="form-field"><label>Geração</label><select id="fl-ger"><option ${l?.geracao==='3ª Geração (12)'?'selected':''}>3ª Geração (12)</option><option ${l?.geracao==='4ª Geração'?'selected':''}>4ª Geração</option><option ${l?.geracao==='5ª Geração'?'selected':''}>5ª Geração</option></select></div></div>
+        <div class="form-row"><div class="form-field"><label>Célula que Lidera</label><input id="fl-cel" value="${l?.celular_que_lidera||''}" /></div><div class="form-field"><label>Líder superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div></div>
+        <div class="form-row"><div class="form-field"><label>Telefone</label><input id="fl-tel" value="${l?.telefone||''}" /></div><div class="form-field"><label>Cidade</label><input id="fl-cidade" value="${l?.cidade||''}" /></div><div class="form-field"><label>Bairro</label><input id="fl-bairro" value="${l?.bairro||''}" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Latitude</label><input id="fl-lat" type="number" step="any" value="${l?.lat||''}" placeholder="-23.55" /></div><div class="form-field"><label>Longitude</label><input id="fl-lng" type="number" step="any" value="${l?.lng||''}" placeholder="-46.63" /></div></div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarLider(${id||'null'})">Salvar</button>`);
+    }
+
+    async function salvarLider(id) {
+      const parentVal = document.getElementById('fl-parent').value;
+      const obj = {
+        nome: document.getElementById('fl-nome').value.trim(),
+        geracao: document.getElementById('fl-ger').value,
+        celular_que_lidera: document.getElementById('fl-cel').value.trim(),
+        celular_onde_e_discipula: parentVal ? (db.lideres.find(x=>x.id==parentVal)?.celular_que_lidera || '') : '—',
+        telefone: document.getElementById('fl-tel').value.trim(),
+        cidade: document.getElementById('fl-cidade').value.trim(),
+        bairro: document.getElementById('fl-bairro').value.trim(),
+        lat: parseFloat(document.getElementById('fl-lat').value) || null,
+        lng: parseFloat(document.getElementById('fl-lng').value) || null,
+        ativa: true,
+        parent_id: parentVal ? parseInt(parentVal) : null
+      };
+      if (!obj.nome || !obj.celular_que_lidera) return alert('Nome e Célula são obrigatórios');
+
+      if (id) {
+        await supabaseClient.from('lideres').update(obj).eq('id', id);
+      } else {
+        await supabaseClient.from('lideres').insert([obj]);
+        await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova célula aberta: ${obj.celular_que_lidera} sob ${obj.nome}` }]);
+      }
+      fecharModal(); await carregarDB(); renderArvoreCompleta(); renderCelulas(); renderDashboard();
+    }
+    function editarLider(id) { abrirModalLider(id); }
+    function abrirModalAbrirCelula() { abrirModalLider(); }
+
+    function fecharCelula(id) {
+      const lider = db.lideres.find(l => l.id === id); if (!lider) return;
+      const outras = db.lideres.filter(l => l.ativa && l.id !== id).map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
+      abrirModal('Fechar Célula — Migração Pastoral', `<p style="margin-bottom:16px;line-height:1.5;">Você está fechando a célula <strong>${lider.celular_que_lidera}</strong> (líder: ${lider.nome}).</p><div class="form-field"><label>Motivo Pastoral</label><textarea id="fc-motivo" placeholder="Descreva o motivo..."></textarea></div><div class="form-field" style="margin-top:14px;"><label>Migrar discípulas para:</label><select id="fc-destino">${outras}</select></div>`, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-danger" onclick="confirmarFecharCelula(${id})">Confirmar Fechamento</button>`);
+    }
+
+    async function confirmarFecharCelula(id) {
+      const motivo = document.getElementById('fc-motivo').value.trim(), destId = parseInt(document.getElementById('fc-destino').value);
+      if (!motivo) return alert('Informe o motivo pastoral');
+      
+      const discipulasAfetadas = db.discipulas.filter(d => d.lider_id === id);
+      for (const d of discipulasAfetadas) {
+        await supabaseClient.from('discipulas').update({ lider_id: destId }).eq('id', d.id);
+      }
+      await supabaseClient.from('lideres').update({ ativa: false }).eq('id', id);
+      const lider = db.lideres.find(l => l.id === id);
+      await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Célula ${lider.celular_que_lidera} fechada. Motivo: ${motivo}.` }]);
+
+      fecharModal(); await carregarDB(); renderCelulas(); renderArvoreCompleta(); renderDashboard(); alert('Célula fechada e discípulas migradas com sucesso.');
+    }
+
+    function abrirModalDesistencia() {
+      const nomes = db.discipulas.map(d => d.nome);
+      abrirModal('Registrar Desistência', `<div class="form-field"><label>Nome da Discípula</label><input id="fd-nome" list="lista-nomes" placeholder="Digite para buscar..." /><datalist id="lista-nomes">${nomes.map(n => `<option value="${n}">`).join('')}</datalist></div><div class="form-field" style="margin-top:14px;"><label>Motivo Pastoral</label><textarea id="fd-motivo" placeholder="Motivo da saída..."></textarea></div>`, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDesistencia()">Registrar</button>`);
+    }
+
+    async function salvarDesistencia() {
+      const nome = document.getElementById('fd-nome').value.trim(), motivo = document.getElementById('fd-motivo').value.trim();
+      if (!nome || !motivo) return alert('Preencha nome e motivo');
+      const disc = db.discipulas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
+      const celular = disc ? (db.lideres.find(l => l.id === disc.lider_id)?.celular_que_lidera || '—') : '—';
+
+      await supabaseClient.from('desistencias').insert([{ nome, celular_origem: celular, data: new Date().toISOString().slice(0,10), motivo, registrado_por: 'Rosane Aleluia' }]);
+      if (disc) {
+        await supabaseClient.from('discipulas').delete().eq('id', disc.id);
+      }
+      await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Desistência registrada: ${nome}` }]);
+
+      fecharModal(); await carregarDB(); renderDesistencias(); renderDiscipulas(); renderDashboard();
+    }
+
+    function iniciais(nome) { return nome ? nome.split(' ').filter(Boolean).slice(0,2).map(p => p[0]).join('').toUpperCase() : '—'; }
+    function formatDate(iso) { if (!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+
+    async function initApp() {
+      await carregarDB();
+      renderDashboard(); renderArvoreCompleta(); renderDiscipulas(); renderCelulas(); renderDesistencias();
+      document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => navegar(item.dataset.page)));
+    }
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>
