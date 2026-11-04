@@ -901,10 +901,17 @@
     async function salvarLider(id) {
       const nomeLider = document.getElementById('fl-nome').value.trim();
       const parentVal = document.getElementById('fl-parent').value;
+      const celularLidera = document.getElementById('fl-cel').value.trim();
+      
+      if (!nomeLider || !celularLidera) {
+        alert('Selecione a líder da lista e preencha o nome da célula.');
+        return;
+      }
+
       const obj = {
         nome: nomeLider,
         geracao: document.getElementById('fl-ger').value,
-        celular_que_lidera: document.getElementById('fl-cel').value.trim(),
+        celular_que_lidera: celularLidera,
         celular_onde_e_discipula: parentVal ? (db.lideres.find(x=>x.id==parentVal)?.celular_que_lidera || '') : '—',
         telefone: '',
         cidade: 'Salvador',
@@ -914,15 +921,24 @@
         ativa: true,
         parent_id: parentVal ? parseInt(parentVal) : null
       };
-      if (!obj.nome || !obj.celular_que_lidera) return alert('Nome da líder e Célula são obrigatórios');
 
-      if (id) {
-        await supabaseClient.from('lideres').update(obj).eq('id', id);
-      } else {
-        await supabaseClient.from('lideres').insert([obj]);
-        await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova célula aberta: ${obj.celular_que_lidera} sob ${obj.nome}` }]);
+      try {
+        if (id) {
+          const { error } = await supabaseClient.from('lideres').update(obj).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabaseClient.from('lideres').insert([obj]);
+          if (error) throw error;
+          await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova célula aberta: ${obj.celular_que_lidera} sob ${obj.nome}` }]);
+        }
+        fecharModal(); 
+        await carregarDB(); 
+        renderPastasCelulas(); 
+        renderDashboard();
+      } catch (err) {
+        console.error('Erro ao salvar célula:', err);
+        alert('Erro ao salvar célula no banco de dados. Verifique a conexão.');
       }
-      fecharModal(); await carregarDB(); renderPastasCelulas(); renderDashboard();
     }
 
     async function salvarAberturaCelula(e) {
