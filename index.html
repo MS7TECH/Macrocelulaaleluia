@@ -125,7 +125,6 @@
     .btn-whatsapp { background: #25D366; color: white; }
     .btn-whatsapp:hover { background: #20ba5a; }
 
-    /* Estilo de Pastas de Células */
     .celulas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
     .celula-folder-card { background: white; border: 1.5px solid #EAEAEA; border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); transition: all var(--trans); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
     .celula-folder-card:hover { border-color: var(--rosa); transform: translateY(-3px); box-shadow: var(--sombra-hover); }
@@ -153,7 +152,7 @@
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 8, 12, 0.55); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
-    .modal { background: white; border-radius: 22px; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
+    .modal { background: white; border-radius: 22px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
     .modal-header { padding: 22px 26px; border-bottom: 1px solid #F0F0F2; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
     .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
@@ -189,7 +188,6 @@
   </style>
 </head>
 <body>
-  <!-- TELA DE LOGIN -->
   <div id="login-screen">
     <div class="login-card">
       <div class="login-logos">
@@ -208,7 +206,6 @@
     </div>
   </div>
 
-  <!-- APLICATIVO PRINCIPAL -->
   <div id="app">
     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     <aside class="sidebar" id="sidebar">
@@ -301,14 +298,13 @@
         </div>
       </section>
 
-      <!-- PÁGINA DE LÍDERES & CÉLULAS (ESTRUTURA DE PASTAS) -->
       <section id="page-lideres" class="page">
         <div class="card">
           <div class="card-header">
             <h2>Pastas de Células &amp; Líderes</h2>
             <button class="btn btn-rosa" onclick="abrirModalLider()">+ Criar Nova Célula (Pasta)</button>
           </div>
-          <p style="color:var(--cinza-medio);margin-bottom:20px;font-size:0.9rem;">Clique em uma célula para gerenciar e visualizar os arquivos (participantes) vinculados.</p>
+          <p style="color:var(--cinza-medio);margin-bottom:20px;font-size:0.9rem;">Clique em uma célula para gerenciar e visualizar os participantes vinculados.</p>
           <div class="celulas-grid" id="grid-pastas-celulas"></div>
         </div>
       </section>
@@ -326,7 +322,6 @@
         </div>
       </section>
 
-      <!-- ABA DE ABERTURA / FECHAMENTO -->
       <section id="page-celulas" class="page">
         <div class="card">
           <div class="card-header"><h2>Gestão de Abertura &amp; Fechamento de Células</h2></div>
@@ -335,7 +330,6 @@
             <button class="tab-btn" onclick="mudarAbaCelulas('fechamento', event)">⚠️ Fechamento de Célula</button>
           </div>
 
-          <!-- ABA ABERTURA -->
           <div id="pane-abertura" class="tab-pane active">
             <h3 style="margin-bottom:16px;font-size:1.05rem;color:var(--rosa);">Cadastrar Abertura de Célula</h3>
             <form id="form-abertura-celula" onsubmit="salvarAberturaCelula(event)">
@@ -353,7 +347,6 @@
             </form>
           </div>
 
-          <!-- ABA FECHAMENTO -->
           <div id="pane-fechamento" class="tab-pane">
             <h3 style="margin-bottom:16px;font-size:1.05rem;color:var(--erro);">Registrar Fechamento de Célula</h3>
             <form id="form-fechamento-celula" onsubmit="salvarFechamentoCelula(event)">
@@ -369,7 +362,6 @@
         </div>
       </section>
 
-      <!-- HISTÓRICO DE DESISTÊNCIAS COM MIGRAÇÃO -->
       <section id="page-desistencias" class="page">
         <div class="card">
           <div class="card-header"><h2>Histórico de Transferências &amp; Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Movimentação</button></div>
@@ -381,7 +373,6 @@
         <div class="card"><div class="card-header"><h2>Mapa Geográfico das Células</h2><span style="font-size:0.82rem;color:#999;">Pins = localização das células</span></div><div id="mapa-container"></div></div>
       </section>
 
-      <!-- ANIVERSARIANTES COM IDADE E WHATSAPP -->
       <section id="page-aniversariantes" class="page">
         <div class="card">
           <div class="card-header">
@@ -554,7 +545,6 @@
       return `<div class="tree-node root"><div class="tree-card" style="border:2px solid var(--dourado);background:linear-gradient(135deg,#FFFEF8,#FFFBF0);"><div class="tree-avatar" style="background:linear-gradient(135deg,var(--dourado),#E8C547);">${iniciais(root.nome)}</div><div class="tree-info"><h4>${root.nome}</h4><span>👑 ${root.geracao} • ${root.celular_que_lidera}</span></div></div>${build(root.id)}</div>`;
     }
 
-    // RENDERIZAÇÃO DAS PASTAS DE CÉLULAS
     function renderPastasCelulas() {
       const container = document.getElementById('grid-pastas-celulas');
       const lideresAtivas = db.lideres.filter(l => l.ativa);
@@ -576,7 +566,6 @@
                   <p>Líder: ${l.nome}</p>
                 </div>
               </div>
-              <p style="font-size:0.85rem;color:var(--cinza);margin-bottom:12px;">📍 ${l.cidade || 'Salvador'} / ${l.bairro || 'Centro'}</p>
             </div>
             <div class="folder-meta">
               <span>👥 ${discipulasNaCelula.length} participante(s)</span>
@@ -586,7 +575,6 @@
       }).join('');
     }
 
-    // ABRIR MODAL DA PASTA DA CÉLULA (ARQUIVOS / PARTICIPANTES)
     function abrirPastaCelula(liderId) {
       const lider = db.lideres.find(l => l.id === liderId);
       const membros = db.discipulas.filter(d => d.lider_id === liderId);
@@ -628,7 +616,7 @@
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => l.id === d.lider_id);
         const assBadge = d.assiduidade === 'Assídua' ? 'badge-success' : d.assiduidade === 'Não Assídua' ? 'badge-warning' : 'badge-danger';
-        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '—'}</td><td><span class="badge ${assBadge}">${d.assiduidade}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao?'Nível '+d.capacitacao:'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
+        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '—'}</td><td><span class="badge ${assBadge}">${d.assiduidade}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
       }).join('') || '<tr><td colspan="8" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula encontrada.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
@@ -692,11 +680,12 @@
       document.getElementById('filtro-bairro').innerHTML = '<option value="">Todos</option>' + bairros.map(b => `<option>${b}</option>`).join('');
       document.getElementById('filtro-lider').innerHTML = '<option value="">Todas</option>' + db.lideres.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
     }
+
     function aplicarFiltrosRelatorio() {
       const cidade = document.getElementById('filtro-cidade').value, bairro = document.getElementById('filtro-bairro').value, liderId = document.getElementById('filtro-lider').value, pend = document.getElementById('filtro-pendencia').value;
       let lista = [...db.discipulas];
       if (cidade) lista = lista.filter(d => d.cidade === cidade); if (bairro) lista = lista.filter(d => d.bairro === bairro); if (liderId) lista = lista.filter(d => d.lider_id == liderId);
-      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada); if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Pré-Encontro'); if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Assídua');
+      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada); if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Não'); if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
       document.getElementById('resultado-relatorio').innerHTML = `<p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p><div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Bairro</th><th>Assiduidade</th><th>Batismo</th></tr></thead><tbody>${lista.map(d => `<tr><td>${d.nome}</td><td>${d.email||'—'}</td><td>${d.cidade||'—'}</td><td>${d.bairro||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}</tbody></table></div>`;
     }
     function gerarRelatorioPDF() { window.print(); }
@@ -707,19 +696,27 @@
     }
     function fecharModal() { document.getElementById('modal').classList.remove('active'); }
 
+    // MODAL DE DISCÍPULA ATUALIZADA COM OS CAMPOS DA PLANILHA
     function abrirModalDiscipula(id = null, preselectedLiderId = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
       const optionsLider = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.id}" ${(d && d.lider_id===l.id) || (!d && preselectedLiderId===l.id) ?'selected':''}>${l.nome} (${l.celular_que_lidera})</option>`).join('');
       abrirModal(d ? 'Editar Discípula' : 'Nova Discípula', `
-        <div class="form-row"><div class="form-field"><label>Nome completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Nome Completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
         <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Líder / Célula (Pasta)</label><select id="f-lider">${optionsLider}</select></div><div class="form-field"><label>Cidade</label><input id="f-cidade" value="${d?.cidade||''}" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Bairro</label><input id="f-bairro" value="${d?.bairro||''}" /></div><div class="form-field"><label>Endereço</label><input id="f-end" value="${d?.endereco||''}" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Assiduidade na Célula</label><select id="f-ass"><option ${d?.assiduidade==='Assídua'?'selected':''}>Assídua</option><option ${d?.assiduidade==='Não Assídua'?'selected':''}>Não Assídua</option><option ${d?.assiduidade==='Não Frequenta'?'selected':''}>Não Frequenta</option></select></div>
-        <div class="form-field"><label>Frequência aos Cultos</label><select id="f-culto"><option ${d?.frequencia_culto==='Semanal'?'selected':''}>Semanal</option><option ${d?.frequencia_culto==='Quinzenal'?'selected':''}>Quinzenal</option><option ${d?.frequencia_culto==='Raramente'?'selected':''}>Raramente</option><option ${d?.frequencia_culto==='Não Frequenta'?'selected':''}>Não Frequenta</option></select></div></div>
-        <div class="form-row"><div class="form-field"><label>Batizada?</label><select id="f-bat"><option value="1" ${d?.batizada?'selected':''}>Sim</option><option value="0" ${!d?.batizada?'selected':''}>Não</option></select></div>
-        <div class="form-field"><label>Universidade da Vida</label><select id="f-uv"><option value="">—</option><option ${d?.uv==='Pré-Encontro'?'selected':''}>Pré-Encontro</option><option ${d?.uv==='Encontro'?'selected':''}>Encontro</option><option ${d?.uv==='Pós-Encontro'?'selected':''}>Pós-Encontro</option><option ${d?.uv==='Conclusão'?'selected':''}>Conclusão</option></select></div>
-        <div class="form-field"><label>Capacitação Destino</label><select id="f-cap"><option value="0">Nenhum</option><option value="1" ${d?.capacitacao===1?'selected':''}>Nível 1</option><option value="2" ${d?.capacitacao===2?'selected':''}>Nível 2</option><option value="3" ${d?.capacitacao===3?'selected':''}>Nível 3</option></select></div></div>
+        <div class="form-row"><div class="form-field"><label>Célula (Pasta) / Líder</label><select id="f-lider">${optionsLider}</select></div><div class="form-field"><label>Status (Cargo)</label><input id="f-status" value="${d?.status||'Discípula'}" placeholder="Discípula, Líder, etc." /></div></div>
+        <div class="form-row">
+          <div class="form-field"><label>Universidade da Vida (UV)</label><select id="f-uv"><option value="">—</option><option ${d?.uv==='Sim'?'selected':''}>Sim</option><option ${d?.uv==='Não'?'selected':''}>Não</option></select></div>
+          <div class="form-field"><label>Encontro</label><select id="f-encontro"><option value="">—</option><option ${d?.encontro==='Sim'?'selected':''}>Sim</option><option ${d?.encontro==='Não'?'selected':''}>Não</option></select></div>
+          <div class="form-field"><label>Reencontro</label><select id="f-reencontro"><option value="">—</option><option ${d?.reencontro==='Sim'?'selected':''}>Sim</option><option ${d?.reencontro==='Não'?'selected':''}>Não</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Capacitação</label><input id="f-capacitacao" value="${d?.capacitacao||''}" placeholder="Ex: Concluído, Livro 1, Não..." /></div>
+          <div class="form-field"><label>Batismo</label><select id="f-bat"><option value="1" ${d?.batizada?'selected':''}>Sim</option><option value="0" ${!d?.batizada?'selected':''}>Não</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>É Assídua na Célula?</label><select id="f-ass"><option value="">—</option><option ${d?.assiduidade==='Sim'?'selected':''}>Sim</option><option ${d?.assiduidade==='Não'?'selected':''}>Não</option></select></div>
+          <div class="form-field"><label>Frequenta Culto de Sábado?</label><select id="f-culto"><option value="">—</option><option ${d?.frequencia_culto==='Sim'?'selected':''}>Sim</option><option ${d?.frequencia_culto==='Não'?'selected':''}>Não</option></select></div>
+        </div>
       `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id||'null'})">Salvar</button>`);
     }
 
@@ -730,16 +727,14 @@
         telefone: document.getElementById('f-tel').value.trim(),
         data_nascimento: document.getElementById('f-nasc').value || null,
         lider_id: parseInt(document.getElementById('f-lider').value),
-        cidade: document.getElementById('f-cidade').value.trim(),
-        bairro: document.getElementById('f-bairro').value.trim(),
-        endereco: document.getElementById('f-end').value.trim(),
-        assiduidade: document.getElementById('f-ass').value,
-        frequencia_culto: document.getElementById('f-culto').value,
-        batizada: document.getElementById('f-bat').value === '1',
+        status: document.getElementById('f-status').value.trim(),
         uv: document.getElementById('f-uv').value,
-        capacitacao: parseInt(document.getElementById('f-cap').value),
-        reencontro: false,
-        foto: null
+        encontro: document.getElementById('f-encontro').value,
+        reencontro: document.getElementById('f-reencontro').value,
+        capacitacao: document.getElementById('f-capacitacao').value.trim(),
+        batizada: document.getElementById('f-bat').value === '1',
+        assiduidade: document.getElementById('f-ass').value,
+        frequencia_culto: document.getElementById('f-culto').value
       };
       if (!obj.nome) return alert('Nome é obrigatório');
 
@@ -757,10 +752,14 @@
       const l = id ? db.lideres.find(x => x.id === id) : null;
       const optionsParent = db.lideres.filter(x => x.ativa && (!l || x.id !== l.id)).map(x => `<option value="${x.id}" ${l && l.parent_id===x.id?'selected':''}>${x.nome} (${x.celular_que_lidera})</option>`).join('');
       abrirModal(l ? 'Editar Líder / Célula' : 'Nova Célula (Pasta)', `
-        <div class="form-row"><div class="form-field"><label>Nome da Líder</label><input id="fl-nome" placeholder="Ex: Ingrid Bonfim" value="${l?.nome||''}" /></div><div class="form-field"><label>Geração</label><select id="fl-ger"><option ${l?.geracao==='3ª Geração (12)'?'selected':''}>3ª Geração (12)</option><option ${l?.geracao==='4ª Geração'?'selected':''}>4ª Geração</option><option ${l?.geracao==='5ª Geração'?'selected':''}>5ª Geração</option></select></div></div>
-        <div class="form-row"><div class="form-field"><label>Nome da Célula (Pasta)</label><input id="fl-cel" placeholder="Ex: Amigas da Fé" value="${l?.celular_que_lidera||''}" /></div><div class="form-field"><label>Líder superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div></div>
-        <div class="form-row"><div class="form-field"><label>Telefone</label><input id="fl-tel" value="${l?.telefone||''}" /></div><div class="form-field"><label>Cidade</label><input id="fl-cidade" value="${l?.cidade||'Salvador'}" /></div><div class="form-field"><label>Bairro</label><input id="fl-bairro" value="${l?.bairro||''}" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Latitude</label><input id="fl-lat" type="number" step="any" value="${l?.lat||''}" placeholder="-12.97" /></div><div class="form-field"><label>Longitude</label><input id="fl-lng" type="number" step="any" value="${l?.lng||''}" placeholder="-38.51" /></div></div>
+        <div class="form-row">
+          <div class="form-field"><label>Nome da Líder</label><input id="fl-nome" placeholder="Ex: Ingrid Bonfim" value="${l?.nome||''}" /></div>
+          <div class="form-field"><label>Geração</label><select id="fl-ger"><option ${l?.geracao==='3ª Geração (12)'?'selected':''}>3ª Geração (12)</option><option ${l?.geracao==='4ª Geração'?'selected':''}>4ª Geração</option><option ${l?.geracao==='5ª Geração'?'selected':''}>5ª Geração</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Nome da Célula (Pasta)</label><input id="fl-cel" placeholder="Ex: Amigas da Fé" value="${l?.celular_que_lidera||''}" /></div>
+          <div class="form-field"><label>Líder Superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div>
+        </div>
       `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarLider(${id||'null'})">Salvar Célula</button>`);
     }
 
@@ -771,11 +770,11 @@
         geracao: document.getElementById('fl-ger').value,
         celular_que_lidera: document.getElementById('fl-cel').value.trim(),
         celular_onde_e_discipula: parentVal ? (db.lideres.find(x=>x.id==parentVal)?.celular_que_lidera || '') : '—',
-        telefone: document.getElementById('fl-tel').value.trim(),
-        cidade: document.getElementById('fl-cidade').value.trim(),
-        bairro: document.getElementById('fl-bairro').value.trim(),
-        lat: parseFloat(document.getElementById('fl-lat').value) || null,
-        lng: parseFloat(document.getElementById('fl-lng').value) || null,
+        telefone: '',
+        cidade: 'Salvador',
+        bairro: '',
+        lat: null,
+        lng: null,
         ativa: true,
         parent_id: parentVal ? parseInt(parentVal) : null
       };
