@@ -104,7 +104,7 @@
     .btn-logout { background: transparent; border: none; color: var(--cinza-medio); cursor: pointer; font-size: 0.82rem; padding: 4px 8px; font-weight: 500; font-family: inherit; }
     .btn-logout:hover { color: var(--erro); }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 28px; }
     .stat-card { background: white; border-radius: var(--radius); padding: 22px 20px 20px; box-shadow: var(--sombra); position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3.5px; background: linear-gradient(90deg, var(--rosa), var(--dourado)); }
     .stat-card .label { font-size: 0.72rem; color: var(--cinza-medio); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
@@ -122,6 +122,8 @@
     .btn-outline { background: transparent; border: 1.5px solid #E5E5E5; color: var(--cinza); }
     .btn-sm { padding: 7px 13px; font-size: 0.8rem; border-radius: 9px; }
     .btn-danger { background: #FEF2F2; color: var(--erro); border: 1.5px solid #FECACA; }
+    .btn-whatsapp { background: #25D366; color: white; }
+    .btn-whatsapp:hover { background: #20ba5a; }
 
     .table-wrap { overflow-x: auto; border-radius: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
@@ -155,6 +157,12 @@
     .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; }
     .empty-state { text-align: center; padding: 52px 20px; color: #A0A0A0; }
 
+    .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #EAEAEA; padding-bottom: 10px; }
+    .tab-btn { background: none; border: none; padding: 8px 16px; font-weight: 600; cursor: pointer; color: var(--cinza); border-radius: 8px; transition: all var(--trans); }
+    .tab-btn.active { background: var(--rosa-claro); color: var(--rosa); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
     .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; background: var(--rosa); color: white; border: none; width: 46px; height: 46px; border-radius: 14px; cursor: pointer; align-items: center; justify-content: center; }
     @media (max-width: 900px) {
       .sidebar { width: var(--sidebar-w); transform: translateX(-100%); } 
@@ -165,7 +173,7 @@
       .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     }
     .page { display: none; } .page.active { display: block; }
-    .bday-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: linear-gradient(135deg, #FFFBF5, #FFF8EE); border-radius: 14px; border: 1px solid #F5E6B8; margin-bottom: 10px; }
+    .bday-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #FFFBF5, #FFF8EE); border-radius: 14px; border: 1px solid #F5E6B8; margin-bottom: 10px; gap: 12px; }
     .search-input { padding: 10px 16px 10px 40px; border: 1.5px solid #E8E4E6; border-radius: 12px; width: 240px; font-size: 0.9rem; background: #FAFAFB; }
   </style>
 </head>
@@ -273,8 +281,13 @@
 
       <section id="page-dashboard" class="page active">
         <div class="stats-grid" id="stats-grid"></div>
-        <div class="card"><div class="card-header"><h2>Árvore Geracional</h2><button class="btn btn-rosa btn-sm" onclick="navegar('lideres')">Ver Completa</button></div><div id="tree-preview"></div></div>
-        <div class="card"><div class="card-header"><h2>Últimas Movimentações</h2></div><div id="ultimas-mov"></div></div>
+        <div class="card">
+          <div class="card-header">
+            <h2>Árvore Geracional</h2>
+            <button class="btn btn-rosa btn-sm" onclick="abrirModalArvore()">🌳 Ver Árvore Completa</button>
+          </div>
+          <p style="color:var(--cinza-medio);font-size:0.9rem;">Clique no botão acima para abrir a estrutura completa da rede em formato hierárquico G12.</p>
+        </div>
       </section>
 
       <section id="page-lideres" class="page">
@@ -290,21 +303,58 @@
               <button class="btn btn-rosa" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
             </div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome &amp; Contato</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
         </div>
       </section>
 
+      <!-- ABA DE ABERTURA / FECHAMENTO -->
       <section id="page-celulas" class="page">
         <div class="card">
-          <div class="card-header"><h2>Gestão de Células</h2><button class="btn btn-rosa" onclick="abrirModalAbrirCelula()">+ Abrir Nova Célula</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Cidade / Bairro</th><th>Discípulas</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-celulas"></tbody></table></div>
+          <div class="card-header"><h2>Gestão de Abertura &amp; Fechamento de Células</h2></div>
+          <div class="tab-buttons">
+            <button class="tab-btn active" onclick="mudarAbaCelulas('abertura', event)">📋 Abertura de Célula</button>
+            <button class="tab-btn" onclick="mudarAbaCelulas('fechamento', event)">⚠️ Fechamento de Célula</button>
+          </div>
+
+          <!-- ABA ABERTURA -->
+          <div id="pane-abertura" class="tab-pane active">
+            <h3 style="margin-bottom:16px;font-size:1.05rem;color:var(--rosa);">Cadastrar Abertura de Célula</h3>
+            <form id="form-abertura-celula" onsubmit="salvarAberturaCelula(event)">
+              <div class="form-row">
+                <div class="form-field"><label>Data da Abertura</label><input type="date" id="ab-data" required /></div>
+                <div class="form-field"><label>Nome da Líder</label><input type="text" id="ab-lider" placeholder="Ex: Maria Silva" required /></div>
+                <div class="form-field"><label>Nome da Célula</label><input type="text" id="ab-celula" placeholder="Ex: Célula Esperança" required /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Local (Bairro / Cidade)</label><input type="text" id="ab-local" placeholder="Ex: Vila Mariana, São Paulo" required /></div>
+                <div class="form-field"><label>Dia da Célula</label><input type="text" id="ab-dia" placeholder="Ex: Terças-feiras" required /></div>
+                <div class="form-field"><label>Horário</label><input type="text" id="ab-horario" placeholder="Ex: 20:00" required /></div>
+              </div>
+              <button type="submit" class="btn btn-rosa">Registrar Abertura</button>
+            </form>
+          </div>
+
+          <!-- ABA FECHAMENTO -->
+          <div id="pane-fechamento" class="tab-pane">
+            <h3 style="margin-bottom:16px;font-size:1.05rem;color:var(--erro);">Registrar Fechamento de Célula</h3>
+            <form id="form-fechamento-celula" onsubmit="salvarFechamentoCelula(event)">
+              <div class="form-row">
+                <div class="form-field"><label>Data do Fechamento</label><input type="date" id="fc-data" required /></div>
+                <div class="form-field"><label>Nome da Líder</label><input type="text" id="fc-lider" placeholder="Ex: Ana Oliveira" required /></div>
+                <div class="form-field"><label>Nome da Célula</label><input type="text" id="fc-celula" placeholder="Ex: Célula Vitória" required /></div>
+              </div>
+              <div class="form-field"><label>Motivo do Fechamento</label><textarea id="fc-motivo" placeholder="Descreva detalhadamente o motivo pastoral..." required></textarea></div>
+              <button type="submit" class="btn btn-danger" style="margin-top:16px;">Confirmar Fechamento</button>
+            </form>
+          </div>
         </div>
       </section>
 
+      <!-- HISTÓRICO DE DESISTÊNCIAS COM MIGRAÇÃO -->
       <section id="page-desistencias" class="page">
         <div class="card">
-          <div class="card-header"><h2>Histórico de Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Desistência</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Célula de Origem</th><th>Data</th><th>Motivo Pastoral</th><th>Registrado por</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
+          <div class="card-header"><h2>Histórico de Transferências &amp; Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Movimentação</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Nome da Discípula</th><th>Célula Anterior</th><th>Célula Nova</th><th>Data da Transferência</th><th>Motivo / Status</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
         </div>
       </section>
 
@@ -312,6 +362,7 @@
         <div class="card"><div class="card-header"><h2>Mapa Geográfico das Células</h2><span style="font-size:0.82rem;color:#999;">Pins = localização das células</span></div><div id="mapa-container"></div></div>
       </section>
 
+      <!-- ANIVERSARIANTES COM IDADE E WHATSAPP -->
       <section id="page-aniversariantes" class="page">
         <div class="card">
           <div class="card-header">
@@ -336,7 +387,6 @@
           </div>
           <button class="btn btn-rosa" style="margin-bottom:20px;" onclick="aplicarFiltrosRelatorio()">Aplicar Filtros</button>
           <div id="resultado-relatorio"></div>
-          <div style="margin-top:28px;padding-top:22px;border-top:1px solid #F0F0F2;"><h3 style="margin-bottom:16px;font-size:1.05rem;">Árvore Geracional Discipular</h3><div id="arvore-relatorio"></div></div>
         </div>
       </section>
     </main>
@@ -357,7 +407,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let db = { lideres: [], discipulas: [], desistencias: [], movimentacoes: [] };
-    const USUARIO_PADRAO = 'rosane', SENHA_PADRAO = 'aleluia2024';
+    const SENHA_PADRAO = 'aleluia2024';
 
     async function carregarDB() {
       try {
@@ -411,7 +461,6 @@
       element.parentElement.classList.toggle('open');
     }
 
-    // Função de navegação exposta globalmente
     window.navegar = function(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -431,7 +480,7 @@
         lideres: 'Líderes & Células', 
         discipulas: 'Discípulas & Jornada Espiritual', 
         celulas: 'Abertura & Fechamento de Células', 
-        desistencias: 'Histórico de Desistências', 
+        desistencias: 'Histórico de Transferências & Desistências', 
         mapa: 'Mapa Geográfico', 
         aniversariantes: 'Aniversariantes', 
         relatorios: 'Relatórios Pastorais' 
@@ -446,19 +495,30 @@
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
+    function mudarAbaCelulas(aba, event) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById('pane-' + aba).classList.add('active');
+    }
+
     function renderDashboard() {
-      const totalRede = db.discipulas.length + db.lideres.length, soDiscipulas = db.discipulas.length;
-      const uv = db.discipulas.filter(d => d.uv && d.uv !== '—').length, cap = db.discipulas.filter(d => d.capacitacao > 0).length;
-      const naoBat = db.discipulas.filter(d => !d.batizada).length, desist = db.desistencias.length;
+      const totalLideres = db.lideres.filter(l => l.ativa).length;
+      const totalDiscipulas = db.discipulas.length;
+      const totalGeral = totalLideres + totalDiscipulas;
+      const batizadas = db.discipulas.filter(d => d.batizada).length;
+      const naoBatizadas = db.discipulas.filter(d => !d.batizada).length;
+
       document.getElementById('stats-grid').innerHTML = `
-        <div class="stat-card"><div class="label">Total da Rede</div><div class="value">${totalRede}</div><div class="icon">👥</div></div>
-        <div class="stat-card"><div class="label">Discípulas</div><div class="value">${soDiscipulas}</div><div class="icon">💜</div></div>
-        <div class="stat-card"><div class="label">Universidade da Vida</div><div class="value">${uv}</div><div class="icon">📖</div></div>
-        <div class="stat-card"><div class="label">Capacitação Destino</div><div class="value">${cap}</div><div class="icon">🎯</div></div>
-        <div class="stat-card"><div class="label">Não Batizadas</div><div class="value">${naoBat}</div><div class="icon">💧</div></div>
-        <div class="stat-card"><div class="label">Desistências</div><div class="value">${desist}</div><div class="icon">📉</div></div>`;
-      document.getElementById('tree-preview').innerHTML = renderArvoreHTML();
-      document.getElementById('ultimas-mov').innerHTML = db.movimentacoes.slice(0,5).map(m => `<div style="padding:12px 0;border-bottom:1px solid #F5F5F7;display:flex;gap:14px;"><span style="font-size:0.78rem;color:#AAA;min-width:88px;font-weight:500;">${formatDate(m.data)}</span><span style="font-size:0.9rem;">${m.texto}</span></div>`).join('') || '<p style="color:#999;padding:12px 0;">Nenhuma movimentação recente.</p>';
+        <div class="stat-card"><div class="label">Total da Rede</div><div class="value">${totalGeral}</div><div class="icon">👥</div></div>
+        <div class="stat-card"><div class="label">Líderes</div><div class="value">${totalLideres}</div><div class="icon">👑</div></div>
+        <div class="stat-card"><div class="label">Discípulas</div><div class="value">${totalDiscipulas}</div><div class="icon">💜</div></div>
+        <div class="stat-card"><div class="label">Batizadas</div><div class="value">${batizadas}</div><div class="icon">💧</div></div>
+        <div class="stat-card"><div class="label">Não Batizadas</div><div class="value">${naoBatizadas}</div><div class="icon">⚠️</div></div>`;
+    }
+
+    function abrirModalArvore() {
+      abrirModal('Árvore Geracional G12 Completa', `<div style="max-height:60vh;overflow-y:auto;padding:10px;">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
     function renderArvoreHTML() {
@@ -482,20 +542,13 @@
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => l.id === d.lider_id);
         const assBadge = d.assiduidade === 'Assídua' ? 'badge-success' : d.assiduidade === 'Não Assídua' ? 'badge-warning' : 'badge-danger';
-        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '—'}</td><td><span class="badge ${assBadge}">${d.assiduidade}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao?'Nível '+d.capacitacao:'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
+        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '—'}</td><td><span class="badge ${assBadge}">${d.assiduidade}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao?'Nível '+d.capacitacao:'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
       }).join('') || '<tr><td colspan="8" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula encontrada.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
 
-    function renderCelulas() {
-      document.getElementById('tabela-celulas').innerHTML = db.lideres.filter(l => l.ativa).map(l => {
-        const qtd = db.discipulas.filter(d => d.lider_id === l.id).length;
-        return `<tr><td><strong>${l.celular_que_lidera}</strong></td><td>${l.nome}</td><td><span class="badge badge-rosa">${l.geracao}</span></td><td>${l.cidade} / ${l.bairro}</td><td>${qtd}</td><td><span class="badge badge-success">Ativa</span></td><td><button class="btn btn-outline btn-sm" onclick="editarLider(${l.id})">Editar</button> ${l.parent_id !== null ? `<button class="btn btn-danger btn-sm" onclick="fecharCelula(${l.id})">Fechar</button>` : ''}</td></tr>`;
-      }).join('');
-    }
-
     function renderDesistencias() {
-      document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `<tr><td><strong>${d.nome}</strong></td><td>${d.celular_origem}</td><td>${formatDate(d.data)}</td><td>${d.motivo}</td><td>${d.registrado_por}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;padding:36px;">Nenhum registro.</td></tr>';
+      document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `<tr><td><strong>${d.nome}</strong></td><td>${d.celular_origem}</td><td><strong>${d.celular_nova || '—'}</strong></td><td>${formatDate(d.data)}</td><td>${d.motivo}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;padding:36px;">Nenhum registro.</td></tr>';
     }
 
     let mapInstance = null;
@@ -509,12 +562,41 @@
       });
     }
 
+    function calcularIdade(dataNasc) {
+      if (!dataNasc) return '';
+      const hoje = new Date();
+      const nasc = new Date(dataNasc);
+      let idade = hoje.getFullYear() - nasc.getFullYear();
+      const m = hoje.getMonth() - nasc.getMonth();
+      if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+      return idade;
+    }
+
     function renderAniversariantes() {
       const mes = parseInt(document.getElementById('mes-aniversario').value);
       const lista = db.discipulas.filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T12:00:00').getMonth() === mes);
       const c = document.getElementById('lista-aniversariantes');
       if (!lista.length) { c.innerHTML = '<div class="empty-state"><p>Nenhum aniversariante neste mês.</p></div>'; return; }
-      c.innerHTML = lista.map(p => { const d = new Date(p.data_nascimento + 'T12:00:00'); return `<div class="bday-card"><div class="foto-disc">${iniciais(p.nome)}</div><div><strong>${p.nome}</strong><br><span style="color:#999;font-size:0.88rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</span></div></div>`; }).join('');
+      
+      c.innerHTML = lista.map(p => {
+        const d = new Date(p.data_nascimento + 'T12:00:00');
+        const idade = calcularIdade(p.data_nascimento);
+        const telLimpo = p.telefone ? p.telefone.replace(/\D/g, '') : '';
+        const msg = encodeURIComponent(`Olá ${p.nome}, a Macrocélula Aleluia te deseja um feliz aniversário! Muitas felicidades e bênçãos de Deus sobre sua vida! 🎂🎉`);
+        const linkWap = telLimpo ? `https://wa.me/55${telLimpo}?text=${msg}` : '#';
+
+        return `
+          <div class="bday-card">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div class="foto-disc">${iniciais(p.nome)}</div>
+              <div>
+                <strong>${p.nome}</strong><br>
+                <span style="color:#999;font-size:0.85rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${idade !== '' ? idade + ' anos' : ''} • Tel: ${p.telefone || 'Não informado'}</span>
+              </div>
+            </div>
+            ${telLimpo ? `<a href="${linkWap}" target="_blank" class="btn btn-whatsapp btn-sm">💬 Enviar Parabéns</a>` : '<span style="font-size:0.75rem;color:#999;">Sem WhatsApp</span>'}
+          </div>`;
+      }).join('');
     }
 
     function prepararFiltrosRelatorio() {
@@ -523,14 +605,13 @@
       document.getElementById('filtro-cidade').innerHTML = '<option value="">Todas</option>' + cidades.map(c => `<option>${c}</option>`).join('');
       document.getElementById('filtro-bairro').innerHTML = '<option value="">Todos</option>' + bairros.map(b => `<option>${b}</option>`).join('');
       document.getElementById('filtro-lider').innerHTML = '<option value="">Todas</option>' + db.lideres.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
-      document.getElementById('arvore-relatorio').innerHTML = renderArvoreHTML();
     }
     function aplicarFiltrosRelatorio() {
       const cidade = document.getElementById('filtro-cidade').value, bairro = document.getElementById('filtro-bairro').value, liderId = document.getElementById('filtro-lider').value, pend = document.getElementById('filtro-pendencia').value;
       let lista = [...db.discipulas];
       if (cidade) lista = lista.filter(d => d.cidade === cidade); if (bairro) lista = lista.filter(d => d.bairro === bairro); if (liderId) lista = lista.filter(d => d.lider_id == liderId);
       if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada); if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Pré-Encontro'); if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Assídua');
-      document.getElementById('resultado-relatorio').innerHTML = `<p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Cidade</th><th>Bairro</th><th>Assiduidade</th><th>Batismo</th><th>UV</th></tr></thead><tbody>${lista.map(d => `<tr><td>${d.nome}</td><td>${d.cidade||'—'}</td><td>${d.bairro||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td><td>${d.uv||'—'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}</tbody></table></div>`;
+      document.getElementById('resultado-relatorio').innerHTML = `<p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p><div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Bairro</th><th>Assiduidade</th><th>Batismo</th></tr></thead><tbody>${lista.map(d => `<tr><td>${d.nome}</td><td>${d.email||'—'}</td><td>${d.cidade||'—'}</td><td>${d.bairro||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}</tbody></table></div>`;
     }
     function gerarRelatorioPDF() { window.print(); }
 
@@ -544,10 +625,10 @@
       const d = id ? db.discipulas.find(x => x.id === id) : null;
       const optionsLider = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.id}" ${d && d.lider_id===l.id?'selected':''}>${l.nome} (${l.celular_que_lidera})</option>`).join('');
       abrirModal(d ? 'Editar Discípula' : 'Nova Discípula', `
-        <div class="form-row"><div class="form-field"><label>Nome completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" value="${d?.data_nascimento||''}" /></div><div class="form-field"><label>Líder / Célula</label><select id="f-lider">${optionsLider}</select></div></div>
-        <div class="form-row"><div class="form-field"><label>Cidade</label><input id="f-cidade" value="${d?.cidade||''}" /></div><div class="form-field"><label>Bairro</label><input id="f-bairro" value="${d?.bairro||''}" /></div></div>
-        <div class="form-field"><label>Endereço</label><input id="f-end" value="${d?.endereco||''}" /></div>
+        <div class="form-row"><div class="form-field"><label>Nome completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Líder / Célula</label><select id="f-lider">${optionsLider}</select></div><div class="form-field"><label>Cidade</label><input id="f-cidade" value="${d?.cidade||''}" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Bairro</label><input id="f-bairro" value="${d?.bairro||''}" /></div><div class="form-field"><label>Endereço</label><input id="f-end" value="${d?.endereco||''}" /></div></div>
         <div class="form-row"><div class="form-field"><label>Assiduidade na Célula</label><select id="f-ass"><option ${d?.assiduidade==='Assídua'?'selected':''}>Assídua</option><option ${d?.assiduidade==='Não Assídua'?'selected':''}>Não Assídua</option><option ${d?.assiduidade==='Não Frequenta'?'selected':''}>Não Frequenta</option></select></div>
         <div class="form-field"><label>Frequência aos Cultos</label><select id="f-culto"><option ${d?.frequencia_culto==='Semanal'?'selected':''}>Semanal</option><option ${d?.frequencia_culto==='Quinzenal'?'selected':''}>Quinzenal</option><option ${d?.frequencia_culto==='Raramente'?'selected':''}>Raramente</option><option ${d?.frequencia_culto==='Não Frequenta'?'selected':''}>Não Frequenta</option></select></div></div>
         <div class="form-row"><div class="form-field"><label>Batizada?</label><select id="f-bat"><option value="1" ${d?.batizada?'selected':''}>Sim</option><option value="0" ${!d?.batizada?'selected':''}>Não</option></select></div>
@@ -559,6 +640,7 @@
     async function salvarDiscipula(id) {
       const obj = {
         nome: document.getElementById('f-nome').value.trim(),
+        email: document.getElementById('f-email').value.trim(),
         telefone: document.getElementById('f-tel').value.trim(),
         data_nascimento: document.getElementById('f-nasc').value || null,
         lider_id: parseInt(document.getElementById('f-lider').value),
@@ -619,48 +701,103 @@
         await supabaseClient.from('lideres').insert([obj]);
         await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova célula aberta: ${obj.celular_que_lidera} sob ${obj.nome}` }]);
       }
-      fecharModal(); await carregarDB(); renderArvoreCompleta(); renderCelulas(); renderDashboard();
-    }
-    function editarLider(id) { abrirModalLider(id); }
-    function abrirModalAbrirCelula() { abrirModalLider(); }
-
-    function fecharCelula(id) {
-      const lider = db.lideres.find(l => l.id === id); if (!lider) return;
-      const outras = db.lideres.filter(l => l.ativa && l.id !== id).map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
-      abrirModal('Fechar Célula — Migração Pastoral', `<p style="margin-bottom:16px;line-height:1.5;">Você está fechando a célula <strong>${lider.celular_que_lidera}</strong> (líder: ${lider.nome}).</p><div class="form-field"><label>Motivo Pastoral</label><textarea id="fc-motivo" placeholder="Descreva o motivo..."></textarea></div><div class="form-field" style="margin-top:14px;"><label>Migrar discípulas para:</label><select id="fc-destino">${outras}</select></div>`, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-danger" onclick="confirmarFecharCelula(${id})">Confirmar Fechamento</button>`);
+      fecharModal(); await carregarDB(); renderArvoreCompleta(); renderDashboard();
     }
 
-    async function confirmarFecharCelula(id) {
-      const motivo = document.getElementById('fc-motivo').value.trim(), destId = parseInt(document.getElementById('fc-destino').value);
-      if (!motivo) return alert('Informe o motivo pastoral');
-      
-      const discipulasAfetadas = db.discipulas.filter(d => d.lider_id === id);
-      for (const d of discipulasAfetadas) {
-        await supabaseClient.from('discipulas').update({ lider_id: destId }).eq('id', d.id);
+    async function salvarAberturaCelula(e) {
+      e.preventDefault();
+      const data = document.getElementById('ab-data').value;
+      const lider = document.getElementById('ab-lider').value.trim();
+      const celula = document.getElementById('ab-celula').value.trim();
+      const local = document.getElementById('ab-local').value.trim();
+      const dia = document.getElementById('ab-dia').value.trim();
+      const horario = document.getElementById('ab-horario').value.trim();
+
+      await supabaseClient.from('lideres').insert([{
+        nome: lider,
+        geracao: 'Nova Célula',
+        celular_que_lidera: celula,
+        cidade: local,
+        ativa: true
+      }]);
+      await supabaseClient.from('movimentacoes').insert([{
+        data: data,
+        texto: `Abertura da ${celula} liderada por ${lider} (${dia} às ${horario} em ${local})`
+      }]);
+
+      alert('Célula aberta com sucesso!');
+      document.getElementById('form-abertura-celula').reset();
+      await carregarDB();
+      renderDashboard();
+    }
+
+    async function salvarFechamentoCelula(e) {
+      e.preventDefault();
+      const data = document.getElementById('fc-data').value;
+      const lider = document.getElementById('fc-lider').value.trim();
+      const celula = document.getElementById('fc-celula').value.trim();
+      const motivo = document.getElementById('fc-motivo').value.trim();
+
+      const liderObj = db.lideres.find(l => l.celular_que_lidera.toLowerCase() === celula.toLowerCase());
+      if (liderObj) {
+        await supabaseClient.from('lideres').update({ ativa: false }).eq('id', liderObj.id);
       }
-      await supabaseClient.from('lideres').update({ ativa: false }).eq('id', id);
-      const lider = db.lideres.find(l => l.id === id);
-      await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Célula ${lider.celular_que_lidera} fechada. Motivo: ${motivo}.` }]);
+      await supabaseClient.from('movimentacoes').insert([{
+        data: data,
+        texto: `Fechamento da ${celula} (${lider}). Motivo: ${motivo}`
+      }]);
 
-      fecharModal(); await carregarDB(); renderCelulas(); renderArvoreCompleta(); renderDashboard(); alert('Célula fechada e discípulas migradas com sucesso.');
+      alert('Fechamento registrado com sucesso!');
+      document.getElementById('form-fechamento-celula').reset();
+      await carregarDB();
+      renderDashboard();
     }
 
     function abrirModalDesistencia() {
       const nomes = db.discipulas.map(d => d.nome);
-      abrirModal('Registrar Desistência', `<div class="form-field"><label>Nome da Discípula</label><input id="fd-nome" list="lista-nomes" placeholder="Digite para buscar..." /><datalist id="lista-nomes">${nomes.map(n => `<option value="${n}">`).join('')}</datalist></div><div class="form-field" style="margin-top:14px;"><label>Motivo Pastoral</label><textarea id="fd-motivo" placeholder="Motivo da saída..."></textarea></div>`, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDesistencia()">Registrar</button>`);
+      const celulasOp = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.celular_que_lidera}">`).join('');
+      
+      abrirModal('Registrar Transferência / Saída', `
+        <div class="form-field"><label>Nome da Discípula</label><input id="fd-nome" list="lista-nomes" placeholder="Digite ou selecione..." /><datalist id="lista-nomes">${nomes.map(n => `<option value="${n}">`).join('')}</datalist></div>
+        <div class="form-row" style="margin-top:14px;"><div class="form-field"><label>Célula Anterior</label><input id="fd-ant" list="lista-cel" placeholder="Célula anterior..." /><datalist id="lista-cel">${celulasOp}</datalist></div><div class="form-field"><label>Célula Nova (ou Deixou a Rede)</label><input id="fd-nova" list="lista-cel" placeholder="Nova célula ou Desistência..." /></div></div>
+        <div class="form-field" style="margin-top:14px;"><label>Motivo Pastoral</label><textarea id="fd-motivo" placeholder="Descreva o motivo da transferência ou saída..."></textarea></div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDesistencia()">Salvar Movimentação</button>`);
     }
 
     async function salvarDesistencia() {
-      const nome = document.getElementById('fd-nome').value.trim(), motivo = document.getElementById('fd-motivo').value.trim();
-      if (!nome || !motivo) return alert('Preencha nome e motivo');
-      const disc = db.discipulas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
-      const celular = disc ? (db.lideres.find(l => l.id === disc.lider_id)?.celular_que_lidera || '—') : '—';
+      const nome = document.getElementById('fd-nome').value.trim();
+      const ant = document.getElementById('fd-ant').value.trim();
+      const nova = document.getElementById('fd-nova').value.trim();
+      const motivo = document.getElementById('fd-motivo').value.trim();
 
-      await supabaseClient.from('desistencias').insert([{ nome, celular_origem: celular, data: new Date().toISOString().slice(0,10), motivo, registrado_por: 'Rosane Aleluia' }]);
-      if (disc) {
-        await supabaseClient.from('discipulas').delete().eq('id', disc.id);
+      if (!nome || !motivo) return alert('Preencha o nome e o motivo.');
+
+      const disc = db.discipulas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
+      
+      await supabaseClient.from('desistencias').insert([{
+        nome,
+        celular_origem: ant || '—',
+        celular_nova: nova || 'Desistência',
+        data: new Date().toISOString().slice(0,10),
+        motivo,
+        registrado_por: 'Rosane Aleluia'
+      }]);
+
+      if (nova.toLowerCase().includes('desistência') || nova.toLowerCase().includes('saída') || !nova) {
+        if (disc) {
+          await supabaseClient.from('discipulas').delete().eq('id', disc.id);
+        }
+      } else if (disc) {
+        const novaLiderObj = db.lideres.find(l => l.celular_que_lidera.toLowerCase() === nova.toLowerCase());
+        if (novaLiderObj) {
+          await supabaseClient.from('discipulas').update({ lider_id: novaLiderObj.id }).eq('id', disc.id);
+        }
       }
-      await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Desistência registrada: ${nome}` }]);
+
+      await supabaseClient.from('movimentacoes').insert([{
+        data: new Date().toISOString().slice(0,10),
+        texto: `Movimentação de discípula: ${nome} (De: ${ant} Para: ${nova || 'Saída'})`
+      }]);
 
       fecharModal(); await carregarDB(); renderDesistencias(); renderDiscipulas(); renderDashboard();
     }
@@ -670,9 +807,8 @@
 
     async function initApp() {
       await carregarDB();
-      renderDashboard(); renderArvoreCompleta(); renderDiscipulas(); renderCelulas(); renderDesistencias();
+      renderDashboard(); renderArvoreCompleta(); renderDiscipulas(); renderDesistencias();
       
-      // Vinculação dinâmica rigorosa dos eventos de clique nas abas
       document.querySelectorAll('.nav-item').forEach(item => {
         item.onclick = () => {
           const page = item.getAttribute('data-page');
