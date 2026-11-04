@@ -150,9 +150,10 @@
     .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #E8E4E6; border-radius: 11px; font-size: 0.92rem; background: #FAFAFB; font-family: inherit; }
     .form-field textarea { resize: vertical; min-height: 84px; }
 
+    /* Modal Aumentado */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 8, 12, 0.55); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
-    .modal { background: white; border-radius: 22px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
+    .modal { background: white; border-radius: 22px; width: 100%; max-width: 840px; max-height: 92vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
     .modal-header { padding: 22px 26px; border-bottom: 1px solid #F0F0F2; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
     .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
@@ -601,7 +602,12 @@
                   <td><strong>${m.nome}</strong><br><small style="color:#999;">${m.email || '—'}</small></td>
                   <td>${m.telefone || '—'}</td>
                   <td><span class="badge badge-success">${m.assiduidade || '—'}</span></td>
-                  <td><button class="btn btn-danger btn-sm" onclick="removerParticipanteDaCelula(${m.id}, ${liderId})">Excluir</button></td>
+                  <td>
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="editarDiscipulaNaCelula(${m.id}, ${liderId})">✏️</button>
+                      <button class="btn btn-danger btn-sm" title="Remover da Célula" onclick="removerParticipanteDaCelula(${m.id}, ${liderId})">Excluir</button>
+                    </div>
+                  </td>
                 </tr>`).join('')}
             </tbody>
           </table>
@@ -614,6 +620,11 @@
         </div>
         ${htmlMembros}
       `, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
+    }
+
+    function editarDiscipulaNaCelula(discipulaId, liderId) {
+      fecharModal();
+      abrirModalDiscipula(discipulaId, liderId, true);
     }
 
     async function removerParticipanteDaCelula(discipulaId, liderId) {
@@ -750,9 +761,9 @@
     }
     function fecharModal() { document.getElementById('modal').classList.remove('active'); }
 
-    function abrirModalDiscipula(id = null) {
+    function abrirModalDiscipula(id = null, retornoLiderId = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
-      abrirModal('Editar Discípula', `
+      abrirModal(d ? 'Editar Perfil da Discípula' : 'Nova Discípula', `
         <div class="form-row"><div class="form-field"><label>Nome Completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
         <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
         <div class="form-row"><div class="form-field"><label>Status (Cargo)</label><input id="f-status" value="${d?.status||'Discípula'}" /></div></div>
@@ -769,10 +780,10 @@
           <div class="form-field"><label>É Assídua na Célula?</label><select id="f-ass"><option value="">—</option><option ${d?.assiduidade==='Sim'?'selected':''}>Sim</option><option ${d?.assiduidade==='Não'?'selected':''}>Não</option></select></div>
           <div class="form-field"><label>Frequenta Culto de Sábado?</label><select id="f-culto"><option value="">—</option><option ${d?.frequencia_culto==='Sim'?'selected':''}>Sim</option><option ${d?.frequencia_culto==='Não'?'selected':''}>Não</option></select></div>
         </div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id})">Salvar</button>`);
+      `, `<button class="btn btn-outline" onclick="${retornoLiderId ? `abrirCelulaseMembros(${retornoLiderId})` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id}, ${retornoLiderId || 'null'})">Salvar</button>`);
     }
 
-    async function salvarDiscipula(id) {
+    async function salvarDiscipula(id, retornoLiderId) {
       const obj = {
         nome: document.getElementById('f-nome').value.trim(),
         email: document.getElementById('f-email').value.trim(),
@@ -790,7 +801,13 @@
       if (!obj.nome) return alert('Nome é obrigatório');
 
       await supabaseClient.from('discipulas').update(obj).eq('id', id);
-      fecharModal(); await carregarDB(); renderDiscipulas(); renderPastasCelulas(); renderDashboard();
+      await carregarDB();
+      if (retornoLiderId) {
+        abrirCelulaseMembros(retornoLiderId);
+      } else {
+        fecharModal();
+      }
+      renderDiscipulas(); renderPastasCelulas(); renderDashboard();
     }
     function editarDiscipula(id) { abrirModalDiscipula(id); }
 
