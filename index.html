@@ -301,10 +301,10 @@
       <section id="page-lideres" class="page">
         <div class="card">
           <div class="card-header">
-            <h2>Pastas de Células &amp; Líderes</h2>
-            <button class="btn btn-rosa" onclick="abrirModalLider()">+ Criar Nova Célula (Pasta)</button>
+            <h2>Células da Rede</h2>
+            <button class="btn btn-rosa" onclick="abrirModalLider()">+ Criar Nova Célula</button>
           </div>
-          <p style="color:var(--cinza-medio);margin-bottom:20px;font-size:0.9rem;">Clique em uma célula para gerenciar e visualizar os participantes vinculados.</p>
+          <p style="color:var(--cinza-medio);margin-bottom:20px;font-size:0.9rem;">Clique em uma célula para gerenciar os participantes ou excluí-la.</p>
           <div class="celulas-grid" id="grid-pastas-celulas"></div>
         </div>
       </section>
@@ -315,7 +315,6 @@
             <h2>Discípulas da Rede</h2>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
               <input type="text" id="busca-discipula" class="search-input" placeholder="Buscar por nome..." oninput="filtrarDiscipulas()" />
-              <button class="btn btn-rosa" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
             </div>
           </div>
           <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome &amp; Contato</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
@@ -487,7 +486,7 @@
       
       const titles = { 
         dashboard: 'Dashboard G12', 
-        lideres: 'Líderes & Células (Pastas)', 
+        lideres: 'Células & Líderes', 
         discipulas: 'Discípulas & Jornada Espiritual', 
         celulas: 'Abertura & Fechamento de Células', 
         desistencias: 'Histórico de Transferências & Desistências', 
@@ -557,10 +556,10 @@
       container.innerHTML = lideresAtivas.map(l => {
         const discipulasNaCelula = db.discipulas.filter(d => d.lider_id === l.id);
         return `
-          <div class="celula-folder-card" onclick="abrirPastaCelula(${l.id})">
-            <div>
+          <div class="celula-folder-card">
+            <div onclick="abrirCelulaseMembros(${l.id})" style="cursor:pointer;">
               <div class="folder-header">
-                <div class="folder-icon">📁</div>
+                <div class="folder-icon">🏠</div>
                 <div class="folder-info">
                   <h3>${l.celular_que_lidera}</h3>
                   <p>Líder: ${l.nome}</p>
@@ -569,45 +568,100 @@
             </div>
             <div class="folder-meta">
               <span>👥 ${discipulasNaCelula.length} participante(s)</span>
-              <span style="color:var(--rosa);font-weight:600;">Abrir Pasta →</span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-outline btn-sm" onclick="abrirCelulaseMembros(${l.id})">Abrir</button>
+                <button class="btn btn-danger btn-sm" onclick="excluirCelula(${l.id})">Excluir</button>
+              </div>
             </div>
           </div>`;
       }).join('');
     }
 
-    function abrirPastaCelula(liderId) {
+    async function excluirCelula(id) {
+      if (!confirm('Tem certeza que deseja excluir esta célula? As discípulas vinculadas ficarão sem célula atribuída.')) return;
+      await supabaseClient.from('discipulas').update({ lider_id: null }).eq('lider_id', id);
+      await supabaseClient.from('lideres').delete().eq('id', id);
+      await carregarDB();
+      renderPastasCelulas();
+      renderDashboard();
+      renderDiscipulas();
+    }
+
+    function abrirCelulaseMembros(liderId) {
       const lider = db.lideres.find(l => l.id === liderId);
       const membros = db.discipulas.filter(d => d.lider_id === liderId);
 
       const htmlMembros = membros.length ? `
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Nome</th><th>Contato</th><th>Assiduidade</th><th>Batismo</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Nome</th><th>Contato</th><th>Assiduidade</th><th>Ações</th></tr></thead>
             <tbody>
               ${membros.map(m => `
                 <tr>
                   <td><strong>${m.nome}</strong><br><small style="color:#999;">${m.email || '—'}</small></td>
                   <td>${m.telefone || '—'}</td>
-                  <td><span class="badge badge-success">${m.assiduidade}</span></td>
-                  <td>${m.batizada ? 'Sim' : 'Não'}</td>
-                  <td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${m.id})">Editar</button></td>
+                  <td><span class="badge badge-success">${m.assiduidade || '—'}</span></td>
+                  <td><button class="btn btn-danger btn-sm" onclick="removerParticipanteDaCelula(${m.id}, ${liderId})">Excluir</button></td>
                 </tr>`).join('')}
             </tbody>
           </table>
-        </div>` : '<div class="empty-state"><p>Nenhum participante cadastrado nesta célula ainda.</p></div>';
+        </div>` : '<div class="empty-state"><p>Nenhum participante vinculado a esta célula.</p></div>';
 
-      abrirModal(`📂 Célula: ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
-        <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:0.9rem;color:var(--cinza);">Lista de participantes vinculados a esta célula:</span>
-          <button class="btn btn-rosa btn-sm" onclick="abrirModalDiscipulaParaCelula(${lider.id})">+ Adicionar Participante</button>
+      abrirModal(`🏠 Célula: ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
+        <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <span style="font-size:0.9rem;color:var(--cinza);">Participantes desta célula:</span>
+          <button class="btn btn-rosa btn-sm" onclick="abrirModalBuscaParticipante(${liderId})">+ Adicionar por Busca</button>
         </div>
         ${htmlMembros}
       `, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
-    function abrirModalDiscipulaParaCelula(liderId) {
+    async function removerParticipanteDaCelula(discipulaId, liderId) {
+      if (!confirm('Deseja realmente excluir/remover esta participante da célula?')) return;
+      await supabaseClient.from('discipulas').update({ lider_id: null }).eq('id', discipulaId);
+      await carregarDB();
+      abrirCelulaseMembros(liderId);
+      renderDiscipulas();
+      renderPastasCelulas();
+    }
+
+    function abrirModalBuscaParticipante(liderId) {
       fecharModal();
-      abrirModalDiscipula(null, liderId);
+      const semCelula = db.discipulas.filter(d => !d.lider_id || d.lider_id !== liderId);
+      
+      abrirModal('Adicionar Participante por Busca', `
+        <div class="form-field" style="margin-bottom:14px;">
+          <label>Buscar Discípula Disponível</label>
+          <input type="text" id="filtro-busca-add" placeholder="Digite o nome..." oninput="filtrarBuscaAdd(${liderId})" />
+        </div>
+        <div id="lista-busca-add" style="max-height:300px;overflow-y:auto;">
+          ${renderListaBuscaAdd(semCelula, liderId)}
+        </div>
+      `, `<button class="btn btn-outline" onclick="abrirCelulaseMembros(${liderId})">Voltar</button>`);
+    }
+
+    function renderListaBuscaAdd(lista, liderId) {
+      if (!lista.length) return '<p style="text-align:center;color:#999;padding:20px;">Nenhuma discípula disponível para adicionar.</p>';
+      return lista.map(m => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #eee;">
+          <div><strong>${m.nome}</strong><br><small style="color:#999;">${m.telefone || 'Sem tel'}</small></div>
+          <button class="btn btn-rosa btn-sm" onclick="adicionarParticipanteNaCelula(${m.id}, ${liderId})">+ Adicionar</button>
+        </div>
+      `).join('');
+    }
+
+    function filtrarBuscaAdd(liderId) {
+      const q = document.getElementById('filtro-busca-add').value.toLowerCase();
+      const filtradas = db.discipulas.filter(d => (!d.lider_id || d.lider_id !== liderId) && d.nome.toLowerCase().includes(q));
+      document.getElementById('lista-busca-add').innerHTML = renderListaBuscaAdd(filtradas, liderId);
+    }
+
+    async function adicionarParticipanteNaCelula(discipulaId, liderId) {
+      await supabaseClient.from('discipulas').update({ lider_id: liderId }).eq('id', discipulaId);
+      await carregarDB();
+      abrirCelulaseMembros(liderId);
+      renderDiscipulas();
+      renderPastasCelulas();
     }
 
     function renderDiscipulas(filtro = '') {
@@ -615,8 +669,8 @@
       if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro.toLowerCase()));
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => l.id === d.lider_id);
-        const assBadge = d.assiduidade === 'Assídua' ? 'badge-success' : d.assiduidade === 'Não Assídua' ? 'badge-warning' : 'badge-danger';
-        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '—'}</td><td><span class="badge ${assBadge}">${d.assiduidade}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
+        const assBadge = d.assiduidade === 'Sim' ? 'badge-success' : 'badge-warning';
+        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '<span style="color:#999;">Sem Célula</span>'}</td><td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
       }).join('') || '<tr><td colspan="8" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula encontrada.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
@@ -696,28 +750,26 @@
     }
     function fecharModal() { document.getElementById('modal').classList.remove('active'); }
 
-    // MODAL DE DISCÍPULA ATUALIZADA COM OS CAMPOS DA PLANILHA
-    function abrirModalDiscipula(id = null, preselectedLiderId = null) {
+    function abrirModalDiscipula(id = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
-      const optionsLider = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.id}" ${(d && d.lider_id===l.id) || (!d && preselectedLiderId===l.id) ?'selected':''}>${l.nome} (${l.celular_que_lidera})</option>`).join('');
-      abrirModal(d ? 'Editar Discípula' : 'Nova Discípula', `
+      abrirModal('Editar Discípula', `
         <div class="form-row"><div class="form-field"><label>Nome Completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
         <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Célula (Pasta) / Líder</label><select id="f-lider">${optionsLider}</select></div><div class="form-field"><label>Status (Cargo)</label><input id="f-status" value="${d?.status||'Discípula'}" placeholder="Discípula, Líder, etc." /></div></div>
+        <div class="form-row"><div class="form-field"><label>Status (Cargo)</label><input id="f-status" value="${d?.status||'Discípula'}" /></div></div>
         <div class="form-row">
           <div class="form-field"><label>Universidade da Vida (UV)</label><select id="f-uv"><option value="">—</option><option ${d?.uv==='Sim'?'selected':''}>Sim</option><option ${d?.uv==='Não'?'selected':''}>Não</option></select></div>
           <div class="form-field"><label>Encontro</label><select id="f-encontro"><option value="">—</option><option ${d?.encontro==='Sim'?'selected':''}>Sim</option><option ${d?.encontro==='Não'?'selected':''}>Não</option></select></div>
           <div class="form-field"><label>Reencontro</label><select id="f-reencontro"><option value="">—</option><option ${d?.reencontro==='Sim'?'selected':''}>Sim</option><option ${d?.reencontro==='Não'?'selected':''}>Não</option></select></div>
         </div>
         <div class="form-row">
-          <div class="form-field"><label>Capacitação</label><input id="f-capacitacao" value="${d?.capacitacao||''}" placeholder="Ex: Concluído, Livro 1, Não..." /></div>
+          <div class="form-field"><label>Capacitação</label><input id="f-capacitacao" value="${d?.capacitacao||''}" /></div>
           <div class="form-field"><label>Batismo</label><select id="f-bat"><option value="1" ${d?.batizada?'selected':''}>Sim</option><option value="0" ${!d?.batizada?'selected':''}>Não</option></select></div>
         </div>
         <div class="form-row">
           <div class="form-field"><label>É Assídua na Célula?</label><select id="f-ass"><option value="">—</option><option ${d?.assiduidade==='Sim'?'selected':''}>Sim</option><option ${d?.assiduidade==='Não'?'selected':''}>Não</option></select></div>
           <div class="form-field"><label>Frequenta Culto de Sábado?</label><select id="f-culto"><option value="">—</option><option ${d?.frequencia_culto==='Sim'?'selected':''}>Sim</option><option ${d?.frequencia_culto==='Não'?'selected':''}>Não</option></select></div>
         </div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id||'null'})">Salvar</button>`);
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id})">Salvar</button>`);
     }
 
     async function salvarDiscipula(id) {
@@ -726,7 +778,6 @@
         email: document.getElementById('f-email').value.trim(),
         telefone: document.getElementById('f-tel').value.trim(),
         data_nascimento: document.getElementById('f-nasc').value || null,
-        lider_id: parseInt(document.getElementById('f-lider').value),
         status: document.getElementById('f-status').value.trim(),
         uv: document.getElementById('f-uv').value,
         encontro: document.getElementById('f-encontro').value,
@@ -738,12 +789,7 @@
       };
       if (!obj.nome) return alert('Nome é obrigatório');
 
-      if (id) {
-        await supabaseClient.from('discipulas').update(obj).eq('id', id);
-      } else {
-        await supabaseClient.from('discipulas').insert([obj]);
-        await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova discípula cadastrada: ${obj.nome}` }]);
-      }
+      await supabaseClient.from('discipulas').update(obj).eq('id', id);
       fecharModal(); await carregarDB(); renderDiscipulas(); renderPastasCelulas(); renderDashboard();
     }
     function editarDiscipula(id) { abrirModalDiscipula(id); }
@@ -751,13 +797,13 @@
     function abrirModalLider(id = null) {
       const l = id ? db.lideres.find(x => x.id === id) : null;
       const optionsParent = db.lideres.filter(x => x.ativa && (!l || x.id !== l.id)).map(x => `<option value="${x.id}" ${l && l.parent_id===x.id?'selected':''}>${x.nome} (${x.celular_que_lidera})</option>`).join('');
-      abrirModal(l ? 'Editar Líder / Célula' : 'Nova Célula (Pasta)', `
+      abrirModal(l ? 'Editar Célula' : 'Nova Célula', `
         <div class="form-row">
           <div class="form-field"><label>Nome da Líder</label><input id="fl-nome" placeholder="Ex: Ingrid Bonfim" value="${l?.nome||''}" /></div>
           <div class="form-field"><label>Geração</label><select id="fl-ger"><option ${l?.geracao==='3ª Geração (12)'?'selected':''}>3ª Geração (12)</option><option ${l?.geracao==='4ª Geração'?'selected':''}>4ª Geração</option><option ${l?.geracao==='5ª Geração'?'selected':''}>5ª Geração</option></select></div>
         </div>
         <div class="form-row">
-          <div class="form-field"><label>Nome da Célula (Pasta)</label><input id="fl-cel" placeholder="Ex: Amigas da Fé" value="${l?.celular_que_lidera||''}" /></div>
+          <div class="form-field"><label>Nome da Célula</label><input id="fl-cel" placeholder="Ex: Amigas da Fé" value="${l?.celular_que_lidera||''}" /></div>
           <div class="form-field"><label>Líder Superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div>
         </div>
       `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarLider(${id||'null'})">Salvar Célula</button>`);
@@ -810,7 +856,7 @@
         texto: `Abertura da ${celula} liderada por ${lider} (${dia} às ${horario} em ${local})`
       }]);
 
-      alert('Célula aberta e pasta criada com sucesso!');
+      alert('Célula aberta e cadastrada com sucesso!');
       document.getElementById('form-abertura-celula').reset();
       await carregarDB();
       renderPastasCelulas();
