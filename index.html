@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -154,21 +153,30 @@
     /* Modal Aumentado e Árvore */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 8, 12, 0.55); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
-    .modal { background: white; border-radius: 22px; width: 100%; max-width: 840px; max-height: 92vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
+    .modal { background: white; border-radius: 22px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
     .modal-header { padding: 22px 26px; border-bottom: 1px solid #F0F0F2; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
     .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
 
-    /* Estilo Árvore Hierárquica G12 */
-    .tree-container { padding: 10px; font-family: 'Inter', sans-serif; }
-    .tree-root-box { background: linear-gradient(135deg, #FFFDF5, #FFF8EE); border: 2px solid var(--dourado); border-radius: 16px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; box-shadow: var(--sombra); }
-    .tree-branch { margin-left: 28px; border-left: 2.5px dashed var(--rosa-medio); padding-left: 22px; position: relative; margin-top: 10px; margin-bottom: 10px; }
-    .tree-branch::before { content: ''; position: absolute; left: 0; top: 22px; width: 18px; height: 2.5px; background: var(--rosa-medio); }
-    .tree-card-node { background: white; border: 1.5px solid #EAEAEA; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--sombra); transition: all var(--trans); }
-    .tree-card-node:hover { border-color: var(--rosa); box-shadow: var(--sombra-hover); }
-    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; font-size: 0.95rem; }
+    /* NOVO VISUAL - Estilo Organograma / Árvore Interativa G12 */
+    .tree-container { padding: 15px 10px; font-family: 'Inter', sans-serif; }
+    .tree-root-box { background: linear-gradient(135deg, #FFFDF5 0%, #FFF5E5 100%); border: 2px solid var(--dourado); border-radius: 16px; padding: 18px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 15px rgba(201,162,39,0.15); position: relative; }
+    .tree-root-box::after { content: ''; position: absolute; bottom: -24px; left: 40px; width: 3px; height: 24px; background: var(--dourado); }
+    
+    .tree-branch { margin-left: 28px; padding-left: 24px; border-left: 3.5px solid var(--rosa-medio); position: relative; margin-top: 16px; margin-bottom: 16px; }
+    .tree-branch::before { content: ''; position: absolute; left: 0; top: 26px; width: 20px; height: 3.5px; background: var(--rosa-medio); }
+    
+    .tree-card-node { background: #FFFFFF; border: 1.5px solid #EAEAEA; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: var(--sombra); transition: all var(--trans); position: relative; }
+    .tree-card-node:hover { border-color: var(--rosa); transform: translateX(4px); box-shadow: var(--sombra-hover); }
+    
+    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; font-size: 0.95rem; border: 2px solid #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .tree-info { flex: 1; }
     .tree-info h4 { font-size: 0.95rem; margin-bottom: 3px; font-weight: 700; color: var(--preto); } 
     .tree-info span { font-size: 0.78rem; color: var(--cinza-medio); font-weight: 500; }
+    
+    .tree-discipulas-box { margin-top: 10px; margin-left: 18px; padding: 10px 14px; background: #FAFAFB; border-radius: 12px; border: 1px dashed #E0E0E0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tree-discipula-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: white; border: 1px solid #E5E5E5; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--cinza); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .tree-discipula-pill small { color: var(--rosa); font-weight: 700; font-size: 0.75rem; }
 
     #mapa-container { height: 480px; border-radius: 16px; overflow: hidden; border: 1px solid #EFEFEF; }
     .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; }
@@ -298,10 +306,10 @@
         <div class="stats-grid" id="stats-grid"></div>
         <div class="card">
           <div class="card-header">
-            <h2>Árvore Geracional</h2>
-            <button class="btn btn-rosa btn-sm" onclick="abrirModalArvore()">🌳 Ver Árvore Completa</button>
+            <h2>Árvore Geracional G12</h2>
+            <button class="btn btn-rosa btn-sm" onclick="abrirModalArvore()">🌳 Expandir Visão Completa</button>
           </div>
-          <p style="color:var(--cinza-medio);font-size:0.9rem;">Clique no botão acima para abrir a estrutura completa da rede em formato hierárquico G12.</p>
+          <p style="color:var(--cinza-medio);font-size:0.9rem;">Visualização direta da cobertura espiritual e divisão das células da rede.</p>
         </div>
       </section>
 
@@ -538,6 +546,7 @@
       abrirModal('Árvore Geracional G12 Completa', `<div class="tree-container">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
+    /* RENDERIZAÇÃO ESTRUTURADA DA ÁRVORE GERACIONAL */
     function renderArvoreHTML() {
       const lideresAtivas = db.lideres.filter(l => l.ativa);
       if (!lideresAtivas.length) return '<p style="color:#999;text-align:center;">Nenhuma célula ou líder cadastrada.</p>';
@@ -547,35 +556,52 @@
         roots = [lideresAtivas[0]];
       }
 
+      function renderDiscipulasPills(liderId) {
+        const discipulas = db.discipulas.filter(d => d.lider_id === liderId);
+        if (!discipulas.length) return '';
+        return `
+          <div class="tree-discipulas-box">
+            <span style="font-size:0.75rem;color:var(--cinza-medio);width:100%;margin-bottom:2px;font-weight:600;">Discípulas desta Célula:</span>
+            ${discipulas.map(d => `<div class="tree-discipula-pill">👤 ${d.nome} <small>(${d.status || 'Discípula'})</small></div>`).join('')}
+          </div>
+        `;
+      }
+
       function buildSubTree(parentId) {
         const children = lideresAtivas.filter(l => l.parent_id === parentId);
         if (!children.length) return '';
         return children.map(l => {
-          const discipulasNaCelula = db.discipulas.filter(d => d.lider_id === l.id);
+          const discipulasCount = db.discipulas.filter(d => d.lider_id === l.id).length;
           return `
             <div class="tree-branch">
               <div class="tree-card-node">
-                <div class="tree-avatar">${iniciais(l.nome)}</div>
-                <div class="tree-info">
-                  <h4>${l.nome} (${l.celular_que_lidera})</h4>
-                  <span>👑 ${l.geracao || 'Líder'} • 👥 ${discipulasNaCelula.length} participante(s)</span>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div class="tree-avatar">${iniciais(l.nome)}</div>
+                  <div class="tree-info">
+                    <h4>${l.nome} <span style="font-weight:500;color:var(--rosa);">(${l.celular_que_lidera})</span></h4>
+                    <span>👑 ${l.geracao || 'Líder de Célula'} • 👥 ${discipulasCount} discípulas diretas</span>
+                  </div>
                 </div>
+                <button class="btn btn-outline btn-sm" onclick="fecharModal(); abrirCelulaseMembros(${l.id});">Ver Célula</button>
               </div>
+              ${renderDiscipulasPills(l.id)}
               ${buildSubTree(l.id)}
             </div>`;
         }).join('');
       }
 
       return roots.map(root => {
-        const discipulasRoot = db.discipulas.filter(d => d.lider_id === root.id);
+        const discipulasRootCount = db.discipulas.filter(d => d.lider_id === root.id).length;
         return `
           <div class="tree-root-box">
             <div class="tree-avatar" style="background:linear-gradient(135deg,var(--dourado),#E8C547);">${iniciais(root.nome)}</div>
             <div class="tree-info">
-              <h4 style="font-size:1.05rem;">👑 Topo da Rede: ${root.nome} (${root.celular_que_lidera})</h4>
-              <span>${root.geracao || 'Macrocélula'} • 👥 ${discipulasRoot.length} participante(s)</span>
+              <h4 style="font-size:1.1rem;color:var(--preto);">👑 Topo da Rede: ${root.nome}</h4>
+              <span style="font-weight:600;color:var(--dourado);">${root.celular_que_lidera} • ${root.geracao || 'Macrocélula Principal'} (${discipulasRootCount} discípulas)</span>
             </div>
+            <button class="btn btn-dourado btn-sm" onclick="fecharModal(); abrirCelulaseMembros(${root.id});">Gerenciar</button>
           </div>
+          ${renderDiscipulasPills(root.id)}
           ${buildSubTree(root.id)}
         `;
       }).join('');
@@ -909,7 +935,6 @@
         return;
       }
 
-      // Validação local para evitar erro 409 (Conflito de duplicidade)
       const existente = db.lideres.find(l => !id && (l.nome.toLowerCase() === nomeLider.toLowerCase() || l.celular_que_lidera.toLowerCase() === celularLidera.toLowerCase()));
       if (existente) {
         alert('Já existe uma célula ou líder cadastrada com este nome ou nome de célula.');
