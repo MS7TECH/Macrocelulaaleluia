@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -908,6 +909,13 @@
         return;
       }
 
+      // Validação local para evitar erro 409 (Conflito de duplicidade)
+      const existente = db.lideres.find(l => !id && (l.nome.toLowerCase() === nomeLider.toLowerCase() || l.celular_que_lidera.toLowerCase() === celularLidera.toLowerCase()));
+      if (existente) {
+        alert('Já existe uma célula ou líder cadastrada com este nome ou nome de célula.');
+        return;
+      }
+
       const obj = {
         nome: nomeLider,
         geracao: document.getElementById('fl-ger').value,
@@ -937,7 +945,7 @@
         renderDashboard();
       } catch (err) {
         console.error('Erro ao salvar célula:', err);
-        alert('Erro ao salvar célula no banco de dados. Verifique a conexão.');
+        alert('Erro ao salvar célula no banco de dados. Verifique se esta líder ou nome de célula já está cadastrada (Erro 409).');
       }
     }
 
