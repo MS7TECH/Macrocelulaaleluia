@@ -151,7 +151,7 @@
     .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #E8E4E6; border-radius: 11px; font-size: 0.92rem; background: #FAFAFB; font-family: inherit; }
     .form-field textarea { resize: vertical; min-height: 84px; }
 
-    /* Modal Aumentado */
+    /* Modal Aumentado e Árvore */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 8, 12, 0.55); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
     .modal { background: white; border-radius: 22px; width: 100%; max-width: 840px; max-height: 92vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
@@ -159,11 +159,16 @@
     .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
     .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
 
-    .tree-node { margin-left: 22px; border-left: 2px solid var(--rosa-medio); padding-left: 18px; margin-bottom: 6px; }
-    .tree-node.root { margin-left: 0; border-left: none; padding-left: 0; }
-    .tree-card { background: white; border: 1px solid #F0F0F2; border-radius: 14px; padding: 13px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; }
-    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
-    .tree-info h4 { font-size: 0.95rem; margin-bottom: 3px; font-weight: 650; } .tree-info span { font-size: 0.76rem; color: var(--cinza-medio); }
+    /* Estilo Árvore Hierárquica G12 */
+    .tree-container { padding: 10px; font-family: 'Inter', sans-serif; }
+    .tree-root-box { background: linear-gradient(135deg, #FFFDF5, #FFF8EE); border: 2px solid var(--dourado); border-radius: 16px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; box-shadow: var(--sombra); }
+    .tree-branch { margin-left: 28px; border-left: 2.5px dashed var(--rosa-medio); padding-left: 22px; position: relative; margin-top: 10px; margin-bottom: 10px; }
+    .tree-branch::before { content: ''; position: absolute; left: 0; top: 22px; width: 18px; height: 2.5px; background: var(--rosa-medio); }
+    .tree-card-node { background: white; border: 1.5px solid #EAEAEA; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--sombra); transition: all var(--trans); }
+    .tree-card-node:hover { border-color: var(--rosa); box-shadow: var(--sombra-hover); }
+    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; font-size: 0.95rem; }
+    .tree-info h4 { font-size: 0.95rem; margin-bottom: 3px; font-weight: 700; color: var(--preto); } 
+    .tree-info span { font-size: 0.78rem; color: var(--cinza-medio); font-weight: 500; }
 
     #mapa-container { height: 480px; border-radius: 16px; overflow: hidden; border: 1px solid #EFEFEF; }
     .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; }
@@ -530,21 +535,51 @@
     }
 
     function abrirModalArvore() {
-      abrirModal('Árvore Geracional G12 Completa', `<div style="max-height:60vh;overflow-y:auto;padding:10px;">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
+      abrirModal('Árvore Geracional G12 Completa', `<div class="tree-container">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
     function renderArvoreHTML() {
-      function build(parentId) {
-        const children = db.lideres.filter(l => l.parent_id === parentId && l.ativa);
+      const lideresAtivas = db.lideres.filter(l => l.ativa);
+      if (!lideresAtivas.length) return '<p style="color:#999;text-align:center;">Nenhuma célula ou líder cadastrada.</p>';
+
+      // Encontrar nós raiz (parent_id é null, undefined ou 0, ou caso não haja, pegar a primeira líder como topo)
+      let roots = lideresAtivas.filter(l => l.parent_id === null || l.parent_id === undefined);
+      if (!roots.length && lideresAtivas.length) {
+        roots = [lideresAtivas[0]];
+      }
+
+      function buildSubTree(parentId) {
+        const children = lideresAtivas.filter(l => l.parent_id === parentId);
         if (!children.length) return '';
         return children.map(l => {
-          const qtd = db.discipulas.filter(d => d.lider_id === l.id).length;
-          return `<div class="tree-node"><div class="tree-card"><div class="tree-avatar">${iniciais(l.nome)}</div><div class="tree-info"><h4>${l.nome}</h4><span>${l.geracao} • ${l.celular_que_lidera} • ${qtd} discípulas</span></div></div>${build(l.id)}</div>`;
+          const discipulasNaCelula = db.discipulas.filter(d => d.lider_id === l.id);
+          return `
+            <div class="tree-branch">
+              <div class="tree-card-node">
+                <div class="tree-avatar">${iniciais(l.nome)}</div>
+                <div class="tree-info">
+                  <h4>${l.nome} (${l.celular_que_lidera})</h4>
+                  <span>👑 ${l.geracao || 'Líder'} • 👥 ${discipulasNaCelula.length} participante(s)</span>
+                </div>
+              </div>
+              ${buildSubTree(l.id)}
+            </div>`;
         }).join('');
       }
-      const root = db.lideres.find(l => l.parent_id === null || l.parent_id === undefined);
-      if (!root) return '<p style="color:#999;">Nenhuma líder cadastrada.</p>';
-      return `<div class="tree-node root"><div class="tree-card" style="border:2px solid var(--dourado);background:linear-gradient(135deg,#FFFEF8,#FFFBF0);"><div class="tree-avatar" style="background:linear-gradient(135deg,var(--dourado),#E8C547);">${iniciais(root.nome)}</div><div class="tree-info"><h4>${root.nome}</h4><span>👑 ${root.geracao} • ${root.celular_que_lidera}</span></div></div>${build(root.id)}</div>`;
+
+      return roots.map(root => {
+        const discipulasRoot = db.discipulas.filter(d => d.lider_id === root.id);
+        return `
+          <div class="tree-root-box">
+            <div class="tree-avatar" style="background:linear-gradient(135deg,var(--dourado),#E8C547);">${iniciais(root.nome)}</div>
+            <div class="tree-info">
+              <h4 style="font-size:1.05rem;">👑 Topo da Rede: ${root.nome} (${root.celular_que_lidera})</h4>
+              <span>${root.geracao || 'Macrocélula'} • 👥 ${discipulasRoot.length} participante(s)</span>
+            </div>
+          </div>
+          ${buildSubTree(root.id)}
+        `;
+      }).join('');
     }
 
     function renderPastasCelulas() {
@@ -774,7 +809,7 @@
             <label>Status (Cargo)</label>
             <select id="f-status">
               <option value="Discípula" ${d?.status==='Discípula'?'selected':''}>Discípula</option>
-              <option value="Líder Direta" ${d?.status==='Líder Direta'?'selected':''}>Líder Direta</option>
+              <option value="Líder Superior" ${d?.status==='Líder Superior'?'selected':''}>Líder Superior</option>
             </select>
           </div>
         </div>
