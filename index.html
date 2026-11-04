@@ -100,7 +100,8 @@
     .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
     .topbar h1 { font-family: 'Playfair Display', serif; font-size: 1.65rem; color: var(--preto); }
     .topbar .user-info { display: flex; align-items: center; gap: 12px; background: white; padding: 7px 14px 7px 7px; border-radius: 50px; box-shadow: var(--sombra); border: 1px solid rgba(0,0,0,0.03); }
-    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--rosa-escuro)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--rosa-escuro)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; overflow: hidden; object-fit: cover; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .btn-logout { background: transparent; border: none; color: var(--cinza-medio); cursor: pointer; font-size: 0.82rem; padding: 4px 8px; font-weight: 500; font-family: inherit; }
     .btn-logout:hover { color: var(--erro); }
 
@@ -126,14 +127,14 @@
     .btn-whatsapp:hover { background: #20ba5a; }
 
     .celulas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .celula-folder-card { background: white; border: 1.5px solid #EAEAEA; border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); transition: all var(--trans); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+    .celula-folder-card { background: white; border: 1.5px solid #EAEAEA; border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); transition: all var(--trans); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; min-height: 150px; }
     .celula-folder-card:hover { border-color: var(--rosa); transform: translateY(-3px); box-shadow: var(--sombra-hover); }
     .celula-folder-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 5px; background: var(--rosa); }
-    .folder-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .folder-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; position: relative; z-index: 2; }
     .folder-icon { font-size: 2rem; background: var(--rosa-claro); padding: 10px; border-radius: 12px; }
     .folder-info h3 { font-size: 1.05rem; font-weight: 700; color: var(--preto); margin-bottom: 2px; }
     .folder-info p { font-size: 0.8rem; color: var(--cinza-medio); font-weight: 600; }
-    .folder-meta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F0F0F2; padding-top: 12px; font-size: 0.82rem; color: var(--cinza); }
+    .folder-meta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F0F0F2; padding-top: 12px; font-size: 0.82rem; color: var(--cinza); position: relative; z-index: 2; }
 
     .table-wrap { overflow-x: auto; border-radius: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
@@ -158,7 +159,7 @@
     .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
     .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
 
-    /* NOVO VISUAL - Estilo Organograma / Árvore Interativa G12 */
+    /* Árvore Hierárquica G12 */
     .tree-container { padding: 15px 10px; font-family: 'Inter', sans-serif; }
     .tree-root-box { background: linear-gradient(135deg, #FFFDF5 0%, #FFF5E5 100%); border: 2px solid var(--dourado); border-radius: 16px; padding: 18px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 15px rgba(201,162,39,0.15); position: relative; }
     .tree-root-box::after { content: ''; position: absolute; bottom: -24px; left: 40px; width: 3px; height: 24px; background: var(--dourado); }
@@ -169,17 +170,20 @@
     .tree-card-node { background: #FFFFFF; border: 1.5px solid #EAEAEA; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: var(--sombra); transition: all var(--trans); position: relative; }
     .tree-card-node:hover { border-color: var(--rosa); transform: translateX(4px); box-shadow: var(--sombra-hover); }
     
-    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; font-size: 0.95rem; border: 2px solid #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; font-size: 0.95rem; border: 2px solid #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+    .tree-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .tree-info { flex: 1; }
     .tree-info h4 { font-size: 0.95rem; margin-bottom: 3px; font-weight: 700; color: var(--preto); } 
     .tree-info span { font-size: 0.78rem; color: var(--cinza-medio); font-weight: 500; }
     
     .tree-discipulas-box { margin-top: 10px; margin-left: 18px; padding: 10px 14px; background: #FAFAFB; border-radius: 12px; border: 1px dashed #E0E0E0; display: flex; flex-wrap: wrap; gap: 8px; }
     .tree-discipula-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: white; border: 1px solid #E5E5E5; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--cinza); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .tree-discipula-pill img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
     .tree-discipula-pill small { color: var(--rosa); font-weight: 700; font-size: 0.75rem; }
 
     #mapa-container { height: 480px; border-radius: 16px; overflow: hidden; border: 1px solid #EFEFEF; }
-    .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; }
+    .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; overflow: hidden; flex-shrink: 0; }
+    .foto-disc img { width: 100%; height: 100%; object-fit: cover; }
     .empty-state { text-align: center; padding: 52px 20px; color: #A0A0A0; }
 
     .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #EAEAEA; padding-bottom: 10px; }
@@ -296,7 +300,7 @@
       <div class="topbar">
         <h1 id="page-title">Dashboard G12</h1>
         <div class="user-info">
-          <div class="user-avatar">RA</div>
+          <div class="user-avatar" id="topbar-avatar">RA</div>
           <div><div style="font-weight:650;font-size:0.88rem;">Rosane Aleluia</div><div style="font-size:0.72rem;color:#999;">Líder Macrocélula</div></div>
           <button class="btn-logout" onclick="logout()">Sair</button>
         </div>
@@ -546,7 +550,20 @@
       abrirModal('Árvore Geracional G12 Completa', `<div class="tree-container">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
-    /* RENDERIZAÇÃO ESTRUTURADA DA ÁRVORE GERACIONAL */
+    function renderAvatarHTML(url, nome, extraClass = '') {
+      if (url && url.trim() !== '') {
+        return `<div class="tree-avatar ${extraClass}"><img src="${url}" alt="${nome}" /></div>`;
+      }
+      return `<div class="tree-avatar ${extraClass}">${iniciais(nome)}</div>`;
+    }
+
+    function renderAvatarDisc(url, nome) {
+      if (url && url.trim() !== '') {
+        return `<div class="foto-disc"><img src="${url}" alt="${nome}" /></div>`;
+      }
+      return `<div class="foto-disc">${iniciais(nome)}</div>`;
+    }
+
     function renderArvoreHTML() {
       const lideresAtivas = db.lideres.filter(l => l.ativa);
       if (!lideresAtivas.length) return '<p style="color:#999;text-align:center;">Nenhuma célula ou líder cadastrada.</p>';
@@ -562,7 +579,7 @@
         return `
           <div class="tree-discipulas-box">
             <span style="font-size:0.75rem;color:var(--cinza-medio);width:100%;margin-bottom:2px;font-weight:600;">Discípulas desta Célula:</span>
-            ${discipulas.map(d => `<div class="tree-discipula-pill">👤 ${d.nome} <small>(${d.status || 'Discípula'})</small></div>`).join('')}
+            ${discipulas.map(d => `<div class="tree-discipula-pill">${d.foto_url ? `<img src="${d.foto_url}" />` : '👤'} ${d.nome} <small>(${d.status || 'Discípula'})</small></div>`).join('')}
           </div>
         `;
       }
@@ -576,7 +593,7 @@
             <div class="tree-branch">
               <div class="tree-card-node">
                 <div style="display:flex;align-items:center;gap:12px;">
-                  <div class="tree-avatar">${iniciais(l.nome)}</div>
+                  ${renderAvatarHTML(l.foto_url, l.nome)}
                   <div class="tree-info">
                     <h4>${l.nome} <span style="font-weight:500;color:var(--rosa);">(${l.celular_que_lidera})</span></h4>
                     <span>👑 ${l.geracao || 'Líder de Célula'} • 👥 ${discipulasCount} discípulas diretas</span>
@@ -594,7 +611,7 @@
         const discipulasRootCount = db.discipulas.filter(d => d.lider_id === root.id).length;
         return `
           <div class="tree-root-box">
-            <div class="tree-avatar" style="background:linear-gradient(135deg,var(--dourado),#E8C547);">${iniciais(root.nome)}</div>
+            ${renderAvatarHTML(root.foto_url, root.nome)}
             <div class="tree-info">
               <h4 style="font-size:1.1rem;color:var(--preto);">👑 Topo da Rede: ${root.nome}</h4>
               <span style="font-weight:600;color:var(--dourado);">${root.celular_que_lidera} • ${root.geracao || 'Macrocélula Principal'} (${discipulasRootCount} discípulas)</span>
@@ -618,23 +635,25 @@
 
       container.innerHTML = lideresAtivas.map(l => {
         const discipulasNaCelula = db.discipulas.filter(d => d.lider_id === l.id);
+        const estiloCapa = l.capa_url ? `background-image: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.75)), url('${l.capa_url}'); background-size: cover; background-position: center; color: white;` : '';
+        const corTextoClass = l.capa_url ? 'color: white;' : '';
+
         return `
-          <div class="celula-folder-card">
+          <div class="celula-folder-card" style="${estiloCapa}">
             <div onclick="abrirCelulaseMembros(${l.id})" style="cursor:pointer;">
               <div class="folder-header">
-                <div class="folder-icon">🏠</div>
+                <div class="folder-icon" style="${l.capa_url ? 'background: rgba(255,255,255,0.25); color:white;' : ''}">🏠</div>
                 <div class="folder-info">
-                  <h3>${l.celular_que_lidera}</h3>
-                  <p>Líder: ${l.nome}</p>
+                  <h3 style="${corTextoClass}">${l.celular_que_lidera}</h3>
+                  <p style="${l.capa_url ? 'color: #f0f0f0;' : ''}">Líder: ${l.nome}</p>
                 </div>
               </div>
             </div>
-            <div class="folder-meta">
-              <span>👥 ${discipulasNaCelula.length} participante(s)</span>
+            <div class="folder-meta" style="${l.capa_url ? 'border-top-color: rgba(255,255,255,0.3); color: white;' : ''}">
+              <span style="${corTextoClass}">👥 ${discipulasNaCelula.length} participante(s)</span>
               <div style="display:flex;gap:6px;">
-                <button class="btn btn-outline btn-sm" onclick="abrirCelulaseMembros(${l.id})">Abrir</button>
-                <button class="btn btn-outline btn-sm" onclick="abrirModalLider(${l.id})" title="Editar Célula">✏️</button>
-                <button class="btn btn-danger btn-sm" onclick="excluirCelula(${l.id})">Excluir</button>
+                <button class="btn btn-outline btn-sm" style="${l.capa_url ? 'border-color:white; color:white;' : ''}" onclick="abrirCelulaseMembros(${l.id})">Abrir</button>
+                <button class="btn btn-outline btn-sm" style="${l.capa_url ? 'border-color:white; color:white;' : ''}" onclick="abrirModalLider(${l.id})" title="Editar Célula">✏️</button>
               </div>
             </div>
           </div>`;
@@ -658,10 +677,11 @@
       const htmlMembros = membros.length ? `
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Nome</th><th>Contato</th><th>Assiduidade</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Assiduidade</th><th>Ações</th></tr></thead>
             <tbody>
               ${membros.map(m => `
                 <tr>
+                  <td>${renderAvatarDisc(m.foto_url, m.nome)}</td>
                   <td><strong>${m.nome}</strong><br><small style="color:#999;">${m.email || '—'}</small></td>
                   <td>${m.telefone || '—'}</td>
                   <td><span class="badge badge-success">${m.assiduidade || '—'}</span></td>
@@ -718,7 +738,7 @@
       if (!lista.length) return '<p style="text-align:center;color:#999;padding:20px;">Nenhuma discípula disponível para adicionar.</p>';
       return lista.map(m => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #eee;">
-          <div><strong>${m.nome}</strong><br><small style="color:#999;">${m.telefone || 'Sem tel'}</small></div>
+          <div style="display:flex;align-items:center;gap:10px;">${renderAvatarDisc(m.foto_url, m.nome)}<div><strong>${m.nome}</strong><br><small style="color:#999;">${m.telefone || 'Sem tel'}</small></div></div>
           <button class="btn btn-rosa btn-sm" onclick="adicionarParticipanteNaCelula(${m.id}, ${liderId})">+ Adicionar</button>
         </div>
       `).join('');
@@ -744,7 +764,7 @@
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => l.id === d.lider_id);
         const assBadge = d.assiduidade === 'Sim' ? 'badge-success' : 'badge-warning';
-        return `<tr><td><div class="foto-disc">${iniciais(d.nome)}</div></td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '<span style="color:#999;">Sem Célula</span>'}</td><td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
+        return `<tr><td>${renderAvatarDisc(d.foto_url, d.nome)}</td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '<span style="color:#999;">Sem Célula</span>'}</td><td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
       }).join('') || '<tr><td colspan="8" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula encontrada.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
@@ -790,7 +810,7 @@
         return `
           <div class="bday-card">
             <div style="display:flex;align-items:center;gap:14px;">
-              <div class="foto-disc">${iniciais(p.nome)}</div>
+              ${renderAvatarDisc(p.foto_url, p.nome)}
               <div>
                 <strong>${p.nome}</strong><br>
                 <span style="color:#999;font-size:0.85rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${idade !== '' ? idade + ' anos' : ''} • Tel: ${p.telefone || 'Não informado'}</span>
@@ -826,29 +846,17 @@
 
     function abrirModalDiscipula(id = null, retornoLiderId = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
-      
       const optionsCelulas = db.lideres.filter(l => l.ativa).map(l => 
         `<option value="${l.id}" ${d && d.lider_id == l.id ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
       ).join('');
 
       abrirModal(d ? 'Editar Perfil da Discípula' : 'Cadastrar Nova Discípula', `
         <div class="form-row"><div class="form-field"><label>Nome Completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>URL da Foto de Perfil</label><input type="url" id="f-foto" value="${d?.foto_url||''}" placeholder="https://exemplo.com/foto.jpg" /></div></div>
+        <div class="form-row"><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
         <div class="form-row">
-          <div class="form-field">
-            <label>Status (Cargo)</label>
-            <select id="f-status">
-              <option value="Discípula" ${d?.status==='Discípula'?'selected':''}>Discípula</option>
-              <option value="Líder Superior" ${d?.status==='Líder Superior'?'selected':''}>Líder Superior</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label>Célula Pertencente (Cobertura)</label>
-            <select id="f-lider-id">
-              <option value="">— Nenhuma / Macrocélula —</option>
-              ${optionsCelulas}
-            </select>
-          </div>
+          <div class="form-field"><label>Status (Cargo)</label><select id="f-status"><option value="Discípula" ${d?.status==='Discípula'?'selected':''}>Discípula</option><option value="Líder Superior" ${d?.status==='Líder Superior'?'selected':''}>Líder Superior</option></select></div>
+          <div class="form-field"><label>Célula Pertencente (Cobertura)</label><select id="f-lider-id"><option value="">— Nenhuma / Macrocélula —</option>${optionsCelulas}</select></div>
         </div>
         <div class="form-row">
           <div class="form-field"><label>Universidade da Vida (UV)</label><select id="f-uv"><option value="">—</option><option ${d?.uv==='Sim'?'selected':''}>Sim</option><option ${d?.uv==='Não'?'selected':''}>Não</option></select></div>
@@ -872,6 +880,7 @@
         nome: document.getElementById('f-nome').value.trim(),
         email: document.getElementById('f-email').value.trim(),
         telefone: document.getElementById('f-tel').value.trim(),
+        foto_url: document.getElementById('f-foto').value.trim(),
         data_nascimento: document.getElementById('f-nasc').value || null,
         status: document.getElementById('f-status').value,
         lider_id: liderIdVal ? parseInt(liderIdVal) : null,
@@ -897,31 +906,25 @@
       } else {
         fecharModal();
       }
-      renderDiscipulas(); renderPastasCelulas(); renderDashboard();
+      renderDiscipulas(); renderPastasCelulas(); renderDashboard(); atualizarAvatarTopo();
     }
     function editarDiscipula(id) { abrirModalDiscipula(id); }
 
     function abrirModalLider(id = null) {
       const l = id ? db.lideres.find(x => x.id === id) : null;
-      
       const optionsNomesDiscipulas = db.discipulas.map(d => `<option value="${d.nome}" ${l && l.nome === d.nome ? 'selected' : ''}>${d.nome}</option>`).join('');
       const optionsParent = db.lideres.filter(x => x.ativa && (!l || x.id !== l.id)).map(x => `<option value="${x.id}" ${l && l.parent_id===x.id?'selected':''}>${x.nome} (${x.celular_que_lidera})</option>`).join('');
 
       abrirModal(l ? 'Editar Célula' : 'Nova Célula', `
         <div class="form-row">
-          <div class="form-field">
-            <label>Nome da Líder (Selecione da Lista)</label>
-            <select id="fl-nome" required>
-              <option value="">Selecione uma discípula...</option>
-              ${optionsNomesDiscipulas}
-            </select>
-          </div>
+          <div class="form-field"><label>Nome da Líder</label><select id="fl-nome" required><option value="">Selecione...</option>${optionsNomesDiscipulas}</select></div>
           <div class="form-field"><label>Geração</label><select id="fl-ger"><option ${l?.geracao==='3ª Geração (12)'?'selected':''}>3ª Geração (12)</option><option ${l?.geracao==='4ª Geração'?'selected':''}>4ª Geração</option><option ${l?.geracao==='5ª Geração'?'selected':''}>5ª Geração</option></select></div>
         </div>
         <div class="form-row">
           <div class="form-field"><label>Nome da Célula</label><input id="fl-cel" placeholder="Ex: Amigas da Fé" value="${l?.celular_que_lidera||''}" /></div>
-          <div class="form-field"><label>Líder Superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div>
+          <div class="form-field"><label>URL da Foto de Capa (Banner)</label><input type="url" id="fl-capa" placeholder="https://exemplo.com/capa.jpg" value="${l?.capa_url||''}" /></div>
         </div>
+        <div class="form-field"><label>Líder Superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div>
       `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarLider(${id||'null'})">Salvar Célula</button>`);
     }
 
@@ -929,6 +932,7 @@
       const nomeLider = document.getElementById('fl-nome').value.trim();
       const parentVal = document.getElementById('fl-parent').value;
       const celularLidera = document.getElementById('fl-cel').value.trim();
+      const capaUrl = document.getElementById('fl-capa').value.trim();
       
       if (!nomeLider || !celularLidera) {
         alert('Selecione a líder da lista e preencha o nome da célula.');
@@ -941,12 +945,18 @@
         return;
       }
 
+      // Sincronizar foto_url da líder baseada no cadastro da discípula
+      const discipulaObj = db.discipulas.find(d => d.nome.toLowerCase() === nomeLider.toLowerCase());
+      const fotoLider = discipulaObj ? (discipulaObj.foto_url || '') : '';
+
       const obj = {
         nome: nomeLider,
         geracao: document.getElementById('fl-ger').value,
         celular_que_lidera: celularLidera,
         celular_onde_e_discipula: parentVal ? (db.lideres.find(x=>x.id==parentVal)?.celular_que_lidera || '') : '—',
-        telefone: '',
+        telefone: discipulaObj?.telefone || '',
+        foto_url: fotoLider,
+        capa_url: capaUrl,
         cidade: 'Salvador',
         bairro: '',
         lat: null,
@@ -1074,12 +1084,22 @@
       fecharModal(); await carregarDB(); renderDesistencias(); renderDiscipulas(); renderPastasCelulas(); renderDashboard();
     }
 
+    function atualizarAvatarTopo() {
+      const rosane = db.discipulas.find(d => d.nome.toLowerCase().includes('rosane')) || db.lideres.find(l => l.nome.toLowerCase().includes('rosane'));
+      const el = document.getElementById('topbar-avatar');
+      if (rosane && rosane.foto_url) {
+        el.innerHTML = `<img src="${rosane.foto_url}" />`;
+      } else {
+        el.innerHTML = 'RA';
+      }
+    }
+
     function iniciais(nome) { return nome ? nome.split(' ').filter(Boolean).slice(0,2).map(p => p[0]).join('').toUpperCase() : '—'; }
     function formatDate(iso) { if (!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
 
     async function initApp() {
       await carregarDB();
-      renderDashboard(); renderPastasCelulas(); renderDiscipulas(); renderDesistencias();
+      renderDashboard(); renderPastasCelulas(); renderDiscipulas(); renderDesistencias(); atualizarAvatarTopo();
       
       document.querySelectorAll('.nav-item').forEach(item => {
         item.onclick = () => {
