@@ -152,6 +152,30 @@
     .cd-item-header .val { font-size: 1.5rem; font-weight: 800; color: var(--rosa); }
     .cd-item-box.desistiu-box .val { color: var(--erro); }
 
+    /* ================= RESUMO NUMÉRICO DO RELATÓRIO PASTORAL ================= */
+    .relatorio-resumo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+      padding: 16px;
+      background: linear-gradient(135deg, #FDF2F7 0%, #FFFDF5 100%);
+      border: 1px solid var(--rosa-medio);
+      border-radius: 14px;
+    }
+    .rel-mini-card {
+      background: white;
+      padding: 12px 14px;
+      border-radius: 11px;
+      border: 1px solid #EFEFEF;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .rel-mini-card .r-label { font-size: 0.68rem; font-weight: 700; color: var(--cinza); text-transform: uppercase; margin-bottom: 4px; }
+    .rel-mini-card .r-val { font-size: 1.35rem; font-weight: 800; color: var(--rosa); }
+    .rel-mini-card.dourado .r-val { color: var(--dourado); }
+    .rel-mini-card.verde .r-val { color: var(--sucesso); }
+    .rel-mini-card.vermelho .r-val { color: var(--erro); }
+
     .card { background: white; border-radius: var(--radius); box-shadow: var(--sombra); padding: 26px; margin-bottom: 22px; border: 1px solid rgba(0,0,0,0.02); }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
     .card-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--preto); }
@@ -343,6 +367,12 @@
     .page { display: none; } .page.active { display: block; }
     .bday-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #FFFBF5, #FFF8EE); border-radius: 14px; border: 1px solid #F5E6B8; margin-bottom: 10px; gap: 12px; }
     .search-input { padding: 10px 16px; border: 1.5px solid #E8E4E6; border-radius: 12px; width: 240px; font-size: 0.9rem; background: #FAFAFB; }
+
+    @media print {
+      .sidebar, .topbar, .menu-toggle, .no-print { display: none !important; }
+      .main-content { margin-left: 0 !important; padding: 0 !important; background: white !important; }
+      .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
+    }
   </style>
 </head>
 <body>
@@ -521,8 +551,8 @@
                   <th>Hierarquia</th>
                   <th>Assiduidade</th>
                   <th>Batismo</th>
-                  <th>UV</th>
-                  <th>CD</th>
+                  <th>UV / Reencontro</th>
+                  <th>CD / Formatura</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -570,16 +600,71 @@
         </div>
       </section>
 
-      <!-- ================= RELATÓRIOS ================= -->
+      <!-- ================= RELATÓRIOS PASTORAIS ================= -->
       <section id="page-relatorios" class="page">
         <div class="card">
-          <div class="card-header"><h2>Relatórios Pastorais</h2><button class="btn btn-dourado" onclick="gerarRelatorioPDF()">🖨 Gerar PDF</button></div>
-          <div class="form-row">
-            <div class="form-field"><label>Líder / Célula</label><select id="filtro-lider"><option value="">Todas</option></select></div>
-            <div class="form-field"><label>Hierarquia</label><select id="filtro-hierarquia"><option value="">Todas</option><option value="Liderança G12">Liderança G12</option><option value="144">144</option><option value="1728">1728</option><option value="20736">20736</option><option value="Sem Célula">Sem Célula Vinculada</option></select></div>
-            <div class="form-field"><label>Pendências</label><select id="filtro-pendencia"><option value="">Todas</option><option value="nao-batizada">Não Batizadas</option><option value="sem-uv">Sem UV</option><option value="nao-assidua">Não Assíduas</option></select></div>
+          <div class="card-header">
+            <div>
+              <h2>Relatórios Pastorais • Macrocélula Aleluia</h2>
+              <p style="color:var(--cinza-medio);font-size:0.84rem;margin-top:3px;">Indicadores gerais da cobertura e filtros detalhados da jornada.</p>
+            </div>
+            <button class="btn btn-dourado no-print" onclick="gerarRelatorioPDF()">🖨 Gerar PDF / Imprimir</button>
           </div>
-          <button class="btn btn-rosa" style="margin-bottom:20px;" onclick="aplicarFiltrosRelatorio()">Aplicar Filtros</button>
+
+          <!-- Painel de Indicadores Totais da Macrocélula -->
+          <div id="relatorio-resumo-indicadores" class="relatorio-resumo-grid"></div>
+
+          <div class="form-row no-print">
+            <div class="form-field">
+              <label>Líder / Célula</label>
+              <select id="filtro-lider"><option value="">Todas as Células</option></select>
+            </div>
+            <div class="form-field">
+              <label>Hierarquia</label>
+              <select id="filtro-hierarquia">
+                <option value="">Todas as Hierarquias</option>
+                <option value="Liderança G12">Liderança G12</option>
+                <option value="144">Liderança 144</option>
+                <option value="1728">Liderança 1728</option>
+                <option value="20736">Liderança 20736</option>
+                <option value="Discípula">Discípulas (Em Célula)</option>
+                <option value="Sem Célula">Sem Célula Vinculada</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Filtro de Jornada &amp; Indicadores</label>
+              <select id="filtro-pendencia">
+                <option value="">Todas as Discípulas</option>
+                <optgroup label="Mulheres & Células">
+                  <option value="todas-mulheres">Total de Mulheres em Toda Macrocélula (Líderes + Discípulas)</option>
+                  <option value="celulas-abertas">Total de Células Abertas (Ativas)</option>
+                  <option value="celulas-fechadas">Total de Células Fechadas (Baixas)</option>
+                </optgroup>
+                <optgroup label="Batismo">
+                  <option value="batizada">Batizadas</option>
+                  <option value="nao-batizada">Não Batizadas</option>
+                </optgroup>
+                <optgroup label="Universidade da Vida (UV) & Reencontro">
+                  <option value="com-uv">Concluintes da UV</option>
+                  <option value="sem-uv">Sem UV</option>
+                  <option value="com-reencontro">Fizeram Reencontro</option>
+                </optgroup>
+                <optgroup label="Capacitação Destino (CD)">
+                  <option value="cd-1">Total na CD - Nível 1</option>
+                  <option value="cd-2">Total na CD - Nível 2</option>
+                  <option value="cd-3">Total na CD - Nível 3</option>
+                  <option value="cd-desistiu">Total na CD - Desistentes</option>
+                  <option value="cd-formatura-sim">Formatura da CD - Sim</option>
+                  <option value="cd-formatura-nao">Formatura da CD - Não</option>
+                </optgroup>
+                <optgroup label="Frequência na Célula">
+                  <option value="assidua">Discípulas Assíduas</option>
+                  <option value="nao-assidua">Discípulas Infrequentes (Não Assíduas)</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-rosa no-print" style="margin-bottom:20px;" onclick="aplicarFiltrosRelatorio()">Aplicar Filtros</button>
           <div id="resultado-relatorio"></div>
         </div>
       </section>
@@ -879,7 +964,7 @@
       
       document.getElementById('page-title').textContent = titles[page] || page;
       if (page === 'aniversariantes') { document.getElementById('mes-aniversario').value = new Date().getMonth(); renderAniversariantes(); }
-      if (page === 'relatorios') prepararFiltrosRelatorio();
+      if (page === 'relatorios') { prepararFiltrosRelatorio(); aplicarFiltrosRelatorio(); }
       if (page === 'acessos') renderTabelaAcessos();
       document.getElementById('sidebar').classList.remove('open');
     };
@@ -1548,7 +1633,7 @@
     }
 
     // =========================================================================
-    // 8. DISCÍPULAS & JORNADA ESPIRITUAL (COM PERGUNTA DE COR PARA G12)
+    // 8. DISCÍPULAS & JORNADA ESPIRITUAL (G12 COR, REENCONTRO E FORMATURA CD)
     // =========================================================================
     function renderDiscipulas(filtro = '') {
       let lista = getDiscipulasVisiveis();
@@ -1571,15 +1656,20 @@
             <td><span class="badge ${hierarquiaBadge}">${d.nivel_lideranca || 'Discípula (Sem Célula)'}</span>${tagCorG12}</td>
             <td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td>
             <td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td>
-            <td><span class="badge badge-info">${d.uv||'—'}</span></td>
-            <td><span class="badge ${cdBadge}">${d.cd||'Nível 1'}</span></td>
+            <td>
+              <span class="badge badge-info">UV: ${d.uv||'Não'}</span><br>
+              <small style="color:#666;font-size:0.72rem;">Reencontro: <strong>${d.reencontro||'Não'}</strong></small>
+            </td>
+            <td>
+              <span class="badge ${cdBadge}">${d.cd||'Nível 1'}</span><br>
+              <small style="color:#666;font-size:0.72rem;">Formatura: <strong>${d.formatura_cd||'Não'}</strong></small>
+            </td>
             <td><button class="btn btn-outline btn-sm" onclick="abrirModalDiscipula(${d.id})">Editar</button></td>
           </tr>`;
       }).join('') || '<tr><td colspan="9" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula cadastrada ainda.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
 
-    // Controla a exibição da caixa de cor favorita quando seleciona G12
     function verificarExibicaoCorG12() {
       const selectNivel = document.getElementById('f-nivel-lideranca');
       const boxCor = document.getElementById('box-cor-favorita');
@@ -1685,10 +1775,18 @@
               <option value="Desistiu" ${d?.cd==='Desistiu'?'selected':''}>Desistiu</option>
             </select>
           </div>
+          <div class="form-field">
+            <label>Fez a Formatura da CD?</label>
+            <select id="f-formatura-cd">
+              <option value="Não" ${d?.formatura_cd!=='Sim'?'selected':''}>Não</option>
+              <option value="Sim" ${d?.formatura_cd==='Sim'?'selected':''}>Sim</option>
+            </select>
+          </div>
         </div>
         <div class="form-row">
           <div class="form-field"><label>Fez Universidade da Vida (UV)?</label><select id="f-uv"><option value="Não" ${d?.uv==='Não'?'selected':''}>Não</option><option value="Sim" ${d?.uv==='Sim'?'selected':''}>Sim</option></select></div>
           <div class="form-field"><label>Fez Encontro com Deus?</label><select id="f-encontro"><option value="Não" ${d?.encontro==='Não'?'selected':''}>Não</option><option value="Sim" ${d?.encontro==='Sim'?'selected':''}>Sim</option></select></div>
+          <div class="form-field"><label>Fez Reencontro?</label><select id="f-reencontro"><option value="Não" ${d?.reencontro!=='Sim'?'selected':''}>Não</option><option value="Sim" ${d?.reencontro==='Sim'?'selected':''}>Sim</option></select></div>
         </div>
         <div class="form-row">
           <div class="form-field"><label>É Batizada?</label><select id="f-bat"><option value="0" ${!d?.batizada?'selected':''}>Não</option><option value="1" ${d?.batizada?'selected':''}>Sim</option></select></div>
@@ -1735,8 +1833,10 @@
         telefone: document.getElementById('f-tel').value.trim(),
         foto_url: tempFotoDiscipulaBase64,
         cd: document.getElementById('f-cd').value,
+        formatura_cd: document.getElementById('f-formatura-cd').value,
         uv: document.getElementById('f-uv').value,
         encontro: document.getElementById('f-encontro').value,
+        reencontro: document.getElementById('f-reencontro').value,
         batizada: document.getElementById('f-bat').value === '1',
         assiduidade: document.getElementById('f-ass').value
       };
@@ -1956,7 +2056,7 @@
     }
 
     // =========================================================================
-    // 10. HISTÓRICO, ANIVERSARIANTES, RELATÓRIOS & UTILITÁRIOS
+    // 10. HISTÓRICO, ANIVERSARIANTES, RELATÓRIOS PASTORAIS COMPLETOS & UTILITÁRIOS
     // =========================================================================
     function renderDesistencias() {
       document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `
@@ -2052,29 +2152,157 @@
 
     function prepararFiltrosRelatorio() {
       const celulas = getCelulasVisiveis();
-      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas</option><option value="SEM_CELULA">Sem Célula Vinculada</option>' + celulas.map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
+      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas as Células</option><option value="SEM_CELULA">Sem Célula Vinculada</option>' + celulas.map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
+      renderResumoRelatorioPastoral();
+    }
+
+    function renderResumoRelatorioPastoral() {
+      const celulasAbertas = getCelulasVisiveis();
+      const celulasFechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
+      const discipulas = getDiscipulasVisiveis();
+
+      // Total de mulheres em toda a macrocélula (Líderes únicas + Discípulas únicas)
+      const nomesUnicos = new Set([
+        ...celulasAbertas.map(c => c.nome.trim().toLowerCase()),
+        ...discipulas.map(d => d.nome.trim().toLowerCase())
+      ]);
+
+      const batizadas = discipulas.filter(d => d.batizada).length;
+      const naoBatizadas = discipulas.filter(d => !d.batizada).length;
+      const concluintesUV = discipulas.filter(d => d.uv === 'Sim').length;
+      const fizeramReencontro = discipulas.filter(d => d.reencontro === 'Sim').length;
+
+      const cd1 = discipulas.filter(d => d.cd === 'Nível 1').length;
+      const cd2 = discipulas.filter(d => d.cd === 'Nível 2').length;
+      const cd3 = discipulas.filter(d => d.cd === 'Nível 3').length;
+      const cdDesistentes = discipulas.filter(d => d.cd === 'Desistiu').length;
+      const cdFormadas = discipulas.filter(d => d.formatura_cd === 'Sim').length;
+
+      const assiduas = discipulas.filter(d => d.assiduidade === 'Sim').length;
+      const infrequentes = discipulas.filter(d => d.assiduidade !== 'Sim').length;
+
+      document.getElementById('relatorio-resumo-indicadores').innerHTML = `
+        <div class="rel-mini-card dourado"><div class="r-label">Total de Mulheres</div><div class="r-val">${nomesUnicos.size}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Células Abertas</div><div class="r-val">${celulasAbertas.length}</div></div>
+        <div class="rel-mini-card vermelho"><div class="r-label">Células Fechadas</div><div class="r-val">${celulasFechadas.length}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Batizadas</div><div class="r-val">${batizadas}</div></div>
+        <div class="rel-mini-card vermelho"><div class="r-label">Não Batizadas</div><div class="r-val">${naoBatizadas}</div></div>
+        <div class="rel-mini-card"><div class="r-label">Concluintes UV</div><div class="r-val">${concluintesUV}</div></div>
+        <div class="rel-mini-card"><div class="r-label">Reencontro</div><div class="r-val">${fizeramReencontro}</div></div>
+        <div class="rel-mini-card"><div class="r-label">CD Nível 1 / 2 / 3</div><div class="r-val">${cd1} / ${cd2} / ${cd3}</div></div>
+        <div class="rel-mini-card vermelho"><div class="r-label">CD Desistentes</div><div class="r-val">${cdDesistentes}</div></div>
+        <div class="rel-mini-card dourado"><div class="r-label">Formatura CD (Sim)</div><div class="r-val">${cdFormadas}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Assíduas</div><div class="r-val">${assiduas}</div></div>
+        <div class="rel-mini-card vermelho"><div class="r-label">Infrequentes</div><div class="r-val">${infrequentes}</div></div>
+      `;
     }
 
     function aplicarFiltrosRelatorio() {
+      renderResumoRelatorioPastoral();
       const liderId = document.getElementById('filtro-lider').value;
       const hierarquia = document.getElementById('filtro-hierarquia').value;
       const pend = document.getElementById('filtro-pendencia').value;
+      const container = document.getElementById('resultado-relatorio');
+
+      // Caso especial 1: Total de Células Abertas
+      if (pend === 'celulas-abertas') {
+        const abertas = getCelulasVisiveis();
+        container.innerHTML = `
+          <p style="margin-bottom:14px;"><strong>${abertas.length}</strong> célula(s) aberta(s) ativa(s)</p>
+          <div class="table-wrap"><table><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Local</th><th>Dia / Horário</th><th>Data Abertura</th></tr></thead><tbody>
+            ${abertas.map(c => `<tr><td><strong>${c.celular_que_lidera}</strong></td><td>${c.nome}</td><td>${c.geracao}</td><td>${c.local || '—'}</td><td>${c.dias || '—'} ${c.horarios || ''}</td><td>${formatDate(c.data_abertura)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhuma célula aberta</td></tr>'}
+          </tbody></table></div>`;
+        return;
+      }
+
+      // Caso especial 2: Total de Células Fechadas
+      if (pend === 'celulas-fechadas') {
+        const fechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
+        container.innerHTML = `
+          <p style="margin-bottom:14px;"><strong>${fechadas.length}</strong> célula(s) fechada(s) registrada(s)</p>
+          <div class="table-wrap"><table><thead><tr><th>Célula / Líder</th><th>Participantes na Baixa</th><th>Status</th><th>Data Fechamento</th><th>Motivo Pastoral</th></tr></thead><tbody>
+            ${fechadas.map(f => `<tr><td><strong>${f.nome}</strong></td><td>${f.celular_origem}</td><td><span class="badge badge-danger">${f.celular_nova}</span></td><td>${formatDate(f.data)}</td><td>${f.motivo}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;">Nenhuma célula fechada</td></tr>'}
+          </tbody></table></div>`;
+        return;
+      }
+
+      // Caso especial 3: Total de Mulheres em Toda Macrocélula (Líderes + Discípulas)
+      if (pend === 'todas-mulheres') {
+        const celulas = getCelulasVisiveis();
+        const discipulas = getDiscipulasVisiveis();
+        const mapaMulheres = new Map();
+
+        celulas.forEach(c => {
+          mapaMulheres.set(c.nome.trim().toLowerCase(), {
+            nome: c.nome,
+            papel: c.geracao,
+            celula: c.celular_que_lidera,
+            telefone: '—',
+            status: 'Líder de Célula'
+          });
+        });
+
+        discipulas.forEach(d => {
+          const cel = db.lideres.find(l => l.id === d.lider_id);
+          const chave = d.nome.trim().toLowerCase();
+          const jaLider = mapaMulheres.get(chave);
+          mapaMulheres.set(chave, {
+            nome: d.nome,
+            papel: d.nivel_lideranca || (jaLider ? jaLider.papel : 'Discípula'),
+            celula: cel ? cel.celular_que_lidera : (jaLider ? jaLider.celula : 'Sem Célula'),
+            telefone: d.telefone || '—',
+            status: d.assiduidade === 'Sim' ? 'Assídua' : 'Infrequente'
+          });
+        });
+
+        const listaMulheres = Array.from(mapaMulheres.values());
+        container.innerHTML = `
+          <p style="margin-bottom:14px;"><strong>${listaMulheres.length}</strong> mulher(es) em toda a Macrocélula (Líderes + Discípulas)</p>
+          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Hierarquia / Cargo</th><th>Célula</th><th>Telefone</th><th>Frequência</th></tr></thead><tbody>
+            ${listaMulheres.map(m => `<tr><td><strong>${m.nome}</strong></td><td>${m.papel}</td><td>${m.celula}</td><td>${m.telefone}</td><td>${m.status}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;">Nenhum registro</td></tr>'}
+          </tbody></table></div>`;
+        return;
+      }
+
+      // Filtros padrão de Discípulas
       let lista = [...getDiscipulasVisiveis()];
 
       if (liderId === 'SEM_CELULA') lista = lista.filter(d => !d.lider_id);
       else if (liderId) lista = lista.filter(d => d.lider_id == liderId);
 
       if (hierarquia === 'Sem Célula') lista = lista.filter(d => !d.lider_id);
+      else if (hierarquia === 'Discípula') lista = lista.filter(d => d.nivel_lideranca === 'Discípula');
       else if (hierarquia) lista = lista.filter(d => (d.nivel_lideranca || '').includes(hierarquia));
 
+      if (pend === 'batizada') lista = lista.filter(d => d.batizada);
       if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada);
+      if (pend === 'com-uv') lista = lista.filter(d => d.uv === 'Sim');
       if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Não');
+      if (pend === 'com-reencontro') lista = lista.filter(d => d.reencontro === 'Sim');
+      if (pend === 'cd-1') lista = lista.filter(d => d.cd === 'Nível 1');
+      if (pend === 'cd-2') lista = lista.filter(d => d.cd === 'Nível 2');
+      if (pend === 'cd-3') lista = lista.filter(d => d.cd === 'Nível 3');
+      if (pend === 'cd-desistiu') lista = lista.filter(d => d.cd === 'Desistiu');
+      if (pend === 'cd-formatura-sim') lista = lista.filter(d => d.formatura_cd === 'Sim');
+      if (pend === 'cd-formatura-nao') lista = lista.filter(d => d.formatura_cd !== 'Sim');
+      if (pend === 'assidua') lista = lista.filter(d => d.assiduidade === 'Sim');
       if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
 
-      document.getElementById('resultado-relatorio').innerHTML = `
-        <p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p>
-        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Hierarquia</th><th>Telefone</th><th>Assiduidade</th><th>Batismo</th><th>UV</th></tr></thead><tbody>
-          ${lista.map(d => `<tr><td>${d.nome}</td><td>${d.nivel_lideranca}</td><td>${d.telefone||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td><td>${d.uv||'—'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}
+      container.innerHTML = `
+        <p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s) encontrado(s)</p>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Hierarquia</th><th>Telefone</th><th>Frequência</th><th>Batismo</th><th>UV</th><th>Reencontro</th><th>CD</th><th>Formatura CD</th></tr></thead><tbody>
+          ${lista.map(d => `
+            <tr>
+              <td><strong>${d.nome}</strong></td>
+              <td>${d.nivel_lideranca}</td>
+              <td>${d.telefone||'—'}</td>
+              <td>${d.assiduidade === 'Sim' ? 'Assídua' : 'Infrequente'}</td>
+              <td>${d.batizada?'Sim':'Não'}</td>
+              <td>${d.uv||'Não'}</td>
+              <td>${d.reencontro||'Não'}</td>
+              <td>${d.cd||'Nível 1'}</td>
+              <td>${d.formatura_cd||'Não'}</td>
+            </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;">Nenhum resultado encontrado para este filtro</td></tr>'}
         </tbody></table></div>`;
     }
     function gerarRelatorioPDF() { window.print(); }
