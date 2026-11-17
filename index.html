@@ -610,7 +610,7 @@
           <div class="card-header">
             <div>
               <h2>Células da Rede</h2>
-              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-celulas">Gerencie células, participantes ou dê baixa clicando no "X" da célula.</p>
+              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-celulas">Gerencie apenas as células em que você é líder ou suas sub-células.</p>
             </div>
             <button class="btn btn-rosa" id="btn-nova-celula" onclick="abrirModalLider()">+ Criar Nova Célula (Abertura)</button>
           </div>
@@ -624,7 +624,7 @@
           <div class="card-header">
             <div>
               <h2>Discípulas &amp; Jornada Espiritual</h2>
-              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-discipulas">Cadastro completo de Liderança G12, 144, 1728 e Discípulas sem célula vinculada.</p>
+              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-discipulas">Cadastro completo das discípulas sob sua liderança.</p>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
               <input type="text" id="busca-discipula" class="search-input" placeholder="Buscar por nome..." oninput="filtrarDiscipulas()" />
@@ -704,7 +704,6 @@
             </div>
           </div>
 
-          <!-- Painel de Indicadores Totais da Macrocélula -->
           <div id="relatorio-resumo-indicadores" class="relatorio-resumo-grid"></div>
 
           <div class="form-row">
@@ -729,7 +728,7 @@
               <select id="filtro-pendencia" onchange="aplicarFiltrosRelatorio()">
                 <option value="">Todas as Discípulas</option>
                 <optgroup label="Mulheres & Células">
-                  <option value="todas-mulheres">Total de Mulheres em Toda Macrocélula (Líderes + Discípulas)</option>
+                  <option value="todas-mulheres">Total de Mulheres na Cobertura (Líderes + Discípulas)</option>
                   <option value="celulas-abertas">Total de Células Abertas (Ativas)</option>
                   <option value="celulas-fechadas">Total de Células Fechadas (Baixas)</option>
                 </optgroup>
@@ -871,7 +870,7 @@
       } catch (err) {
         console.error('Erro ao conectar com Supabase:', err);
         if (pillLogin) {
-          pillLogin.textContent = '🔴 Erro ao conectar no Supabase (Verifique se rodou o SQL)';
+          pillLogin.textContent = '🔴 Erro ao conectar no Supabase';
           pillLogin.className = 'db-status-pill error';
         }
         setSyncStatus('🔴 Falha na Conexão', 'error');
@@ -926,7 +925,7 @@
     }
 
     // =========================================================================
-    // 3. SISTEMA DE LOGIN & PERMISSÕES POR HIERARQUIA
+    // 3. SISTEMA DE LOGIN & BLINDAGEM DE LIDERANÇA (SÓ EDITA A PRÓPRIA CÉLULA)
     // =========================================================================
     async function realizarLogin(e) {
       e.preventDefault();
@@ -946,7 +945,7 @@
       btn.textContent = 'Entrar no Sistema';
 
       if (!conta) {
-        alert('Usuário ou senha inválidos! (Verifique se o script SQL foi executado no Supabase)');
+        alert('Usuário ou senha inválidos!');
         return;
       }
 
@@ -987,18 +986,22 @@
         document.getElementById('subtitulo-celulas').textContent = 'Visão Geral da Macro: gerencie todas as células (G12, 144, 1728, 20736) ou dê baixa no "X".';
         document.getElementById('subtitulo-discipulas').textContent = 'Cadastro completo de Liderança G12, 144, 1728, 20736 e Discípulas sem célula.';
       } else {
-        document.getElementById('subtitulo-celulas').textContent = 'Gerencie sua célula pertencente e suas sub-células vinculadas.';
-        document.getElementById('subtitulo-discipulas').textContent = 'Cadastre e edite as discípulas pertencentes à sua cobertura.';
+        document.getElementById('subtitulo-celulas').textContent = 'Acesso exclusivo às células em que VOCÊ é a líder (a célula onde você é discípula fica protegida).';
+        document.getElementById('subtitulo-discipulas').textContent = 'Cadastre e edite apenas as discípulas das células que você lidera.';
       }
     }
 
+    // REGRA DE OURO: Retorna SOMENTE as células em que a usuária logada é a LÍDER (l.nome)
+    // e as sub-células descendentes dela. Nunca retorna a célula onde ela participa como discípula!
     function getCelulasVisiveis() {
       const ativas = db.lideres.filter(l => l.ativa);
       if (isMacroAdmin()) return ativas;
 
-      const minhasDiretas = ativas.filter(l => l.nome.toLowerCase() === usuarioLogado.nome.toLowerCase() || l.id === usuarioLogado.lider_id);
-      const resultadoIds = new Set(minhasDiretas.map(c => c.id));
+      const nomeLogada = usuarioLogado.nome.trim().toLowerCase();
+      const minhasPropriasCelulas = ativas.filter(l => l.nome.trim().toLowerCase() === nomeLogada);
+      const resultadoIds = new Set(minhasPropriasCelulas.map(c => c.id));
 
+      // Inclui apenas as sub-células criadas abaixo das células que ela lidera
       let adicionou = true;
       while (adicionou) {
         adicionou = false;
@@ -1012,10 +1015,19 @@
       return ativas.filter(c => resultadoIds.has(c.id));
     }
 
+    // Verifica se a usuária logada tem permissão real para abrir/editar aquela célula específica
+    function podeGerenciarCelula(celulaId) {
+      if (isMacroAdmin()) return true;
+      if (!celulaId) return false;
+      const permitidas = getCelulasVisiveis();
+      return permitidas.some(c => c.id === parseInt(celulaId));
+    }
+
+    // Retorna SOMENTE as discípulas vinculadas às células que ela lidera
     function getDiscipulasVisiveis() {
       if (isMacroAdmin()) return db.discipulas;
       const minhasCelulasIds = getCelulasVisiveis().map(c => c.id);
-      return db.discipulas.filter(d => minhasCelulasIds.includes(d.lider_id));
+      return db.discipulas.filter(d => d.lider_id && minhasCelulasIds.includes(d.lider_id));
     }
 
     function atualizarInterfaceCompleta() {
@@ -1073,13 +1085,13 @@
       const uvConcluidas = discipulas.filter(d => d.uv === 'Sim').length;
       const batizadas = discipulas.filter(d => d.batizada).length;
       const naoBatizadas = discipulas.filter(d => !d.batizada).length;
-      const semCelula = db.discipulas.filter(d => !d.lider_id).length;
+      const semCelula = isMacroAdmin() ? db.discipulas.filter(d => !d.lider_id).length : 0;
 
       document.getElementById('stats-grid').innerHTML = `
         <div class="stat-card"><div class="label">Total na Cobertura</div><div class="value">${totalGeral}</div><div class="icon">👥</div></div>
-        <div class="stat-card"><div class="label">Células Ativas</div><div class="value">${totalLideres}</div><div class="icon">🏠</div></div>
-        <div class="stat-card"><div class="label">Discípulas</div><div class="value">${totalDiscipulas}</div><div class="icon">💜</div></div>
-        <div class="stat-card"><div class="label">Sem Célula</div><div class="value">${semCelula}</div><div class="icon">🌱</div></div>
+        <div class="stat-card"><div class="label">Minhas Células Ativas</div><div class="value">${totalLideres}</div><div class="icon">🏠</div></div>
+        <div class="stat-card"><div class="label">Minhas Discípulas</div><div class="value">${totalDiscipulas}</div><div class="icon">💜</div></div>
+        ${isMacroAdmin() ? `<div class="stat-card"><div class="label">Sem Célula</div><div class="value">${semCelula}</div><div class="icon">🌱</div></div>` : ''}
         <div class="stat-card"><div class="label">UV Concluídas</div><div class="value">${uvConcluidas}</div><div class="icon">🎓</div></div>
         <div class="stat-card"><div class="label">Batizadas</div><div class="value">${batizadas}</div><div class="icon">💧</div></div>
         <div class="stat-card"><div class="label">Não Batizadas</div><div class="value">${naoBatizadas}</div><div class="icon">⚠️</div></div>`;
@@ -1213,20 +1225,24 @@
                 </div>
               </div>
             `;
-          }).join('') : '<div class="empty-state" style="grid-column:1/-1;"><p>Nenhuma célula G12 cadastrada ainda. Crie a primeira célula em "Células & Liderança".</p></div>'}
+          }).join('') : '<div class="empty-state" style="grid-column:1/-1;"><p>Nenhuma célula G12 cadastrada ainda.</p></div>'}
         </div>
       `;
     }
 
     // =========================================================================
-    // 6. GESTÃO DE CÉLULAS (PERSISTÊNCIA NO SUPABASE)
+    // 6. GESTÃO DE CÉLULAS (BLOQUEIO PARA NÃO MEXER NA CÉLULA DA LÍDER SUPERIOR)
     // =========================================================================
     function renderPastasCelulas() {
       const container = document.getElementById('grid-pastas-celulas');
       const lideresVisiveis = getCelulasVisiveis();
 
       if (!lideresVisiveis.length) {
-        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>Nenhuma célula encontrada para o seu perfil.</p></div>';
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <p style="font-size:1rem;color:var(--preto);font-weight:600;margin-bottom:6px;">Você ainda não abriu a sua própria célula.</p>
+            <p style="font-size:0.85rem;">Clique no botão <strong>"+ Criar Nova Célula (Abertura)"</strong> acima para cadastrar a célula em que você é líder.</p>
+          </div>`;
         return;
       }
 
@@ -1236,7 +1252,7 @@
           ? `<img src="${l.foto_celula_url}" alt="${l.celular_que_lidera}" />` 
           : `🏠`;
 
-        const podeDarBaixa = l.parent_id !== null && (isMacroAdmin() || usuarioLogado.pode_dar_baixa);
+        const podeDarBaixa = l.parent_id !== null && podeGerenciarCelula(l.id) && (isMacroAdmin() || usuarioLogado.pode_dar_baixa);
         const botaoBaixaHTML = podeDarBaixa 
           ? `<button class="btn-baixa-x" title="Dar Baixa / Fechar Célula" onclick="abrirModalBaixaCelula(${l.id}, event)">✕</button>` 
           : '';
@@ -1269,6 +1285,11 @@
     }
 
     function abrirModalLider(id = null) {
+      if (id && !podeGerenciarCelula(id)) {
+        alert('🔒 Acesso Negado: Você só pode editar as células em que você é líder.');
+        return;
+      }
+
       const l = id ? db.lideres.find(x => x.id === id) : null;
       tempFotoCelulaBase64 = l?.foto_celula_url || "";
 
@@ -1310,7 +1331,7 @@
             <div class="form-field">
               <label>Líder Responsável *</label>
               <select id="fl-nome" onchange="aoMudarLiderOuGeracao(null, null)" required>
-                <option value="${usuarioLogado.nome}" selected>${usuarioLogado.nome} (Própria Líder)</option>
+                <option value="${usuarioLogado.nome}" selected>${usuarioLogado.nome} (Minha Própria Célula)</option>
                 ${opcoesMinhasDisc}
               </select>
             </div>`;
@@ -1453,8 +1474,7 @@
         const celulas1728 = ativasSemAutoLideranca.filter(x => x.geracao.includes('1728'));
         let id1728Real = parentSalvoId 
           || (celulaExistenteDaLider && celulaExistenteDaLider.geracao.includes('1728') ? celulaExistenteDaLider.id : null)
-          || (discEncontrada ? discEncontrada.lider_id : null)
-          || (!isMacroAdmin() ? usuarioLogado.lider_id : null);
+          || (discEncontrada ? discEncontrada.lider_id : null);
 
         const celula1728Alvo = celulas1728.find(c => c.id === id1728Real);
 
@@ -1481,6 +1501,11 @@
     }
 
     async function salvarLider(id) {
+      if (id && !podeGerenciarCelula(id)) {
+        alert('🔒 Acesso Negado: Você não tem permissão para alterar esta célula.');
+        return;
+      }
+
       const nomeLider = document.getElementById('fl-nome').value.trim();
       const celularLidera = document.getElementById('fl-cel').value.trim();
       const local = document.getElementById('fl-local').value.trim();
@@ -1526,6 +1551,11 @@
 
     function abrirModalBaixaCelula(liderId, event) {
       event.stopPropagation();
+      if (!podeGerenciarCelula(liderId)) {
+        alert('🔒 Acesso Negado: Você só pode dar baixa nas células que você lidera.');
+        return;
+      }
+
       const celula = db.lideres.find(l => l.id === liderId);
       if (!celula) return;
 
@@ -1551,6 +1581,8 @@
     }
 
     async function confirmarBaixaExclusaoCelula(liderId) {
+      if (!podeGerenciarCelula(liderId)) return;
+
       const dataFechamento = document.getElementById('fc-data').value;
       const motivo = document.getElementById('fc-motivo').value.trim();
 
@@ -1592,9 +1624,14 @@
     }
 
     // =========================================================================
-    // 7. GERENCIAR MEMBROS DENTRO DA CÉLULA (CRIAR NOVA OU BUSCAR SEM CÉLULA)
+    // 7. GERENCIAR MEMBROS DENTRO DA CÉLULA (PROTEGIDO CONTRA ACESSO INDEVIDO)
     // =========================================================================
     function abrirCelulaseMembros(liderId) {
+      if (!podeGerenciarCelula(liderId)) {
+        alert('🔒 Acesso Negado: Você não pode gerenciar membros de uma célula onde você não é a líder.');
+        return;
+      }
+
       const lider = db.lideres.find(l => l.id === liderId);
       if (!lider) return;
       const membros = db.discipulas.filter(d => d.lider_id === liderId);
@@ -1674,6 +1711,8 @@
     }
 
     async function vincularDiscipulaExistente(liderId) {
+      if (!podeGerenciarCelula(liderId)) return;
+
       const select = document.getElementById('select-discipula-disponivel');
       const discipulaId = select ? parseInt(select.value) : null;
 
@@ -1707,6 +1746,7 @@
     }
 
     async function removerParticipanteDaCelula(discipulaId, liderId) {
+      if (!podeGerenciarCelula(liderId)) return;
       if (!confirm('Deseja desvincular esta discípula desta célula? Ela voltará a ficar disponível como "Sem Célula Vinculada".')) return;
       
       const { error } = await supabaseClient
@@ -1725,7 +1765,7 @@
     }
 
     // =========================================================================
-    // 8. DISCÍPULAS & JORNADA ESPIRITUAL (G12 COR, REENCONTRO E FORMATURA CD)
+    // 8. DISCÍPULAS & JORNADA ESPIRITUAL
     // =========================================================================
     function renderDiscipulas(filtro = '') {
       let lista = getDiscipulasVisiveis();
@@ -1758,7 +1798,7 @@
             </td>
             <td><button class="btn btn-outline btn-sm" onclick="abrirModalDiscipula(${d.id})">Editar</button></td>
           </tr>`;
-      }).join('') || '<tr><td colspan="9" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula cadastrada ainda.</td></tr>';
+      }).join('') || '<tr><td colspan="9" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula cadastrada nas suas células ainda.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
 
@@ -1791,15 +1831,29 @@
 
     function abrirModalDiscipula(id = null, celulaFixaId = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
-      tempFotoDiscipulaBase64 = d?.foto_url || "";
-      const celulasPermitidas = getCelulasVisiveis();
 
-      const optionsCelulas = `
-        <option value="" ${(!d?.lider_id && !celulaFixaId) ? 'selected' : ''}>— Sem Célula Vinculada —</option>
-        ${celulasPermitidas.map(l => 
-          `<option value="${l.id}" ${(d && d.lider_id == l.id) || (celulaFixaId == l.id) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
-        ).join('')}
-      `;
+      // Impede uma líder de editar discípula que não pertence às células que ela lidera
+      if (d && d.lider_id && !podeGerenciarCelula(d.lider_id)) {
+        alert('🔒 Acesso Negado: Você só pode editar discípulas vinculadas às suas próprias células.');
+        return;
+      }
+
+      const celulasPermitidas = getCelulasVisiveis();
+      if (!isMacroAdmin() && celulasPermitidas.length === 0) {
+        alert('⚠️ Você precisa primeiro abrir a sua própria célula em "Células & Liderança" antes de cadastrar suas discípulas.');
+        return;
+      }
+
+      tempFotoDiscipulaBase64 = d?.foto_url || "";
+
+      const optionsCelulas = isMacroAdmin()
+        ? `<option value="" ${(!d?.lider_id && !celulaFixaId) ? 'selected' : ''}>— Sem Célula Vinculada —</option>` +
+          celulasPermitidas.map(l => 
+            `<option value="${l.id}" ${(d && d.lider_id == l.id) || (celulaFixaId == l.id) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
+          ).join('')
+        : celulasPermitidas.map(l => 
+            `<option value="${l.id}" ${(d && d.lider_id == l.id) || (celulaFixaId == l.id) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
+          ).join('');
 
       const perfisNomes = db.perfisLideranca.filter(p => p.id !== 'MACRO').map(p => p.nome);
       const listaNiveis = [...new Set(['Discípula', ...perfisNomes, 'Discípula (Sem Célula)'])];
@@ -1816,7 +1870,6 @@
           </div>
         </div>
 
-        <!-- CAIXA CONDICIONAL: PERGUNTA QUAL COR ELA GOSTA QUANDO SELECIONA G12 -->
         <div id="box-cor-favorita" class="g12-color-box" style="display:${mostrarCorInicial ? 'block' : 'none'};">
           <label for="f-cor-favorita">🎨 Qual é a cor que ela gosta? (Obrigatório para Liderança G12)</label>
           <div class="g12-color-inputs">
@@ -1827,7 +1880,7 @@
 
         <div class="form-row">
           <div class="form-field">
-            <label>Célula Pertencente (Opcional — pode deixar sem célula)</label>
+            <label>Célula Pertencente ${isMacroAdmin() ? '(Opcional)' : '*'}</label>
             <select id="f-lider-id">${optionsCelulas}</select>
           </div>
           <div class="form-field"><label>Data de Aniversário</label><input type="date" id="f-nasc" value="${d?.data_nascimento||''}" /></div>
@@ -1893,6 +1946,13 @@
       if (!nome) return alert('O Nome Completo é obrigatório!');
 
       const liderIdParsed = liderIdRaw ? parseInt(liderIdRaw) : null;
+
+      // Impede salvar discípula em célula que não pertence à líder logada
+      if (!isMacroAdmin() && (!liderIdParsed || !podeGerenciarCelula(liderIdParsed))) {
+        alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
+        return;
+      }
+
       let nivelSel = document.getElementById('f-nivel-lideranca').value;
       const isG12 = nivelSel.toUpperCase().includes('G12');
       const corFavoritaVal = isG12 ? (document.getElementById('f-cor-favorita')?.value.trim() || '') : '';
@@ -2037,8 +2097,6 @@
     function abrirModalAcesso(userId = null) {
       const u = userId ? db.usuarios.find(x => x.id === userId) : null;
       const opcoesDiscipulas = db.discipulas.map(d => `<option value="${d.nome}" ${u && u.nome === d.nome ? 'selected' : ''}>${d.nome}</option>`).join('');
-      const opcoesCelulas = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.id}" ${u && u.lider_id === l.id ? 'selected' : ''}>${l.celular_que_lidera} (${l.nome})</option>`).join('');
-      
       const opcoesPerfis = db.perfisLideranca.map(p => 
         `<option value="${p.id}" ${u && u.perfil_id === p.id ? 'selected' : ''}>${p.nome}</option>`
       ).join('');
@@ -2059,20 +2117,17 @@
         <div class="form-row">
           <div class="form-field"><label>Login de Acesso *</label><input type="text" id="ac-login" value="${u?.login || ''}" placeholder="Ex: larissa" required /></div>
           <div class="form-field"><label>Senha *</label><input type="text" id="ac-senha" value="${u?.senha || ''}" placeholder="Ex: 123" required /></div>
-          <div class="form-field">
-            <label>Célula Vinculada (Cobertura)</label>
-            <select id="ac-celula-id">
-              <option value="1">— Macrocélula / Sem Célula Fixa —</option>
-              ${opcoesCelulas}
-            </select>
-          </div>
+        </div>
+
+        <div style="background:#FFFDF5;border:1px solid #F3E3B2;padding:10px 14px;border-radius:10px;font-size:0.78rem;color:#8A6D14;margin-bottom:14px;">
+          🔒 <strong>Regra de Isolamento:</strong> Ao entrar com este login, a líder terá acesso exclusivo apenas às células em que <strong>ela mesma for a líder</strong>, nunca podendo alterar a célula onde participa como discípula.
         </div>
 
         <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Domínios &amp; Permissões Específicas desta Usuária:</label>
         <div class="permissoes-grid">
-          <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Células</label>
-          <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Discípulas</label>
-          <label class="perm-item"><input type="checkbox" id="ac-perm-baixa" ${u?.pode_dar_baixa ? 'checked' : ''} /> Dar Baixa (X) em Células</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Células Próprias</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Discípulas Próprias</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-baixa" ${u?.pode_dar_baixa ? 'checked' : ''} /> Dar Baixa (X) em Células Próprias</label>
           <label class="perm-item"><input type="checkbox" id="ac-perm-acessos" ${u?.pode_gerenciar_acessos ? 'checked' : ''} /> Gerenciar Logins &amp; Lideranças</label>
         </div>
       `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId || 'null'})">Salvar Credenciais</button>`);
@@ -2098,7 +2153,6 @@
       const podeEditarDisc = document.getElementById('ac-perm-disc').checked;
       const podeDarBaixa = document.getElementById('ac-perm-baixa').checked;
       const podeGerenciarAcessos = document.getElementById('ac-perm-acessos').checked;
-      const liderId = parseInt(document.getElementById('ac-celula-id').value) || 1;
 
       if (!nome || !login || !senha) return alert('Preencha nome, login e senha!');
 
@@ -2110,6 +2164,9 @@
         await supabaseClient.from('discipulas').update({ nivel_lideranca: perfilObj.nome }).eq('id', disc.id);
       }
 
+      // Vincula apenas à célula onde ela já é líder (se existir), nunca à célula onde ela é discípula
+      const celulaPropria = db.lideres.find(l => l.ativa && l.nome.trim().toLowerCase() === nome.toLowerCase());
+
       const dadosUsuario = {
         id: userId || Date.now(),
         nome, login, senha,
@@ -2119,7 +2176,7 @@
         pode_editar_discipulas: podeEditarDisc,
         pode_dar_baixa: podeDarBaixa,
         pode_gerenciar_acessos: podeGerenciarAcessos,
-        lider_id: liderId
+        lider_id: celulaPropria ? celulaPropria.id : null
       };
 
       const { error } = await supabaseClient.from('usuarios').upsert(dadosUsuario);
@@ -2244,7 +2301,8 @@
 
     function prepararFiltrosRelatorio() {
       const celulas = getCelulasVisiveis();
-      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas as Células</option><option value="SEM_CELULA">Sem Célula Vinculada</option>' + celulas.map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
+      const opSemCelula = isMacroAdmin() ? '<option value="SEM_CELULA">Sem Célula Vinculada</option>' : '';
+      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas as Minhas Células</option>' + opSemCelula + celulas.map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
       renderResumoRelatorioPastoral();
     }
 
@@ -2261,7 +2319,6 @@
       const labelHier = selectHier.options[selectHier.selectedIndex]?.text || 'Todas as Hierarquias';
       const labelPend = selectPend.options[selectPend.selectedIndex]?.text || 'Todas as Discípulas';
 
-      // Caso 1: Células Abertas
       if (pend === 'celulas-abertas') {
         const abertas = getCelulasVisiveis();
         return {
@@ -2280,7 +2337,6 @@
         };
       }
 
-      // Caso 2: Células Fechadas
       if (pend === 'celulas-fechadas') {
         const fechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
         return {
@@ -2296,7 +2352,6 @@
         };
       }
 
-      // Caso 3: Total de Mulheres em Toda Macrocélula
       if (pend === 'todas-mulheres') {
         const celulas = getCelulasVisiveis();
         const discipulas = getDiscipulasVisiveis();
@@ -2341,7 +2396,6 @@
         };
       }
 
-      // Caso 4: Filtros de Discípulas
       let lista = [...getDiscipulasVisiveis()];
 
       if (liderId === 'SEM_CELULA') lista = lista.filter(d => !d.lider_id);
@@ -2447,7 +2501,6 @@
       `;
     }
 
-    // Abre o Documento Oficial com Logo no topo, Cards informativos e Listagem em Texto (sem print!)
     function abrirModalRelatorioOficial() {
       const dados = obterDadosRelatorioAtual();
       const dataAgora = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -2540,7 +2593,7 @@
       });
 
       navigator.clipboard.writeText(texto).then(() => {
-        alert('✅ Relatório completo em texto copiado! Agora é só colar no WhatsApp da Rosane.');
+        alert('✅ Relatório completo em texto copiado! Agora é só colar no WhatsApp.');
       }).catch(() => {
         alert('Não foi possível copiar automaticamente. Abra o botão "Gerar Relatório Oficial" para selecionar o texto.');
       });
