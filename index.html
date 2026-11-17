@@ -10,6 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Biblioteca para Download Direto de PDF (sem print) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --rosa: #D0397C; --rosa-escuro: #A82A61; --rosa-claro: #FDF2F7; --rosa-medio: #F9D6E6;
@@ -176,6 +178,100 @@
     .rel-mini-card.verde .r-val { color: var(--sucesso); }
     .rel-mini-card.vermelho .r-val { color: var(--erro); }
 
+    /* ================= DOCUMENTO OFICIAL DE RELATÓRIO (SEM PRINT) ================= */
+    .doc-oficial-container {
+      background: #FFFFFF;
+      border: 1px solid #E5E5E5;
+      border-radius: 16px;
+      padding: 32px;
+      color: #1A1A1A;
+      font-family: 'Inter', sans-serif;
+    }
+    .doc-oficial-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--rosa);
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .doc-oficial-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .doc-oficial-logo {
+      height: 74px;
+      width: auto;
+      object-fit: contain;
+    }
+    .doc-oficial-title h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--rosa);
+      font-size: 1.45rem;
+      margin-bottom: 4px;
+    }
+    .doc-oficial-title p {
+      font-size: 0.82rem;
+      color: var(--cinza);
+      font-weight: 500;
+    }
+    .doc-oficial-meta {
+      text-align: right;
+      font-size: 0.76rem;
+      color: var(--cinza);
+      line-height: 1.5;
+    }
+    .doc-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .doc-stat-card {
+      background: #FDF2F7;
+      border: 1px solid #F9D6E6;
+      border-left: 4px solid var(--rosa);
+      border-radius: 10px;
+      padding: 11px 13px;
+    }
+    .doc-stat-card.gold {
+      background: #FFFDF5;
+      border-color: #F3E3B2;
+      border-left-color: var(--dourado);
+    }
+    .doc-stat-card .d-lbl {
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--cinza);
+      margin-bottom: 4px;
+    }
+    .doc-stat-card .d-num {
+      font-size: 1.28rem;
+      font-weight: 800;
+      color: var(--preto);
+    }
+    .doc-texto-lista {
+      margin-top: 16px;
+    }
+    .doc-texto-item {
+      padding: 12px 14px;
+      border: 1px solid #ECECEC;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #FAFAFB;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      page-break-inside: avoid;
+    }
+    .doc-texto-item strong {
+      color: var(--rosa-escuro);
+      font-size: 0.92rem;
+    }
+
     .card { background: white; border-radius: var(--radius); box-shadow: var(--sombra); padding: 26px; margin-bottom: 22px; border: 1px solid rgba(0,0,0,0.02); }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
     .card-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--preto); }
@@ -329,7 +425,7 @@
     .modal { background: white; border-radius: 22px; width: 100%; max-width: 1080px; max-height: 94vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
     .modal-header { padding: 22px 26px; border-bottom: 1px solid #F0F0F2; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
-    .modal-body { padding: 28px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
+    .modal-body { padding: 28px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
 
     .tree-container { padding: 10px; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 20px; }
     .tree-root-level { display: flex; justify-content: center; width: 100%; margin-bottom: 10px; position: relative; }
@@ -367,12 +463,6 @@
     .page { display: none; } .page.active { display: block; }
     .bday-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #FFFBF5, #FFF8EE); border-radius: 14px; border: 1px solid #F5E6B8; margin-bottom: 10px; gap: 12px; }
     .search-input { padding: 10px 16px; border: 1.5px solid #E8E4E6; border-radius: 12px; width: 240px; font-size: 0.9rem; background: #FAFAFB; }
-
-    @media print {
-      .sidebar, .topbar, .menu-toggle, .no-print { display: none !important; }
-      .main-content { margin-left: 0 !important; padding: 0 !important; background: white !important; }
-      .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
-    }
   </style>
 </head>
 <body>
@@ -606,22 +696,25 @@
           <div class="card-header">
             <div>
               <h2>Relatórios Pastorais • Macrocélula Aleluia</h2>
-              <p style="color:var(--cinza-medio);font-size:0.84rem;margin-top:3px;">Indicadores gerais da cobertura e filtros detalhados da jornada.</p>
+              <p style="color:var(--cinza-medio);font-size:0.84rem;margin-top:3px;">Filtre os dados e gere o Documento Oficial em Texto/PDF com a logo e cards informativos.</p>
             </div>
-            <button class="btn btn-dourado no-print" onclick="gerarRelatorioPDF()">🖨 Gerar PDF / Imprimir</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Texto (WhatsApp)</button>
+              <button class="btn btn-dourado" onclick="abrirModalRelatorioOficial()">📄 Gerar Relatório Oficial (PDF / Texto)</button>
+            </div>
           </div>
 
           <!-- Painel de Indicadores Totais da Macrocélula -->
           <div id="relatorio-resumo-indicadores" class="relatorio-resumo-grid"></div>
 
-          <div class="form-row no-print">
+          <div class="form-row">
             <div class="form-field">
               <label>Líder / Célula</label>
-              <select id="filtro-lider"><option value="">Todas as Células</option></select>
+              <select id="filtro-lider" onchange="aplicarFiltrosRelatorio()"><option value="">Todas as Células</option></select>
             </div>
             <div class="form-field">
               <label>Hierarquia</label>
-              <select id="filtro-hierarquia">
+              <select id="filtro-hierarquia" onchange="aplicarFiltrosRelatorio()">
                 <option value="">Todas as Hierarquias</option>
                 <option value="Liderança G12">Liderança G12</option>
                 <option value="144">Liderança 144</option>
@@ -633,7 +726,7 @@
             </div>
             <div class="form-field">
               <label>Filtro de Jornada &amp; Indicadores</label>
-              <select id="filtro-pendencia">
+              <select id="filtro-pendencia" onchange="aplicarFiltrosRelatorio()">
                 <option value="">Todas as Discípulas</option>
                 <optgroup label="Mulheres & Células">
                   <option value="todas-mulheres">Total de Mulheres em Toda Macrocélula (Líderes + Discípulas)</option>
@@ -664,7 +757,6 @@
               </select>
             </div>
           </div>
-          <button class="btn btn-rosa no-print" style="margin-bottom:20px;" onclick="aplicarFiltrosRelatorio()">Aplicar Filtros</button>
           <div id="resultado-relatorio"></div>
         </div>
       </section>
@@ -2056,7 +2148,7 @@
     }
 
     // =========================================================================
-    // 10. HISTÓRICO, ANIVERSARIANTES, RELATÓRIOS PASTORAIS COMPLETOS & UTILITÁRIOS
+    // 10. HISTÓRICO, ANIVERSARIANTES, RELATÓRIOS OFICIAIS (TEXTO + PDF) & UTILITÁRIOS
     // =========================================================================
     function renderDesistencias() {
       document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `
@@ -2156,12 +2248,152 @@
       renderResumoRelatorioPastoral();
     }
 
+    function obterDadosRelatorioAtual() {
+      const selectLider = document.getElementById('filtro-lider');
+      const selectHier = document.getElementById('filtro-hierarquia');
+      const selectPend = document.getElementById('filtro-pendencia');
+
+      const liderId = selectLider.value;
+      const hierarquia = selectHier.value;
+      const pend = selectPend.value;
+
+      const labelLider = selectLider.options[selectLider.selectedIndex]?.text || 'Todas as Células';
+      const labelHier = selectHier.options[selectHier.selectedIndex]?.text || 'Todas as Hierarquias';
+      const labelPend = selectPend.options[selectPend.selectedIndex]?.text || 'Todas as Discípulas';
+
+      // Caso 1: Células Abertas
+      if (pend === 'celulas-abertas') {
+        const abertas = getCelulasVisiveis();
+        return {
+          tipo: 'celulas-abertas',
+          tituloFiltro: `${labelPend} (${labelLider})`,
+          cards: [
+            { label: 'Células Abertas', valor: abertas.length, gold: true },
+            { label: 'Líderes G12', valor: abertas.filter(c => c.geracao.includes('G12')).length },
+            { label: 'Líderes 144', valor: abertas.filter(c => c.geracao.includes('144')).length },
+            { label: 'Líderes 1728 / 20736', valor: abertas.filter(c => c.geracao.includes('1728') || c.geracao.includes('20736')).length }
+          ],
+          itens: abertas.map(c => ({
+            titulo: `${c.celular_que_lidera} (Líder: ${c.nome})`,
+            detalhes: `Geração: ${c.geracao} • Local: ${c.local || 'Não informado'} • Dia/Hora: ${c.dias || '—'} às ${c.horarios || '—'} • Abertura: ${formatDate(c.data_abertura)}`
+          }))
+        };
+      }
+
+      // Caso 2: Células Fechadas
+      if (pend === 'celulas-fechadas') {
+        const fechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
+        return {
+          tipo: 'celulas-fechadas',
+          tituloFiltro: labelPend,
+          cards: [
+            { label: 'Células Fechadas', valor: fechadas.length, gold: true }
+          ],
+          itens: fechadas.map(f => ({
+            titulo: f.nome,
+            detalhes: `Participantes na Baixa: ${f.celular_origem} • Data: ${formatDate(f.data)} • Motivo: ${f.motivo}`
+          }))
+        };
+      }
+
+      // Caso 3: Total de Mulheres em Toda Macrocélula
+      if (pend === 'todas-mulheres') {
+        const celulas = getCelulasVisiveis();
+        const discipulas = getDiscipulasVisiveis();
+        const mapaMulheres = new Map();
+
+        celulas.forEach(c => {
+          mapaMulheres.set(c.nome.trim().toLowerCase(), {
+            nome: c.nome,
+            papel: c.geracao,
+            celula: c.celular_que_lidera,
+            telefone: '—',
+            status: 'Líder de Célula'
+          });
+        });
+
+        discipulas.forEach(d => {
+          const cel = db.lideres.find(l => l.id === d.lider_id);
+          const chave = d.nome.trim().toLowerCase();
+          const jaLider = mapaMulheres.get(chave);
+          mapaMulheres.set(chave, {
+            nome: d.nome,
+            papel: d.nivel_lideranca || (jaLider ? jaLider.papel : 'Discípula'),
+            celula: cel ? cel.celular_que_lidera : (jaLider ? jaLider.celula : 'Sem Célula'),
+            telefone: d.telefone || '—',
+            status: d.assiduidade === 'Sim' ? 'Assídua' : 'Infrequente'
+          });
+        });
+
+        const listaMulheres = Array.from(mapaMulheres.values());
+        return {
+          tipo: 'todas-mulheres',
+          tituloFiltro: labelPend,
+          cards: [
+            { label: 'Total de Mulheres', valor: listaMulheres.length, gold: true },
+            { label: 'Células Ativas', valor: celulas.length },
+            { label: 'Discípulas Cadastradas', valor: discipulas.length }
+          ],
+          itens: listaMulheres.map(m => ({
+            titulo: m.nome,
+            detalhes: `Cargo/Hierarquia: ${m.papel} • Célula: ${m.celula} • Tel: ${m.telefone} • Frequência: ${m.status}`
+          }))
+        };
+      }
+
+      // Caso 4: Filtros de Discípulas
+      let lista = [...getDiscipulasVisiveis()];
+
+      if (liderId === 'SEM_CELULA') lista = lista.filter(d => !d.lider_id);
+      else if (liderId) lista = lista.filter(d => d.lider_id == liderId);
+
+      if (hierarquia === 'Sem Célula') lista = lista.filter(d => !d.lider_id);
+      else if (hierarquia === 'Discípula') lista = lista.filter(d => d.nivel_lideranca === 'Discípula');
+      else if (hierarquia) lista = lista.filter(d => (d.nivel_lideranca || '').includes(hierarquia));
+
+      if (pend === 'batizada') lista = lista.filter(d => d.batizada);
+      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada);
+      if (pend === 'com-uv') lista = lista.filter(d => d.uv === 'Sim');
+      if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Não');
+      if (pend === 'com-reencontro') lista = lista.filter(d => d.reencontro === 'Sim');
+      if (pend === 'cd-1') lista = lista.filter(d => d.cd === 'Nível 1');
+      if (pend === 'cd-2') lista = lista.filter(d => d.cd === 'Nível 2');
+      if (pend === 'cd-3') lista = lista.filter(d => d.cd === 'Nível 3');
+      if (pend === 'cd-desistiu') lista = lista.filter(d => d.cd === 'Desistiu');
+      if (pend === 'cd-formatura-sim') lista = lista.filter(d => d.formatura_cd === 'Sim');
+      if (pend === 'cd-formatura-nao') lista = lista.filter(d => d.formatura_cd !== 'Sim');
+      if (pend === 'assidua') lista = lista.filter(d => d.assiduidade === 'Sim');
+      if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
+
+      return {
+        tipo: 'discipulas',
+        tituloFiltro: `${labelPend} • ${labelLider} • ${labelHier}`,
+        listaBruta: lista,
+        cards: [
+          { label: 'Total Selecionado', valor: lista.length, gold: true },
+          { label: 'Batizadas', valor: lista.filter(d => d.batizada).length },
+          { label: 'Concluintes UV', valor: lista.filter(d => d.uv === 'Sim').length },
+          { label: 'Reencontro', valor: lista.filter(d => d.reencontro === 'Sim').length },
+          { label: 'Formatura CD (Sim)', valor: lista.filter(d => d.formatura_cd === 'Sim').length },
+          { label: 'Assíduas', valor: lista.filter(d => d.assiduidade === 'Sim').length },
+          { label: 'Infrequentes', valor: lista.filter(d => d.assiduidade !== 'Sim').length }
+        ],
+        itens: lista.map(d => {
+          const cel = db.lideres.find(l => l.id === d.lider_id);
+          const corStr = (d.nivel_lideranca && d.nivel_lideranca.includes('G12') && d.cor_favorita) ? ` • Cor G12: ${d.cor_favorita}` : '';
+          return {
+            titulo: `${d.nome} (${d.nivel_lideranca || 'Discípula'})`,
+            detalhes: `Célula: ${cel ? cel.celular_que_lidera : 'Sem Célula'} • Tel: ${d.telefone || '—'} • Frequência: ${d.assiduidade === 'Sim' ? 'Assídua' : 'Infrequente'} • Batizada: ${d.batizada ? 'Sim' : 'Não'} • UV: ${d.uv || 'Não'} • Reencontro: ${d.reencontro || 'Não'} • CD: ${d.cd || 'Nível 1'} (Formatura: ${d.formatura_cd || 'Não'})${corStr}`
+          };
+        })
+      };
+    }
+
     function renderResumoRelatorioPastoral() {
       const celulasAbertas = getCelulasVisiveis();
       const celulasFechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
       const discipulas = getDiscipulasVisiveis();
 
-      // Total de mulheres em toda a macrocélula (Líderes únicas + Discípulas únicas)
       const nomesUnicos = new Set([
         ...celulasAbertas.map(c => c.nome.trim().toLowerCase()),
         ...discipulas.map(d => d.nome.trim().toLowerCase())
@@ -2199,113 +2431,120 @@
 
     function aplicarFiltrosRelatorio() {
       renderResumoRelatorioPastoral();
-      const liderId = document.getElementById('filtro-lider').value;
-      const hierarquia = document.getElementById('filtro-hierarquia').value;
-      const pend = document.getElementById('filtro-pendencia').value;
+      const dados = obterDadosRelatorioAtual();
       const container = document.getElementById('resultado-relatorio');
 
-      // Caso especial 1: Total de Células Abertas
-      if (pend === 'celulas-abertas') {
-        const abertas = getCelulasVisiveis();
-        container.innerHTML = `
-          <p style="margin-bottom:14px;"><strong>${abertas.length}</strong> célula(s) aberta(s) ativa(s)</p>
-          <div class="table-wrap"><table><thead><tr><th>Célula</th><th>Líder</th><th>Geração</th><th>Local</th><th>Dia / Horário</th><th>Data Abertura</th></tr></thead><tbody>
-            ${abertas.map(c => `<tr><td><strong>${c.celular_que_lidera}</strong></td><td>${c.nome}</td><td>${c.geracao}</td><td>${c.local || '—'}</td><td>${c.dias || '—'} ${c.horarios || ''}</td><td>${formatDate(c.data_abertura)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhuma célula aberta</td></tr>'}
-          </tbody></table></div>`;
-        return;
-      }
-
-      // Caso especial 2: Total de Células Fechadas
-      if (pend === 'celulas-fechadas') {
-        const fechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
-        container.innerHTML = `
-          <p style="margin-bottom:14px;"><strong>${fechadas.length}</strong> célula(s) fechada(s) registrada(s)</p>
-          <div class="table-wrap"><table><thead><tr><th>Célula / Líder</th><th>Participantes na Baixa</th><th>Status</th><th>Data Fechamento</th><th>Motivo Pastoral</th></tr></thead><tbody>
-            ${fechadas.map(f => `<tr><td><strong>${f.nome}</strong></td><td>${f.celular_origem}</td><td><span class="badge badge-danger">${f.celular_nova}</span></td><td>${formatDate(f.data)}</td><td>${f.motivo}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;">Nenhuma célula fechada</td></tr>'}
-          </tbody></table></div>`;
-        return;
-      }
-
-      // Caso especial 3: Total de Mulheres em Toda Macrocélula (Líderes + Discípulas)
-      if (pend === 'todas-mulheres') {
-        const celulas = getCelulasVisiveis();
-        const discipulas = getDiscipulasVisiveis();
-        const mapaMulheres = new Map();
-
-        celulas.forEach(c => {
-          mapaMulheres.set(c.nome.trim().toLowerCase(), {
-            nome: c.nome,
-            papel: c.geracao,
-            celula: c.celular_que_lidera,
-            telefone: '—',
-            status: 'Líder de Célula'
-          });
-        });
-
-        discipulas.forEach(d => {
-          const cel = db.lideres.find(l => l.id === d.lider_id);
-          const chave = d.nome.trim().toLowerCase();
-          const jaLider = mapaMulheres.get(chave);
-          mapaMulheres.set(chave, {
-            nome: d.nome,
-            papel: d.nivel_lideranca || (jaLider ? jaLider.papel : 'Discípula'),
-            celula: cel ? cel.celular_que_lidera : (jaLider ? jaLider.celula : 'Sem Célula'),
-            telefone: d.telefone || '—',
-            status: d.assiduidade === 'Sim' ? 'Assídua' : 'Infrequente'
-          });
-        });
-
-        const listaMulheres = Array.from(mapaMulheres.values());
-        container.innerHTML = `
-          <p style="margin-bottom:14px;"><strong>${listaMulheres.length}</strong> mulher(es) em toda a Macrocélula (Líderes + Discípulas)</p>
-          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Hierarquia / Cargo</th><th>Célula</th><th>Telefone</th><th>Frequência</th></tr></thead><tbody>
-            ${listaMulheres.map(m => `<tr><td><strong>${m.nome}</strong></td><td>${m.papel}</td><td>${m.celula}</td><td>${m.telefone}</td><td>${m.status}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;">Nenhum registro</td></tr>'}
-          </tbody></table></div>`;
-        return;
-      }
-
-      // Filtros padrão de Discípulas
-      let lista = [...getDiscipulasVisiveis()];
-
-      if (liderId === 'SEM_CELULA') lista = lista.filter(d => !d.lider_id);
-      else if (liderId) lista = lista.filter(d => d.lider_id == liderId);
-
-      if (hierarquia === 'Sem Célula') lista = lista.filter(d => !d.lider_id);
-      else if (hierarquia === 'Discípula') lista = lista.filter(d => d.nivel_lideranca === 'Discípula');
-      else if (hierarquia) lista = lista.filter(d => (d.nivel_lideranca || '').includes(hierarquia));
-
-      if (pend === 'batizada') lista = lista.filter(d => d.batizada);
-      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada);
-      if (pend === 'com-uv') lista = lista.filter(d => d.uv === 'Sim');
-      if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Não');
-      if (pend === 'com-reencontro') lista = lista.filter(d => d.reencontro === 'Sim');
-      if (pend === 'cd-1') lista = lista.filter(d => d.cd === 'Nível 1');
-      if (pend === 'cd-2') lista = lista.filter(d => d.cd === 'Nível 2');
-      if (pend === 'cd-3') lista = lista.filter(d => d.cd === 'Nível 3');
-      if (pend === 'cd-desistiu') lista = lista.filter(d => d.cd === 'Desistiu');
-      if (pend === 'cd-formatura-sim') lista = lista.filter(d => d.formatura_cd === 'Sim');
-      if (pend === 'cd-formatura-nao') lista = lista.filter(d => d.formatura_cd !== 'Sim');
-      if (pend === 'assidua') lista = lista.filter(d => d.assiduidade === 'Sim');
-      if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
-
       container.innerHTML = `
-        <p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s) encontrado(s)</p>
-        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Hierarquia</th><th>Telefone</th><th>Frequência</th><th>Batismo</th><th>UV</th><th>Reencontro</th><th>CD</th><th>Formatura CD</th></tr></thead><tbody>
-          ${lista.map(d => `
-            <tr>
-              <td><strong>${d.nome}</strong></td>
-              <td>${d.nivel_lideranca}</td>
-              <td>${d.telefone||'—'}</td>
-              <td>${d.assiduidade === 'Sim' ? 'Assídua' : 'Infrequente'}</td>
-              <td>${d.batizada?'Sim':'Não'}</td>
-              <td>${d.uv||'Não'}</td>
-              <td>${d.reencontro||'Não'}</td>
-              <td>${d.cd||'Nível 1'}</td>
-              <td>${d.formatura_cd||'Não'}</td>
-            </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;">Nenhum resultado encontrado para este filtro</td></tr>'}
-        </tbody></table></div>`;
+        <p style="margin-bottom:14px;"><strong>${dados.itens.length}</strong> registro(s) encontrado(s) para: <em>${dados.tituloFiltro}</em></p>
+        <div class="doc-texto-lista">
+          ${dados.itens.length ? dados.itens.map((item, idx) => `
+            <div class="doc-texto-item">
+              <strong>${idx + 1}. ${item.titulo}</strong><br>
+              <span style="color:var(--cinza);">${item.detalhes}</span>
+            </div>
+          `).join('') : '<div class="empty-state"><p>Nenhum registro encontrado para este filtro.</p></div>'}
+        </div>
+      `;
     }
-    function gerarRelatorioPDF() { window.print(); }
+
+    // Abre o Documento Oficial com Logo no topo, Cards informativos e Listagem em Texto (sem print!)
+    function abrirModalRelatorioOficial() {
+      const dados = obterDadosRelatorioAtual();
+      const dataAgora = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      const htmlDocumento = `
+        <div id="documento-relatorio-export" class="doc-oficial-container">
+          <div class="doc-oficial-header">
+            <div class="doc-oficial-header-left">
+              <img src="logo-macrocelula.png" alt="Logo Macrocélula Aleluia" class="doc-oficial-logo" />
+              <div class="doc-oficial-title">
+                <h2>Relatório Pastoral Oficial</h2>
+                <p>Macrocélula Aleluia • PIBB Ministério Mulheres de Fé</p>
+              </div>
+            </div>
+            <div class="doc-oficial-meta">
+              <strong>Emissão:</strong> ${dataAgora}<br>
+              <strong>Emitido por:</strong> ${usuarioLogado?.nome || 'Rosane Aleluia'}<br>
+              <strong>Recorte:</strong> ${dados.tituloFiltro}
+            </div>
+          </div>
+
+          <h4 style="font-size:0.82rem;text-transform:uppercase;color:var(--rosa-escuro);margin-bottom:10px;letter-spacing:0.4px;">📊 Resumo dos Indicadores Selecionados</h4>
+          <div class="doc-cards-grid">
+            ${dados.cards.map(c => `
+              <div class="doc-stat-card ${c.gold ? 'gold' : ''}">
+                <div class="d-lbl">${c.label}</div>
+                <div class="d-num">${c.valor}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <h4 style="font-size:0.82rem;text-transform:uppercase;color:var(--rosa-escuro);margin:18px 0 10px;letter-spacing:0.4px;">📝 Relação Detalhada em Texto (${dados.itens.length})</h4>
+          <div class="doc-texto-lista">
+            ${dados.itens.length ? dados.itens.map((item, idx) => `
+              <div class="doc-texto-item">
+                <strong>${idx + 1}. ${item.titulo}</strong><br>
+                <span style="color:#444;">${item.detalhes}</span>
+              </div>
+            `).join('') : '<p style="color:#888;text-align:center;padding:20px;">Nenhum registro listado para este filtro.</p>'}
+          </div>
+        </div>
+      `;
+
+      abrirModal('📄 Documento de Relatório Pastoral (Texto & PDF)', htmlDocumento, `
+        <button class="btn btn-outline" onclick="fecharModal()">Fechar</button>
+        <button class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Texto Completo</button>
+        <button class="btn btn-rosa" id="btn-baixar-pdf-direto" onclick="baixarPDFDireto()">📥 Baixar Arquivo PDF</button>
+      `);
+    }
+
+    function baixarPDFDireto() {
+      const elemento = document.getElementById('documento-relatorio-export');
+      if (!elemento) return;
+
+      const btn = document.getElementById('btn-baixar-pdf-direto');
+      if (btn) { btn.disabled = true; btn.textContent = 'Gerando PDF...'; }
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `Relatorio_Macrocelula_Aleluia_${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(elemento).save().then(() => {
+        if (btn) { btn.disabled = false; btn.textContent = '📥 Baixar Arquivo PDF'; }
+      }).catch(err => {
+        console.error(err);
+        alert('Erro ao gerar o PDF: ' + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = '📥 Baixar Arquivo PDF'; }
+      });
+    }
+
+    function copiarRelatorioTexto() {
+      const dados = obterDadosRelatorioAtual();
+      const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+      let texto = `*RELATÓRIO PASTORAL - MACROCÉLULA ALELUIA*\n`;
+      texto += `📅 Data: ${dataHoje}\n`;
+      texto += `🔎 Filtro: ${dados.tituloFiltro}\n\n`;
+      texto += `*📊 RESUMO DOS INDICADORES:*\n`;
+      dados.cards.forEach(c => {
+        texto += `• ${c.label}: *${c.valor}*\n`;
+      });
+
+      texto += `\n*📝 RELAÇÃO DETALHADA (${dados.itens.length}):*\n`;
+      dados.itens.forEach((item, i) => {
+        texto += `\n*${i + 1}. ${item.titulo}*\n${item.detalhes}\n`;
+      });
+
+      navigator.clipboard.writeText(texto).then(() => {
+        alert('✅ Relatório completo em texto copiado! Agora é só colar no WhatsApp da Rosane.');
+      }).catch(() => {
+        alert('Não foi possível copiar automaticamente. Abra o botão "Gerar Relatório Oficial" para selecionar o texto.');
+      });
+    }
 
     function abrirModal(title, bodyHTML, footerHTML) {
       document.getElementById('modal-title').textContent = title;
