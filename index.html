@@ -170,6 +170,50 @@
     .btn-whatsapp { background: #25D366; color: white; }
     .btn-whatsapp:hover:not(:disabled) { background: #20ba5a; }
 
+    /* ================= CAIXA CONDICIONAL COR FAVORITA G12 ================= */
+    .g12-color-box {
+      background: linear-gradient(135deg, #FFFDF5 0%, #FDF2F7 100%);
+      border: 1.5px solid var(--dourado);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      animation: fadeInBox 0.25s ease-out;
+    }
+    .g12-color-box label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--rosa-escuro);
+      margin-bottom: 8px;
+    }
+    .g12-color-inputs {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .g12-color-inputs input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid #E5C1D3;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      background: white;
+      font-family: inherit;
+    }
+    .g12-color-inputs input[type="color"] {
+      width: 46px;
+      height: 42px;
+      padding: 2px;
+      border: 1.5px solid #E5C1D3;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+    }
+    @keyframes fadeInBox {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* ================= CARDS DE CÉLULAS E BOTÃO X DE BAIXA ================= */
     .celulas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; }
     .celula-folder-card { background: white; border: 1.5px solid #EAEAEA; border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); transition: all var(--trans); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; min-height: 175px; }
@@ -1504,7 +1548,7 @@
     }
 
     // =========================================================================
-    // 8. DISCÍPULAS & JORNADA ESPIRITUAL (PERSISTÊNCIA NO SUPABASE)
+    // 8. DISCÍPULAS & JORNADA ESPIRITUAL (COM PERGUNTA DE COR PARA G12)
     // =========================================================================
     function renderDiscipulas(filtro = '') {
       let lista = getDiscipulasVisiveis();
@@ -1515,13 +1559,16 @@
         const assBadge = d.assiduidade === 'Sim' ? 'badge-success' : 'badge-warning';
         const cdBadge = d.cd === 'Desistiu' ? 'badge-danger' : 'badge-rosa';
         const hierarquiaBadge = !d.lider_id ? 'badge-cinza' : (d.nivel_lideranca === 'Liderança G12' ? 'badge-dourado' : 'badge-rosa');
+        const tagCorG12 = (d.nivel_lideranca && d.nivel_lideranca.includes('G12') && d.cor_favorita)
+          ? `<br><span style="display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;color:#8A6D14;background:#FFFDF5;border:1px solid #F5E6B8;padding:1px 7px;border-radius:10px;margin-top:3px;">🎨 Cor: <strong>${d.cor_favorita}</strong></span>`
+          : '';
 
         return `
           <tr>
             <td>${renderAvatarDisc(d.foto_url, d.nome)}</td>
             <td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td>
             <td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">Líder: ' + lider.nome + '</small>' : '<span class="badge badge-cinza">Sem Célula Vinculada</span>'}</td>
-            <td><span class="badge ${hierarquiaBadge}">${d.nivel_lideranca || 'Discípula (Sem Célula)'}</span></td>
+            <td><span class="badge ${hierarquiaBadge}">${d.nivel_lideranca || 'Discípula (Sem Célula)'}</span>${tagCorG12}</td>
             <td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td>
             <td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td>
             <td><span class="badge badge-info">${d.uv||'—'}</span></td>
@@ -1531,6 +1578,34 @@
       }).join('') || '<tr><td colspan="9" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula cadastrada ainda.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
+
+    // Controla a exibição da caixa de cor favorita quando seleciona G12
+    function verificarExibicaoCorG12() {
+      const selectNivel = document.getElementById('f-nivel-lideranca');
+      const boxCor = document.getElementById('box-cor-favorita');
+      if (!selectNivel || !boxCor) return;
+
+      const isG12 = selectNivel.value.toUpperCase().includes('G12');
+      boxCor.style.display = isG12 ? 'block' : 'none';
+    }
+
+    function sincronizarSeletorCor(hexColor) {
+      const mapaCores = {
+        '#d0397c': 'Rosa',
+        '#ff0000': 'Vermelho',
+        '#0000ff': 'Azul',
+        '#008000': 'Verde',
+        '#ffff00': 'Amarelo',
+        '#800080': 'Roxo',
+        '#ffa500': 'Laranja',
+        '#ffffff': 'Branco',
+        '#000000': 'Preto'
+      };
+      const inpTexto = document.getElementById('f-cor-favorita');
+      if (inpTexto) {
+        inpTexto.value = mapaCores[hexColor.toLowerCase()] || hexColor.toUpperCase();
+      }
+    }
 
     function abrirModalDiscipula(id = null, celulaFixaId = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
@@ -1548,11 +1623,26 @@
       const listaNiveis = [...new Set(['Discípula', ...perfisNomes, 'Discípula (Sem Célula)'])];
       const opcoesNivel = listaNiveis.map(nv => `<option value="${nv}" ${d?.nivel_lideranca===nv?'selected':''}>${nv}</option>`).join('');
 
+      const mostrarCorInicial = d?.nivel_lideranca && d.nivel_lideranca.toUpperCase().includes('G12');
+
       abrirModal(d ? 'Editar Perfil da Discípula' : 'Cadastrar Nova Discípula', `
         <div class="form-row">
           <div class="form-field"><label>Nome Completo *</label><input id="f-nome" value="${d?.nome||''}" required /></div>
-          <div class="form-field"><label>Nível Hierárquico</label><select id="f-nivel-lideranca">${opcoesNivel}</select></div>
+          <div class="form-field">
+            <label>Nível Hierárquico</label>
+            <select id="f-nivel-lideranca" onchange="verificarExibicaoCorG12()">${opcoesNivel}</select>
+          </div>
         </div>
+
+        <!-- CAIXA CONDICIONAL: PERGUNTA QUAL COR ELA GOSTA QUANDO SELECIONA G12 -->
+        <div id="box-cor-favorita" class="g12-color-box" style="display:${mostrarCorInicial ? 'block' : 'none'};">
+          <label for="f-cor-favorita">🎨 Qual é a cor que ela gosta? (Obrigatório para Liderança G12)</label>
+          <div class="g12-color-inputs">
+            <input type="text" id="f-cor-favorita" value="${d?.cor_favorita || ''}" placeholder="Ex: Rosa, Azul Royal, Dourado, Lilás..." />
+            <input type="color" id="f-cor-picker" value="#D0397C" title="Escolher tonalidade visual" onchange="sincronizarSeletorCor(this.value)" />
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-field">
             <label>Célula Pertencente (Opcional — pode deixar sem célula)</label>
@@ -1612,21 +1702,31 @@
       const liderIdRaw = document.getElementById('f-lider-id').value;
       if (!nome) return alert('O Nome Completo é obrigatório!');
 
-      const btn = document.getElementById('btn-salvar-discipula');
-      if (btn) { btn.disabled = true; btn.textContent = 'Salvando no Banco...'; }
-
       const liderIdParsed = liderIdRaw ? parseInt(liderIdRaw) : null;
       let nivelSel = document.getElementById('f-nivel-lideranca').value;
-      if (!liderIdParsed && nivelSel !== 'Discípula (Sem Célula)') {
+      const isG12 = nivelSel.toUpperCase().includes('G12');
+      const corFavoritaVal = isG12 ? (document.getElementById('f-cor-favorita')?.value.trim() || '') : '';
+
+      if (isG12 && !corFavoritaVal) {
+        alert('Por favor, informe qual é a cor que ela gosta!');
+        document.getElementById('f-cor-favorita')?.focus();
+        return;
+      }
+
+      if (!liderIdParsed && !isG12 && nivelSel !== 'Discípula (Sem Célula)') {
         nivelSel = 'Discípula (Sem Célula)';
       } else if (liderIdParsed && nivelSel === 'Discípula (Sem Célula)') {
         nivelSel = 'Discípula';
       }
 
+      const btn = document.getElementById('btn-salvar-discipula');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando no Banco...'; }
+
       const obj = {
         id: id || Date.now(),
         nome: nome,
         nivel_lideranca: nivelSel,
+        cor_favorita: corFavoritaVal,
         lider_id: liderIdParsed,
         data_nascimento: document.getElementById('f-nasc').value || null,
         endereco: document.getElementById('f-endereco').value.trim(),
