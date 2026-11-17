@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Macrocélula Aleluia | Gestão Pastoral G12</title>
   <link rel="icon" href="logo-macrocelula.png" type="image/png" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
@@ -28,25 +27,38 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--cinza-claro); color: var(--preto); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-    #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, #12080e 0%, #1f0c18 35%, #3a1228 70%, #4a1535 100%); position: relative; overflow: hidden; padding: 24px; }
-    #login-screen::before { content: ''; position: absolute; width: 700px; height: 700px; background: radial-gradient(circle, rgba(208,57,124,0.22) 0%, transparent 68%); top: -280px; right: -180px; border-radius: 50%; pointer-events: none; }
-    .login-card { background: rgba(255,255,255,0.98); border-radius: 28px; padding: 44px 40px 36px; width: 100%; max-width: 420px; box-shadow: var(--sombra-forte); position: relative; z-index: 2; text-align: center; border: 1px solid rgba(255,255,255,0.6); }
-    .login-logos { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 24px; }
-    .login-logos img { height: 78px; object-fit: contain; filter: drop-shadow(0 3px 10px rgba(0,0,0,0.12)); }
-    .login-card h1 { font-family: 'Playfair Display', serif; font-size: 1.65rem; color: var(--rosa); margin-bottom: 6px; }
-    .login-card .subtitle { font-size: 0.84rem; color: var(--cinza-medio); margin-bottom: 30px; line-height: 1.5; }
-    .form-group { margin-bottom: 16px; text-align: left; }
-    .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--cinza); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.6px; }
-    .form-group input { width: 100%; padding: 14px 16px; border: 1.5px solid #E8E4E6; border-radius: 14px; font-size: 0.98rem; background: #FAFAFB; font-family: inherit; }
-    .form-group input:focus { outline: none; border-color: var(--rosa); background: #fff; box-shadow: 0 0 0 4px rgba(208,57,124,0.12); }
-    .btn-primary { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%); color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all var(--trans); margin-top: 10px; font-family: inherit; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(208,57,124,0.38); }
-    .error-msg { background: #FEF2F2; color: #B91C1C; padding: 12px 14px; border-radius: 12px; font-size: 0.88rem; margin-bottom: 16px; display: none; border: 1px solid #FECACA; text-align: left; }
-    .login-footer { margin-top: 28px; font-size: 0.73rem; color: #A0A0A0; line-height: 1.6; }
-    .login-footer strong { color: var(--cinza); }
+    /* ================= TELA DE LOGIN ================= */
+    #login-screen {
+      position: fixed; inset: 0; background: linear-gradient(135deg, #FDF2F7 0%, #F8F0D8 100%);
+      z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .login-box {
+      background: white; border-radius: 24px; padding: 38px 34px; width: 100%; max-width: 440px;
+      box-shadow: var(--sombra-forte); text-align: center; border: 1px solid rgba(208,57,124,0.12);
+    }
+    .login-logo {
+      display: block;
+      margin: 0 auto 14px auto;
+      height: 86px;
+      max-width: 220px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(208,57,124,0.12));
+    }
+    .login-box h1 { font-family: 'Playfair Display', serif; color: var(--rosa); font-size: 1.75rem; margin-bottom: 6px; }
+    .login-box p { color: var(--cinza-medio); font-size: 0.85rem; margin-bottom: 18px; }
+    .db-status-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600; margin-bottom: 20px; background: #F3F4F6; color: #4B5563;
+    }
+    .db-status-pill.online { background: #ECFDF5; color: #047857; }
+    .db-status-pill.error { background: #FEF2F2; color: #B91C1C; }
+    .login-box .form-field { text-align: left; margin-bottom: 16px; }
+    .login-hint { margin-top: 20px; padding: 12px; background: var(--cinza-claro); border-radius: 12px; font-size: 0.75rem; color: var(--cinza); text-align: left; line-height: 1.65; }
 
     #app { display: none; min-height: 100vh; }
     
+    /* ================= SIDEBAR ================= */
     .sidebar { 
       position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-collapsed-w); 
       background: #FFFFFF; color: var(--preto); z-index: 100; display: flex; flex-direction: column; 
@@ -56,14 +68,31 @@
     .sidebar:hover { width: var(--sidebar-w); box-shadow: 6px 0 24px rgba(0,0,0,0.12); }
 
     .sidebar-header {
-      padding: 20px 14px; text-align: center; border-bottom: 1px solid #F0F0F2; background: #FFFFFF;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90px;
+      padding: 18px 12px;
+      text-align: center;
+      border-bottom: 1px solid #F0F0F2;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 92px;
     }
-    .sidebar-header img { height: 40px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08)); transition: height var(--trans); }
-    .sidebar:hover .sidebar-header img { height: 70px; }
-    .sidebar-header-text { opacity: 0; transition: opacity var(--trans); margin-top: 6px; }
+    .sidebar-header img {
+      display: block;
+      height: 44px;
+      max-width: 190px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+      transition: height var(--trans), transform var(--trans);
+    }
+    .sidebar:hover .sidebar-header img {
+      height: 82px;
+    }
+    .sidebar-header-text { opacity: 0; transition: opacity var(--trans); margin-top: 8px; }
     .sidebar:hover .sidebar-header-text { opacity: 1; }
-    .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--rosa); margin-bottom: 2px; font-weight: 700; }
+    .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--rosa); margin-bottom: 2px; font-weight: 700; }
     .sidebar-header p { font-size: 0.65rem; color: var(--cinza-medio); text-transform: uppercase; font-weight: 600; }
 
     .nav-menu { flex: 1; padding: 14px 10px; overflow-y: auto; overflow-x: hidden; }
@@ -94,6 +123,7 @@
     .sidebar:hover .sidebar-footer { opacity: 1; }
     .sidebar-footer img { height: 24px; opacity: 0.85; margin-bottom: 4px; }
 
+    /* ================= CONTEÚDO PRINCIPAL ================= */
     .main-content { margin-left: var(--sidebar-collapsed-w); min-height: 100vh; padding: 28px 32px 48px; background: var(--cinza-claro); transition: margin-left var(--trans); }
     .sidebar:hover ~ .main-content { margin-left: var(--sidebar-w); }
     
@@ -105,37 +135,108 @@
     .btn-logout { background: transparent; border: none; color: var(--cinza-medio); cursor: pointer; font-size: 0.82rem; padding: 4px 8px; font-weight: 500; font-family: inherit; }
     .btn-logout:hover { color: var(--erro); }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 28px; }
-    .stat-card { background: white; border-radius: var(--radius); padding: 22px 20px 20px; box-shadow: var(--sombra); position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: white; border-radius: var(--radius); padding: 20px 18px 18px; box-shadow: var(--sombra); position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3.5px; background: linear-gradient(90deg, var(--rosa), var(--dourado)); }
-    .stat-card .label { font-size: 0.72rem; color: var(--cinza-medio); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
-    .stat-card .value { font-size: 1.9rem; font-weight: 800; color: var(--preto); line-height: 1; }
-    .stat-card .icon { position: absolute; right: 16px; top: 18px; font-size: 1.7rem; opacity: 0.12; }
+    .stat-card .label { font-size: 0.7rem; color: var(--cinza-medio); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+    .stat-card .value { font-size: 1.85rem; font-weight: 800; color: var(--preto); line-height: 1; }
+    .stat-card .icon { position: absolute; right: 14px; top: 16px; font-size: 1.6rem; opacity: 0.12; }
+
+    .cd-dashboard-card { background: white; border-radius: var(--radius); box-shadow: var(--sombra); padding: 24px; margin-bottom: 22px; border: 1px solid rgba(0,0,0,0.02); }
+    .cd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 14px; margin-top: 16px; }
+    .cd-item-box { background: var(--cinza-claro); border-radius: 14px; padding: 18px; border: 1.5px solid #EAEAEA; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; transition: all var(--trans); }
+    .cd-item-box:hover { border-color: var(--rosa); box-shadow: var(--sombra-hover); }
+    .cd-item-box.desistiu-box:hover { border-color: var(--erro); }
+    .cd-item-header { display: flex; justify-content: space-between; align-items: center; }
+    .cd-item-header h4 { font-size: 0.9rem; font-weight: 700; color: var(--preto); }
+    .cd-item-header .val { font-size: 1.5rem; font-weight: 800; color: var(--rosa); }
+    .cd-item-box.desistiu-box .val { color: var(--erro); }
 
     .card { background: white; border-radius: var(--radius); box-shadow: var(--sombra); padding: 26px; margin-bottom: 22px; border: 1px solid rgba(0,0,0,0.02); }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
     .card-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--preto); }
 
-    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; border-radius: 11px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; transition: all var(--trans); font-family: inherit; white-space: nowrap; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 18px; border-radius: 11px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; transition: all var(--trans); font-family: inherit; white-space: nowrap; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-rosa { background: var(--rosa); color: white; }
-    .btn-rosa:hover { background: var(--rosa-escuro); box-shadow: 0 4px 14px rgba(208,57,124,0.3); }
+    .btn-rosa:hover:not(:disabled) { background: var(--rosa-escuro); box-shadow: 0 4px 14px rgba(208,57,124,0.3); }
     .btn-dourado { background: linear-gradient(135deg, #D4AF37, var(--dourado)); color: #1a1a1a; }
     .btn-outline { background: transparent; border: 1.5px solid #E5E5E5; color: var(--cinza); }
+    .btn-outline:hover:not(:disabled) { border-color: var(--rosa); color: var(--rosa); }
     .btn-sm { padding: 7px 13px; font-size: 0.8rem; border-radius: 9px; }
     .btn-danger { background: #FEF2F2; color: var(--erro); border: 1.5px solid #FECACA; }
+    .btn-danger-solid { background: var(--erro); color: white; }
+    .btn-danger-solid:hover:not(:disabled) { background: #B91C1C; box-shadow: 0 4px 14px rgba(220,38,38,0.35); }
     .btn-whatsapp { background: #25D366; color: white; }
-    .btn-whatsapp:hover { background: #20ba5a; }
+    .btn-whatsapp:hover:not(:disabled) { background: #20ba5a; }
 
-    .celulas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .celula-folder-card { background: white; border: 1.5px solid #EAEAEA; border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); transition: all var(--trans); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; min-height: 150px; }
+    /* ================= CARDS DE CÉLULAS E BOTÃO X DE BAIXA ================= */
+    .celulas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; }
+    .celula-folder-card { background: white; border: 1.5px solid #EAEAEA; border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); transition: all var(--trans); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; min-height: 175px; }
     .celula-folder-card:hover { border-color: var(--rosa); transform: translateY(-3px); box-shadow: var(--sombra-hover); }
-    .celula-folder-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 5px; background: var(--rosa); }
-    .folder-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; position: relative; z-index: 2; }
-    .folder-icon { font-size: 2rem; background: var(--rosa-claro); padding: 10px; border-radius: 12px; }
+    .celula-folder-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 5px; background: var(--rosa); z-index: 2; }
+    
+    .btn-baixa-x {
+      position: absolute; top: 12px; right: 12px; z-index: 10;
+      width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(220,38,38,0.3);
+      background: rgba(255,255,255,0.92); color: var(--erro); font-weight: 800; font-size: 0.85rem;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .btn-baixa-x:hover { background: var(--erro); color: white; transform: scale(1.1); }
+
+    .folder-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; position: relative; z-index: 2; padding-right: 26px; }
+    .folder-icon { width: 52px; height: 52px; font-size: 1.5rem; background: var(--rosa-claro); border-radius: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 2px solid #F3E5EC; }
+    .folder-icon img { width: 100%; height: 100%; object-fit: cover; }
     .folder-info h3 { font-size: 1.05rem; font-weight: 700; color: var(--preto); margin-bottom: 2px; }
     .folder-info p { font-size: 0.8rem; color: var(--cinza-medio); font-weight: 600; }
+    .folder-details { font-size: 0.76rem; color: var(--cinza); margin-bottom: 12px; position: relative; z-index: 2; }
     .folder-meta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F0F0F2; padding-top: 12px; font-size: 0.82rem; color: var(--cinza); position: relative; z-index: 2; }
 
+    /* ================= CAIXA DE ADIÇÃO DENTRO DA CÉLULA ================= */
+    .celula-add-panel {
+      background: var(--rosa-claro);
+      border: 1.5px solid var(--rosa-medio);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .celula-add-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .celula-add-row input, .celula-add-row select {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 14px;
+      border: 1.5px solid #E2C6D4;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      background: white;
+      font-family: inherit;
+    }
+
+    /* ================= UPLOAD DE ARQUIVO & CHECKBOXES PERFIL ================= */
+    .file-upload-box {
+      display: flex; align-items: center; gap: 12px; background: #FAFAFB; border: 1.5px dashed #D8D0D4;
+      padding: 8px 12px; border-radius: 11px;
+    }
+    .file-upload-box input[type="file"] { border: none; background: transparent; padding: 0; font-size: 0.82rem; width: 100%; }
+    .file-preview-thumb { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; background: #fff; }
+
+    .permissoes-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;
+      background: #FAFAFB; padding: 14px; border-radius: 12px; border: 1px solid #EAEAEA; margin-top: 6px;
+    }
+    .perm-item { display: flex; align-items: center; gap: 8px; font-size: 0.83rem; font-weight: 500; cursor: pointer; }
+    .perm-item input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--rosa); cursor: pointer; }
+
+    /* ================= TABELAS & FORMULÁRIOS ================= */
     .table-wrap { overflow-x: auto; border-radius: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     th { text-align: left; padding: 13px 16px; background: var(--rosa-claro); color: var(--rosa-escuro); font-weight: 650; font-size: 0.72rem; text-transform: uppercase; }
@@ -145,91 +246,94 @@
     .badge-success { background: #ECFDF5; color: #047857; } .badge-warning { background: #FFFBEB; color: #B45309; }
     .badge-danger { background: #FEF2F2; color: #B91C1C; } .badge-info { background: #EFF6FF; color: #1D4ED8; }
     .badge-rosa { background: var(--rosa-claro); color: var(--rosa-escuro); }
+    .badge-dourado { background: var(--dourado-claro); color: #8A6D14; }
+    .badge-cinza { background: #F3F4F6; color: #4B5563; }
 
     .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
     .form-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--cinza); margin-bottom: 7px; }
     .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #E8E4E6; border-radius: 11px; font-size: 0.92rem; background: #FAFAFB; font-family: inherit; }
+    .form-field select:disabled, .form-field input:disabled { background: #EFEFF2; color: #4A4A4A; font-weight: 600; cursor: not-allowed; border-color: #DCDCE0; }
     .form-field textarea { resize: vertical; min-height: 84px; }
 
-    /* Modal Aumentado e Árvore */
+    /* ================= MODAIS & ÁRVORE G12 -> 144 -> 1728 -> 20736 ================= */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 8, 12, 0.55); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
-    .modal { background: white; border-radius: 22px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
+    .modal { background: white; border-radius: 22px; width: 100%; max-width: 1080px; max-height: 94vh; overflow-y: auto; box-shadow: var(--sombra-forte); }
     .modal-header { padding: 22px 26px; border-bottom: 1px solid #F0F0F2; display: flex; justify-content: space-between; align-items: center; }
-    .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; }
-    .modal-body { padding: 24px 26px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
+    .modal-close { background: #F5F5F7; border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+    .modal-body { padding: 28px; } .modal-footer { padding: 16px 26px 22px; border-top: 1px solid #F0F0F2; display: flex; justify-content: flex-end; gap: 10px; }
 
-    /* Árvore Hierárquica G12 */
-    .tree-container { padding: 15px 10px; font-family: 'Inter', sans-serif; }
-    .tree-root-box { background: linear-gradient(135deg, #FFFDF5 0%, #FFF5E5 100%); border: 2px solid var(--dourado); border-radius: 16px; padding: 18px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 15px rgba(201,162,39,0.15); position: relative; }
-    .tree-root-box::after { content: ''; position: absolute; bottom: -24px; left: 40px; width: 3px; height: 24px; background: var(--dourado); }
-    
-    .tree-branch { margin-left: 28px; padding-left: 24px; border-left: 3.5px solid var(--rosa-medio); position: relative; margin-top: 16px; margin-bottom: 16px; }
-    .tree-branch::before { content: ''; position: absolute; left: 0; top: 26px; width: 20px; height: 3.5px; background: var(--rosa-medio); }
-    
-    .tree-card-node { background: #FFFFFF; border: 1.5px solid #EAEAEA; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: var(--sombra); transition: all var(--trans); position: relative; }
-    .tree-card-node:hover { border-color: var(--rosa); transform: translateX(4px); box-shadow: var(--sombra-hover); }
-    
-    .tree-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; font-size: 0.95rem; border: 2px solid #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
-    .tree-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .tree-info { flex: 1; }
-    .tree-info h4 { font-size: 0.95rem; margin-bottom: 3px; font-weight: 700; color: var(--preto); } 
-    .tree-info span { font-size: 0.78rem; color: var(--cinza-medio); font-weight: 500; }
-    
-    .tree-discipulas-box { margin-top: 10px; margin-left: 18px; padding: 10px 14px; background: #FAFAFB; border-radius: 12px; border: 1px dashed #E0E0E0; display: flex; flex-wrap: wrap; gap: 8px; }
-    .tree-discipula-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: white; border: 1px solid #E5E5E5; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--cinza); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-    .tree-discipula-pill img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-    .tree-discipula-pill small { color: var(--rosa); font-weight: 700; font-size: 0.75rem; }
+    .tree-container { padding: 10px; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    .tree-root-level { display: flex; justify-content: center; width: 100%; margin-bottom: 10px; position: relative; }
+    .tree-root-level::after { content: ''; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); width: 2px; height: 20px; background: var(--dourado); }
+    .tree-branch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; margin-top: 10px; }
+    .tree-card-node { background: #FFFFFF; border: 2px solid var(--rosa-medio); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--sombra); transition: all var(--trans); position: relative; }
+    .tree-card-node:hover { border-color: var(--rosa); box-shadow: var(--sombra-hover); }
+    .tree-card-node.root-card { border-color: var(--dourado); background: linear-gradient(135deg, #FFFDF5, #FFF5E5); max-width: 420px; margin: 0 auto; text-align: center; }
+    .tree-node-header { display: flex; align-items: center; gap: 14px; }
+    .tree-node-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--rosa), var(--dourado)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; flex-shrink: 0; }
+    .tree-node-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .tree-node-info h4 { font-size: 0.98rem; font-weight: 700; color: var(--preto); margin-bottom: 2px; }
+    .tree-node-info span { font-size: 0.78rem; color: var(--cinza-medio); font-weight: 500; display: block; }
 
-    #mapa-container { height: 480px; border-radius: 16px; overflow: hidden; border: 1px solid #EFEFEF; }
+    .sub-celulas-container { background: #FAFAFB; border-radius: 12px; border: 1px dashed #E0E0E0; padding: 12px; margin-top: 6px; display: none; }
+    .sub-celulas-container.open { display: block; }
+    .sub-celula-item { display: flex; flex-direction: column; gap: 6px; padding: 10px; background: white; border-radius: 10px; margin-bottom: 8px; border: 1px solid #EAEAEA; font-size: 0.82rem; }
+    .sub-1728-box { margin-left: 12px; padding-left: 10px; border-left: 2px solid var(--dourado); margin-top: 4px; font-size: 0.78rem; color: var(--cinza); }
+    .sub-20736-box { margin-left: 12px; padding-left: 10px; border-left: 2px solid var(--rosa); margin-top: 4px; font-size: 0.75rem; color: var(--cinza); }
+
     .foto-disc { width: 44px; height: 44px; border-radius: 50%; background: var(--rosa-claro); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--rosa); font-size: 0.9rem; border: 2px solid white; overflow: hidden; flex-shrink: 0; }
     .foto-disc img { width: 100%; height: 100%; object-fit: cover; }
-    .empty-state { text-align: center; padding: 52px 20px; color: #A0A0A0; }
-
-    .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #EAEAEA; padding-bottom: 10px; }
-    .tab-btn { background: none; border: none; padding: 8px 16px; font-weight: 600; cursor: pointer; color: var(--cinza); border-radius: 8px; transition: all var(--trans); }
-    .tab-btn.active { background: var(--rosa-claro); color: var(--rosa); }
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+    .empty-state { text-align: center; padding: 42px 20px; color: #A0A0A0; }
 
     .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; background: var(--rosa); color: white; border: none; width: 46px; height: 46px; border-radius: 14px; cursor: pointer; align-items: center; justify-content: center; }
     @media (max-width: 900px) {
       .sidebar { width: var(--sidebar-w); transform: translateX(-100%); } 
       .sidebar.open { transform: translateX(0); }
       .sidebar .sidebar-header-text, .sidebar .accordion-header, .sidebar .nav-item span, .sidebar .sidebar-footer { opacity: 1; }
+      .sidebar .sidebar-header img { height: 82px; }
       .main-content { margin-left: 0; padding: 72px 16px 36px; } 
       .menu-toggle { display: flex; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     }
     .page { display: none; } .page.active { display: block; }
     .bday-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #FFFBF5, #FFF8EE); border-radius: 14px; border: 1px solid #F5E6B8; margin-bottom: 10px; gap: 12px; }
-    .search-input { padding: 10px 16px 10px 40px; border: 1.5px solid #E8E4E6; border-radius: 12px; width: 240px; font-size: 0.9rem; background: #FAFAFB; }
+    .search-input { padding: 10px 16px; border: 1.5px solid #E8E4E6; border-radius: 12px; width: 240px; font-size: 0.9rem; background: #FAFAFB; }
   </style>
 </head>
 <body>
+
+  <!-- ================= TELA DE LOGIN ================= -->
   <div id="login-screen">
-    <div class="login-card">
-      <div class="login-logos">
-        <img src="logo-macrocelula.png" alt="Macrocélula Aleluia" />
-        <img src="pibb.png" alt="PIBB" style="height:56px;" />
-      </div>
+    <div class="login-box">
+      <img src="logo-macrocelula.png" alt="Logo Macrocélula Aleluia" class="login-logo" />
       <h1>Macrocélula Aleluia</h1>
-      <p class="subtitle">Gestão Pastoral &amp; Discipular • Modelo G12<br>Ministério Mulheres de Fé • PIBB</p>
-      <div class="error-msg" id="login-error"></div>
-      <form id="login-form" autocomplete="off">
-        <div class="form-group"><label>Usuário / E-mail</label><input type="text" id="login-user" name="username" placeholder="rosane" autocomplete="off" required /></div>
-        <div class="form-group"><label>Senha</label><input type="password" id="login-pass" name="password" placeholder="••••••••" autocomplete="new-password" required /></div>
-        <button type="submit" class="btn-primary">Entrar no Sistema</button>
+      <p>Gestão Pastoral &amp; Hierarquia G12 • 144 • 1728 • 20736</p>
+      <div id="db-status-login" class="db-status-pill">⏳ Conectando ao Supabase...</div>
+      <form onsubmit="realizarLogin(event)">
+        <div class="form-field">
+          <label>Usuário de Acesso</label>
+          <input type="text" id="login-user" placeholder="Digite seu login" required />
+        </div>
+        <div class="form-field">
+          <label>Senha</label>
+          <input type="password" id="login-pass" placeholder="••••••" required />
+        </div>
+        <button type="submit" id="btn-login-submit" class="btn btn-rosa" style="width:100%;margin-top:8px;">Entrar no Sistema</button>
       </form>
-      <div class="login-footer"><strong>Liderança:</strong> Rosane Aleluia<br>Ministério Mulheres de Fé — Pra. Elane Souza Pereira<br>PIBB — Ap. Milton Ebenézer &amp; Ap. Naiara Souza</div>
+      <div class="login-hint">
+        <strong>Acesso Administrativo:</strong><br>
+        • <strong>Macrocélula (Rosane):</strong> <code>rosane</code> | Senha: <code>123</code>
+      </div>
     </div>
   </div>
 
+  <!-- ================= APLICAÇÃO PRINCIPAL ================= -->
   <div id="app">
     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <img src="logo-macrocelula.png" alt="Logo" />
+        <img src="logo-macrocelula.png" alt="Logo Macrocélula Aleluia" />
         <div class="sidebar-header-text">
           <h2>Macrocélula Aleluia</h2>
           <p>Gestão Pastoral G12</p>
@@ -240,6 +344,7 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
           <span>Dashboard G12</span>
         </div>
+        
         <div class="nav-accordion open">
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <span>Gestão Pastoral</span>
@@ -248,18 +353,15 @@
           <div class="accordion-content">
             <div class="nav-item" data-page="lideres">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-              <span>Líderes &amp; Células</span>
+              <span>Células &amp; Liderança</span>
             </div>
             <div class="nav-item" data-page="discipulas">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-              <span>Discípulas</span>
-            </div>
-            <div class="nav-item" data-page="celulas">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-              <span>Abertura / Fechamento</span>
+              <span>Discípulas &amp; Jornada</span>
             </div>
           </div>
         </div>
+
         <div class="nav-accordion open">
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <span>Acompanhamento</span>
@@ -268,7 +370,7 @@
           <div class="accordion-content">
             <div class="nav-item" data-page="desistencias">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-              <span>Histórico Desistências</span>
+              <span>Histórico &amp; Baixas</span>
             </div>
             <div class="nav-item" data-page="aniversariantes">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"/></svg>
@@ -276,122 +378,141 @@
             </div>
           </div>
         </div>
+
         <div class="nav-accordion open">
           <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Análise &amp; Visão</span>
+            <span>Administração &amp; Visão</span>
             <span class="accordion-icon">▼</span>
           </div>
           <div class="accordion-content">
-            <div class="nav-item" data-page="mapa">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              <span>Mapa Geográfico</span>
-            </div>
             <div class="nav-item" data-page="relatorios">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span>Relatórios</span>
             </div>
+            <div class="nav-item" data-page="acessos" id="menu-acessos-admin">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span>Acessos &amp; Liderança</span>
+            </div>
           </div>
         </div>
       </nav>
-      <div class="sidebar-footer"><img src="pibb.png" alt="PIBB" /><br>PIBB • Ministério Mulheres de Fé</div>
+      <div class="sidebar-footer"><img src="pibb.png" alt="PIBB" onerror="this.style.display='none'" /><br>PIBB • Ministério Mulheres de Fé</div>
     </aside>
 
     <main class="main-content">
       <div class="topbar">
-        <h1 id="page-title">Dashboard G12</h1>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <h1 id="page-title">Dashboard G12</h1>
+          <span class="badge badge-success" id="sync-badge" style="font-size:0.72rem;">🟢 Supabase Sincronizado</span>
+        </div>
         <div class="user-info">
           <div class="user-avatar" id="topbar-avatar">RA</div>
-          <div><div style="font-weight:650;font-size:0.88rem;">Rosane Aleluia</div><div style="font-size:0.72rem;color:#999;">Líder Macrocélula</div></div>
-          <button class="btn-logout" onclick="logout()">Sair</button>
+          <div>
+            <div style="font-weight:650;font-size:0.88rem;" id="topbar-nome">Rosane Aleluia</div>
+            <div style="font-size:0.72rem;color:var(--rosa);font-weight:600;" id="topbar-cargo">Líder Macrocélula</div>
+          </div>
+          <button class="btn-logout" onclick="sairSistema()">Sair</button>
         </div>
       </div>
 
+      <!-- ================= DASHBOARD ================= -->
       <section id="page-dashboard" class="page active">
         <div class="stats-grid" id="stats-grid"></div>
+
+        <!-- Capacitação de Discípulas (CD) -->
+        <div class="cd-dashboard-card" id="cd-dashboard-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h3 style="font-size:1.1rem;font-weight:700;color:var(--preto);">📚 Capacitação de Discípulas (CD)</h3>
+              <p style="font-size:0.82rem;color:var(--cinza-medio);">Acompanhamento detalhado do progresso nos níveis de capacitação.</p>
+            </div>
+          </div>
+          <div class="cd-grid" id="cd-grid-stats"></div>
+        </div>
+        
+        <!-- Árvore Geracional G12 -> 144 -> 1728 -> 20736 -->
         <div class="card">
           <div class="card-header">
-            <h2>Árvore Geracional G12</h2>
+            <h2>Árvore Geracional (Macro ➔ G12 ➔ 144 ➔ 1728 ➔ 20736)</h2>
             <button class="btn btn-rosa btn-sm" onclick="abrirModalArvore()">🌳 Expandir Visão Completa</button>
           </div>
-          <p style="color:var(--cinza-medio);font-size:0.9rem;">Visualização direta da cobertura espiritual e divisão das células da rede.</p>
+          <p style="color:var(--cinza-medio);font-size:0.9rem;">Visualização direta da cobertura espiritual: Macrocélula no topo, Liderança G12, geração 144, geração 1728 e ramificações 20736.</p>
         </div>
       </section>
 
+      <!-- ================= CÉLULAS ================= -->
       <section id="page-lideres" class="page">
         <div class="card">
           <div class="card-header">
-            <h2>Células da Rede</h2>
-            <button class="btn btn-rosa" onclick="abrirModalLider()">+ Criar Nova Célula</button>
+            <div>
+              <h2>Células da Rede</h2>
+              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-celulas">Gerencie células, participantes ou dê baixa clicando no "X" da célula.</p>
+            </div>
+            <button class="btn btn-rosa" id="btn-nova-celula" onclick="abrirModalLider()">+ Criar Nova Célula (Abertura)</button>
           </div>
-          <p style="color:var(--cinza-medio);margin-bottom:20px;font-size:0.9rem;">Clique em uma célula para gerenciar os participantes ou excluí-la.</p>
           <div class="celulas-grid" id="grid-pastas-celulas"></div>
         </div>
       </section>
 
+      <!-- ================= DISCÍPULAS & JORNADA ================= -->
       <section id="page-discipulas" class="page">
         <div class="card">
           <div class="card-header">
-            <h2>Discípulas da Rede</h2>
+            <div>
+              <h2>Discípulas &amp; Jornada Espiritual</h2>
+              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-discipulas">Cadastro completo de Liderança G12, 144, 1728 e Discípulas sem célula vinculada.</p>
+            </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
               <input type="text" id="busca-discipula" class="search-input" placeholder="Buscar por nome..." oninput="filtrarDiscipulas()" />
-              <button class="btn btn-rosa" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
+              <button class="btn btn-rosa" id="btn-nova-discipula" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
             </div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome &amp; Contato</th><th>Célula / Líder</th><th>Assiduidade</th><th>Batismo</th><th>UV</th><th>Capacitação</th><th>Ações</th></tr></thead><tbody id="tabela-discipulas"></tbody></table></div>
-        </div>
-      </section>
-
-      <section id="page-celulas" class="page">
-        <div class="card">
-          <div class="card-header"><h2>Gestão de Abertura &amp; Fechamento de Células</h2></div>
-          <div class="tab-buttons">
-            <button class="tab-btn active" onclick="mudarAbaCelulas('abertura', event)">📋 Abertura de Célula</button>
-            <button class="tab-btn" onclick="mudarAbaCelulas('fechamento', event)">⚠️ Fechamento de Célula</button>
-          </div>
-
-          <div id="pane-abertura" class="tab-pane active">
-            <h3 style="margin-bottom:16px;font-size:1.05rem;color:var(--rosa);">Cadastrar Abertura de Célula</h3>
-            <form id="form-abertura-celula" onsubmit="salvarAberturaCelula(event)">
-              <div class="form-row">
-                <div class="form-field"><label>Data da Abertura</label><input type="date" id="ab-data" required /></div>
-                <div class="form-field"><label>Nome da Líder</label><input type="text" id="ab-lider" placeholder="Ex: Ingrid Bonfim" required /></div>
-                <div class="form-field"><label>Nome da Célula</label><input type="text" id="ab-celula" placeholder="Ex: Amigas da Fé" required /></div>
-              </div>
-              <div class="form-row">
-                <div class="form-field"><label>Local (Bairro / Cidade)</label><input type="text" id="ab-local" placeholder="Ex: Salvador, BA" required /></div>
-                <div class="form-field"><label>Dia da Célula</label><input type="text" id="ab-dia" placeholder="Ex: Terças-feiras" required /></div>
-                <div class="form-field"><label>Horário</label><input type="text" id="ab-horario" placeholder="Ex: 20:00" required /></div>
-              </div>
-              <button type="submit" class="btn btn-rosa">Registrar Abertura</button>
-            </form>
-          </div>
-
-          <div id="pane-fechamento" class="tab-pane">
-            <h3 style="margin-bottom:16px;font-size:1.05rem;color:var(--erro);">Registrar Fechamento de Célula</h3>
-            <form id="form-fechamento-celula" onsubmit="salvarFechamentoCelula(event)">
-              <div class="form-row">
-                <div class="form-field"><label>Data do Fechamento</label><input type="date" id="fc-data" required /></div>
-                <div class="form-field"><label>Nome da Líder</label><input type="text" id="fc-lider" placeholder="Ex: Ana Oliveira" required /></div>
-                <div class="form-field"><label>Nome da Célula</label><input type="text" id="fc-celula" placeholder="Ex: Célula Vitória" required /></div>
-              </div>
-              <div class="form-field"><label>Motivo do Fechamento</label><textarea id="fc-motivo" placeholder="Descreva detalhadamente o motivo pastoral..." required></textarea></div>
-              <button type="submit" class="btn btn-danger" style="margin-top:16px;">Confirmar Fechamento</button>
-            </form>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nome &amp; Contato</th>
+                  <th>Célula / Cobertura</th>
+                  <th>Hierarquia</th>
+                  <th>Assiduidade</th>
+                  <th>Batismo</th>
+                  <th>UV</th>
+                  <th>CD</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-discipulas"></tbody>
+            </table>
           </div>
         </div>
       </section>
 
+      <!-- ================= HISTÓRICO DE DESISTÊNCIAS & BAIXAS ================= -->
       <section id="page-desistencias" class="page">
         <div class="card">
-          <div class="card-header"><h2>Histórico de Transferências &amp; Desistências</h2><button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Movimentação</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Nome da Discípula</th><th>Célula Anterior</th><th>Célula Nova</th><th>Data da Transferência</th><th>Motivo / Status</th></tr></thead><tbody id="tabela-desistencias"></tbody></table></div>
+          <div class="card-header">
+            <h2>Histórico de Transferências, Desistências &amp; Baixas</h2>
+            <button class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Movimentação</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome / Célula</th>
+                  <th>Origem</th>
+                  <th>Destino / Status</th>
+                  <th>Data</th>
+                  <th>Motivo Pastoral</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-desistencias"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section id="page-mapa" class="page">
-        <div class="card"><div class="card-header"><h2>Mapa Geográfico das Células</h2><span style="font-size:0.82rem;color:#999;">Pins = localização das células</span></div><div id="mapa-container"></div></div>
-      </section>
-
+      <!-- ================= ANIVERSARIANTES ================= -->
       <section id="page-aniversariantes" class="page">
         <div class="card">
           <div class="card-header">
@@ -405,22 +526,61 @@
         </div>
       </section>
 
+      <!-- ================= RELATÓRIOS ================= -->
       <section id="page-relatorios" class="page">
         <div class="card">
           <div class="card-header"><h2>Relatórios Pastorais</h2><button class="btn btn-dourado" onclick="gerarRelatorioPDF()">🖨 Gerar PDF</button></div>
           <div class="form-row">
-            <div class="form-field"><label>Cidade</label><select id="filtro-cidade"><option value="">Todas</option></select></div>
-            <div class="form-field"><label>Bairro</label><select id="filtro-bairro"><option value="">Todos</option></select></div>
-            <div class="form-field"><label>Líder</label><select id="filtro-lider"><option value="">Todas</option></select></div>
+            <div class="form-field"><label>Líder / Célula</label><select id="filtro-lider"><option value="">Todas</option></select></div>
+            <div class="form-field"><label>Hierarquia</label><select id="filtro-hierarquia"><option value="">Todas</option><option value="Liderança G12">Liderança G12</option><option value="144">144</option><option value="1728">1728</option><option value="20736">20736</option><option value="Sem Célula">Sem Célula Vinculada</option></select></div>
             <div class="form-field"><label>Pendências</label><select id="filtro-pendencia"><option value="">Todas</option><option value="nao-batizada">Não Batizadas</option><option value="sem-uv">Sem UV</option><option value="nao-assidua">Não Assíduas</option></select></div>
           </div>
           <button class="btn btn-rosa" style="margin-bottom:20px;" onclick="aplicarFiltrosRelatorio()">Aplicar Filtros</button>
           <div id="resultado-relatorio"></div>
         </div>
       </section>
+
+      <!-- ================= PAINEL DE LOGIN, PERFIS & DOMÍNIO DE LIDERANÇA ================= -->
+      <section id="page-acessos" class="page">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>🔐 Painel de Login, Perfis &amp; Domínio de Liderança</h2>
+              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;">Crie novas lideranças (G12, 144, 1728, 20736 ou perfis personalizados), configure logins/senhas e designe os domínios de cada perfil.</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-dourado" onclick="abrirModalNovoPerfilLideranca()">✨ Criar Tipo de Liderança / Perfil</button>
+              <button class="btn btn-rosa" onclick="abrirModalAcesso()">+ Criar Login &amp; Designar Liderança</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:22px;">
+            <h3 style="font-size:0.95rem;color:var(--preto);margin-bottom:10px;">📋 Perfis de Liderança Disponíveis no Sistema</h3>
+            <div id="lista-perfis-lideranca" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Líder / Usuária</th>
+                  <th>Login</th>
+                  <th>Senha</th>
+                  <th>Perfil / Liderança</th>
+                  <th>Domínios Liberados</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-acessos"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
+  <!-- ================= MODAL GLOBAL ================= -->
   <div class="modal-overlay" id="modal">
     <div class="modal">
       <div class="modal-header"><h3 id="modal-title">Título</h3><button class="modal-close" onclick="fecharModal()">×</button></div>
@@ -429,68 +589,231 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const SUPABASE_URL = 'https://ttagzaaumksnubhhymkq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_69vFXrFHkdrXeSEvoh8Jzw_bzbour78';
+    // =========================================================================
+    // 1. CONFIGURAÇÃO SUPABASE & SINCRONIZAÇÃO
+    // =========================================================================
+    const SUPABASE_URL = 'https://erubgcvrxphvnjydkuga.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_o1FNdEXD8B35qqom5h_wiA_y8dIQWbu';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let db = { lideres: [], discipulas: [], desistencias: [], movimentacoes: [] };
-    const SENHA_PADRAO = 'aleluia2024';
+    let usuarioLogado = null;
+    let tempFotoCelulaBase64 = ""; 
+    let tempFotoDiscipulaBase64 = "";
 
-    async function carregarDB() {
+    let db = {
+      perfisLideranca: [],
+      usuarios: [],
+      lideres: [],
+      discipulas: [],
+      desistencias: []
+    };
+
+    function setSyncStatus(texto, tipo = 'online') {
+      const badge = document.getElementById('sync-badge');
+      if (!badge) return;
+      badge.textContent = texto;
+      badge.className = 'badge ' + (tipo === 'online' ? 'badge-success' : (tipo === 'loading' ? 'badge-warning' : 'badge-danger'));
+    }
+
+    async function carregarDadosDoSupabase() {
+      const pillLogin = document.getElementById('db-status-login');
       try {
-        const [resLideres, resDiscipulas, resDesistencias, resMov] = await Promise.all([
-          supabaseClient.from('lideres').select('*'),
-          supabaseClient.from('discipulas').select('*'),
-          supabaseClient.from('desistencias').select('*'),
-          supabaseClient.from('movimentacoes').select('*').order('id', { ascending: false })
+        setSyncStatus('⏳ Sincronizando...', 'loading');
+
+        const [resPerfis, resUsuarios, resLideres, resDiscipulas, resDesistencias] = await Promise.all([
+          supabaseClient.from('perfis_lideranca').select('*').order('nivel', { ascending: true }),
+          supabaseClient.from('usuarios').select('*').order('id', { ascending: true }),
+          supabaseClient.from('lideres').select('*').order('id', { ascending: true }),
+          supabaseClient.from('discipulas').select('*').order('nome', { ascending: true }),
+          supabaseClient.from('desistencias').select('*').order('id', { ascending: false })
         ]);
 
+        if (resPerfis.error) throw resPerfis.error;
+        if (resUsuarios.error) throw resUsuarios.error;
+        if (resLideres.error) throw resLideres.error;
+        if (resDiscipulas.error) throw resDiscipulas.error;
+        if (resDesistencias.error) throw resDesistencias.error;
+
+        db.perfisLideranca = resPerfis.data || [];
+        db.usuarios = resUsuarios.data || [];
         db.lideres = resLideres.data || [];
         db.discipulas = resDiscipulas.data || [];
         db.desistencias = resDesistencias.data || [];
-        db.movimentacoes = resMov.data || [];
+
+        if (pillLogin) {
+          pillLogin.textContent = `🟢 Banco Supabase Conectado (${db.lideres.length} células • ${db.discipulas.length} discípulas)`;
+          pillLogin.className = 'db-status-pill online';
+        }
+        setSyncStatus('🟢 Supabase Conectado', 'online');
+        return true;
       } catch (err) {
-        console.error('Erro ao carregar dados do Supabase:', err);
+        console.error('Erro ao conectar com Supabase:', err);
+        if (pillLogin) {
+          pillLogin.textContent = '🔴 Erro ao conectar no Supabase (Verifique se rodou o SQL)';
+          pillLogin.className = 'db-status-pill error';
+        }
+        setSyncStatus('🔴 Falha na Conexão', 'error');
+        return false;
       }
     }
 
-    function login(e) {
+    window.addEventListener('DOMContentLoaded', () => {
+      carregarDadosDoSupabase();
+    });
+
+    // =========================================================================
+    // 2. MÁSCARA DE TELEFONE & UPLOAD DE ARQUIVOS
+    // =========================================================================
+    function mascaraTelefone(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 10) {
+        v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+      } else if (v.length > 6) {
+        v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+      } else if (v.length > 2) {
+        v = v.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+      } else if (v.length > 0) {
+        v = v.replace(/^(\d*)/, "($1");
+      }
+      input.value = v;
+    }
+
+    function processarArquivoFotoCelula(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempFotoCelulaBase64 = e.target.result;
+          const prev = document.getElementById('preview-foto-celula');
+          if (prev) { prev.src = tempFotoCelulaBase64; prev.style.display = 'block'; }
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function processarArquivoFotoDiscipula(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempFotoDiscipulaBase64 = e.target.result;
+          const prev = document.getElementById('preview-foto-discipula');
+          if (prev) { prev.src = tempFotoDiscipulaBase64; prev.style.display = 'block'; }
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    // =========================================================================
+    // 3. SISTEMA DE LOGIN & PERMISSÕES POR HIERARQUIA
+    // =========================================================================
+    async function realizarLogin(e) {
       e.preventDefault();
-      const user = document.getElementById('login-user').value.trim().toLowerCase();
-      const pass = document.getElementById('login-pass').value;
-      const err = document.getElementById('login-error');
-      err.style.display = 'none';
+      const btn = document.getElementById('btn-login-submit');
+      btn.disabled = true;
+      btn.textContent = 'Verificando no Banco...';
 
-      if (!['rosane', 'rosane@aleluia', 'rosane.aleluia'].includes(user)) {
-        err.textContent = 'Usuário não encontrado.'; err.style.display = 'block'; return;
+      if (db.usuarios.length === 0) {
+        await carregarDadosDoSupabase();
       }
-      if (pass !== SENHA_PADRAO) {
-        err.textContent = 'Senha incorreta.'; err.style.display = 'block'; return;
-      }
-      entrarNoApp(user);
-    }
 
-    function entrarNoApp(user) {
-      sessionStorage.setItem('logado', '1');
-      sessionStorage.setItem('usuario', user);
+      const userInp = document.getElementById('login-user').value.trim().toLowerCase();
+      const passInp = document.getElementById('login-pass').value.trim();
+
+      const conta = db.usuarios.find(u => u.login.toLowerCase() === userInp && u.senha === passInp);
+      btn.disabled = false;
+      btn.textContent = 'Entrar no Sistema';
+
+      if (!conta) {
+        alert('Usuário ou senha inválidos! (Verifique se o script SQL foi executado no Supabase)');
+        return;
+      }
+
+      usuarioLogado = conta;
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      initApp();
+
+      aplicarPermissoesUsuario();
+      atualizarInterfaceCompleta();
+      window.navegar('dashboard');
     }
 
-    function logout() {
-      sessionStorage.removeItem('logado');
-      sessionStorage.removeItem('usuario');
-      location.reload();
+    function sairSistema() {
+      usuarioLogado = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('login-pass').value = '';
     }
 
-    function toggleAccordion(element) {
-      element.parentElement.classList.toggle('open');
+    function isMacroAdmin() {
+      return usuarioLogado && (usuarioLogado.perfil_id === 'MACRO' || usuarioLogado.pode_gerenciar_acessos);
     }
+
+    function aplicarPermissoesUsuario() {
+      document.getElementById('topbar-nome').textContent = usuarioLogado.nome;
+      document.getElementById('topbar-avatar').textContent = iniciais(usuarioLogado.nome);
+      document.getElementById('topbar-cargo').textContent = usuarioLogado.perfil_nome || 'Liderança';
+
+      const menuAcessos = document.getElementById('menu-acessos-admin');
+      const btnNovaCelula = document.getElementById('btn-nova-celula');
+      const btnNovaDiscipula = document.getElementById('btn-nova-discipula');
+
+      menuAcessos.style.display = usuarioLogado.pode_gerenciar_acessos ? 'flex' : 'none';
+      btnNovaCelula.style.display = usuarioLogado.pode_criar_celula ? 'inline-flex' : 'none';
+      btnNovaDiscipula.style.display = usuarioLogado.pode_editar_discipulas ? 'inline-flex' : 'none';
+
+      if (isMacroAdmin()) {
+        document.getElementById('subtitulo-celulas').textContent = 'Visão Geral da Macro: gerencie todas as células (G12, 144, 1728, 20736) ou dê baixa no "X".';
+        document.getElementById('subtitulo-discipulas').textContent = 'Cadastro completo de Liderança G12, 144, 1728, 20736 e Discípulas sem célula.';
+      } else {
+        document.getElementById('subtitulo-celulas').textContent = 'Gerencie sua célula pertencente e suas sub-células vinculadas.';
+        document.getElementById('subtitulo-discipulas').textContent = 'Cadastre e edite as discípulas pertencentes à sua cobertura.';
+      }
+    }
+
+    function getCelulasVisiveis() {
+      const ativas = db.lideres.filter(l => l.ativa);
+      if (isMacroAdmin()) return ativas;
+
+      const minhasDiretas = ativas.filter(l => l.nome.toLowerCase() === usuarioLogado.nome.toLowerCase() || l.id === usuarioLogado.lider_id);
+      const resultadoIds = new Set(minhasDiretas.map(c => c.id));
+
+      let adicionou = true;
+      while (adicionou) {
+        adicionou = false;
+        ativas.forEach(c => {
+          if (c.parent_id && resultadoIds.has(c.parent_id) && !resultadoIds.has(c.id)) {
+            resultadoIds.add(c.id);
+            adicionou = true;
+          }
+        });
+      }
+      return ativas.filter(c => resultadoIds.has(c.id));
+    }
+
+    function getDiscipulasVisiveis() {
+      if (isMacroAdmin()) return db.discipulas;
+      const minhasCelulasIds = getCelulasVisiveis().map(c => c.id);
+      return db.discipulas.filter(d => minhasCelulasIds.includes(d.lider_id));
+    }
+
+    function atualizarInterfaceCompleta() {
+      renderDashboard();
+      renderPastasCelulas();
+      renderDiscipulas();
+      renderDesistencias();
+      if (usuarioLogado && usuarioLogado.pode_gerenciar_acessos) renderTabelaAcessos();
+    }
+
+    // =========================================================================
+    // 4. NAVEGAÇÃO
+    // =========================================================================
+    function toggleAccordion(element) { element.parentElement.classList.toggle('open'); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
     window.navegar = function(page) {
+      if (page === 'acessos' && !usuarioLogado.pode_gerenciar_acessos) return;
+
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       
@@ -498,296 +821,1102 @@
       if (el) el.classList.add('active');
       
       const nav = document.querySelector(`.nav-item[data-page="${page}"]`); 
-      if (nav) {
-        nav.classList.add('active');
-        const parentAccordion = nav.closest('.nav-accordion');
-        if (parentAccordion) parentAccordion.classList.add('open');
-      }
+      if (nav) nav.classList.add('active');
       
       const titles = { 
         dashboard: 'Dashboard G12', 
-        lideres: 'Células & Líderes', 
+        lideres: 'Células & Liderança', 
         discipulas: 'Discípulas & Jornada Espiritual', 
-        celulas: 'Abertura & Fechamento de Células', 
-        desistencias: 'Histórico de Transferências & Desistências', 
-        mapa: 'Mapa Geográfico', 
+        desistencias: 'Histórico de Transferências & Baixas', 
         aniversariantes: 'Aniversariantes', 
-        relatorios: 'Relatórios Pastorais' 
+        relatorios: 'Relatórios Pastorais',
+        acessos: 'Painel de Login, Perfis & Domínio de Liderança'
       };
       
       document.getElementById('page-title').textContent = titles[page] || page;
-      if (page === 'mapa') setTimeout(initMapa, 100);
       if (page === 'aniversariantes') { document.getElementById('mes-aniversario').value = new Date().getMonth(); renderAniversariantes(); }
       if (page === 'relatorios') prepararFiltrosRelatorio();
+      if (page === 'acessos') renderTabelaAcessos();
       document.getElementById('sidebar').classList.remove('open');
-    }
+    };
 
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-
-    function mudarAbaCelulas(aba, event) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-      document.getElementById('pane-' + aba).classList.add('active');
-    }
-
+    // =========================================================================
+    // 5. DASHBOARD & ÁRVORE GERACIONAL
+    // =========================================================================
     function renderDashboard() {
-      const totalLideres = db.lideres.filter(l => l.ativa).length;
-      const totalDiscipulas = db.discipulas.length;
+      const celulas = getCelulasVisiveis();
+      const discipulas = getDiscipulasVisiveis();
+      const totalLideres = celulas.length;
+      const totalDiscipulas = discipulas.length;
       const totalGeral = totalLideres + totalDiscipulas;
-      const batizadas = db.discipulas.filter(d => d.batizada).length;
-      const naoBatizadas = db.discipulas.filter(d => !d.batizada).length;
+      const uvConcluidas = discipulas.filter(d => d.uv === 'Sim').length;
+      const batizadas = discipulas.filter(d => d.batizada).length;
+      const naoBatizadas = discipulas.filter(d => !d.batizada).length;
+      const semCelula = db.discipulas.filter(d => !d.lider_id).length;
 
       document.getElementById('stats-grid').innerHTML = `
-        <div class="stat-card"><div class="label">Total da Rede</div><div class="value">${totalGeral}</div><div class="icon">👥</div></div>
-        <div class="stat-card"><div class="label">Líderes</div><div class="value">${totalLideres}</div><div class="icon">👑</div></div>
+        <div class="stat-card"><div class="label">Total na Cobertura</div><div class="value">${totalGeral}</div><div class="icon">👥</div></div>
+        <div class="stat-card"><div class="label">Células Ativas</div><div class="value">${totalLideres}</div><div class="icon">🏠</div></div>
         <div class="stat-card"><div class="label">Discípulas</div><div class="value">${totalDiscipulas}</div><div class="icon">💜</div></div>
+        <div class="stat-card"><div class="label">Sem Célula</div><div class="value">${semCelula}</div><div class="icon">🌱</div></div>
+        <div class="stat-card"><div class="label">UV Concluídas</div><div class="value">${uvConcluidas}</div><div class="icon">🎓</div></div>
         <div class="stat-card"><div class="label">Batizadas</div><div class="value">${batizadas}</div><div class="icon">💧</div></div>
         <div class="stat-card"><div class="label">Não Batizadas</div><div class="value">${naoBatizadas}</div><div class="icon">⚠️</div></div>`;
+
+      const cdNivel1 = discipulas.filter(d => d.cd === 'Nível 1').length;
+      const cdNivel2 = discipulas.filter(d => d.cd === 'Nível 2').length;
+      const cdNivel3 = discipulas.filter(d => d.cd === 'Nível 3').length;
+      const cdConcluidas = discipulas.filter(d => d.cd === 'Concluído').length;
+      const cdDesistiu = discipulas.filter(d => d.cd === 'Desistiu').length;
+
+      document.getElementById('cd-grid-stats').innerHTML = `
+        <div class="cd-item-box"><div class="cd-item-header"><h4>Nível 1</h4><span class="val">${cdNivel1}</span></div><button class="btn btn-outline btn-sm" onclick="abrirModalListaCD('Nível 1')">Ver Mais</button></div>
+        <div class="cd-item-box"><div class="cd-item-header"><h4>Nível 2</h4><span class="val">${cdNivel2}</span></div><button class="btn btn-outline btn-sm" onclick="abrirModalListaCD('Nível 2')">Ver Mais</button></div>
+        <div class="cd-item-box"><div class="cd-item-header"><h4>Nível 3</h4><span class="val">${cdNivel3}</span></div><button class="btn btn-outline btn-sm" onclick="abrirModalListaCD('Nível 3')">Ver Mais</button></div>
+        <div class="cd-item-box"><div class="cd-item-header"><h4>Concluídos</h4><span class="val">${cdConcluidas}</span></div><button class="btn btn-rosa btn-sm" onclick="abrirModalListaCD('Concluído')">Ver Mais</button></div>
+        <div class="cd-item-box desistiu-box"><div class="cd-item-header"><h4>Desistiu</h4><span class="val">${cdDesistiu}</span></div><button class="btn btn-danger btn-sm" onclick="abrirModalListaCD('Desistiu')">Ver Mais</button></div>
+      `;
+    }
+
+    function abrirModalListaCD(nivel) {
+      const filtradas = getDiscipulasVisiveis().filter(d => d.cd === nivel);
+      const htmlLista = filtradas.length ? `
+        <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Célula</th></tr></thead><tbody>
+          ${filtradas.map(m => {
+            const lider = db.lideres.find(l => l.id === m.lider_id);
+            return `<tr><td>${renderAvatarDisc(m.foto_url, m.nome)}</td><td><strong>${m.nome}</strong></td><td>${m.telefone || '—'}</td><td>${lider ? lider.celular_que_lidera : 'Sem Célula'}</td></tr>`;
+          }).join('')}
+        </tbody></table></div>` : '<div class="empty-state"><p>Nenhuma discípula neste status.</p></div>';
+
+      abrirModal(`📚 Capacitação Destino (CD): ${nivel}`, htmlLista, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
     function abrirModalArvore() {
-      abrirModal('Árvore Geracional G12 Completa', `<div class="tree-container">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
+      abrirModal('Árvore Geracional (Macro ➔ G12 ➔ 144 ➔ 1728 ➔ 20736)', `<div class="tree-container">${renderArvoreHTML()}</div>`, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
-    function renderAvatarHTML(url, nome, extraClass = '') {
-      if (url && url.trim() !== '') {
-        return `<div class="tree-avatar ${extraClass}"><img src="${url}" alt="${nome}" /></div>`;
+    function toggleSubCelulas(id) {
+      const el = document.getElementById('sub-celulas-' + id);
+      const btn = document.getElementById('btn-ver-mais-' + id);
+      if (el) {
+        el.classList.toggle('open');
+        btn.textContent = el.classList.contains('open') ? '▲ Ocultar Ramificações' : '▼ Ver 144 / 1728 / 20736';
       }
-      return `<div class="tree-avatar ${extraClass}">${iniciais(nome)}</div>`;
-    }
-
-    function renderAvatarDisc(url, nome) {
-      if (url && url.trim() !== '') {
-        return `<div class="foto-disc"><img src="${url}" alt="${nome}" /></div>`;
-      }
-      return `<div class="foto-disc">${iniciais(nome)}</div>`;
     }
 
     function renderArvoreHTML() {
       const lideresAtivas = db.lideres.filter(l => l.ativa);
-      if (!lideresAtivas.length) return '<p style="color:#999;text-align:center;">Nenhuma célula ou líder cadastrada.</p>';
+      const root = lideresAtivas.find(l => l.parent_id === null) || lideresAtivas[0];
+      if (!root) return '<p style="text-align:center;color:#999;">Nenhuma célula ativa.</p>';
 
-      let roots = lideresAtivas.filter(l => l.parent_id === null || l.parent_id === undefined);
-      if (!roots.length && lideresAtivas.length) {
-        roots = [lideresAtivas[0]];
-      }
+      const g12Lideres = lideresAtivas.filter(l => l.parent_id === root.id);
 
-      function renderDiscipulasPills(liderId) {
-        const discipulas = db.discipulas.filter(d => d.lider_id === liderId);
-        if (!discipulas.length) return '';
-        return `
-          <div class="tree-discipulas-box">
-            <span style="font-size:0.75rem;color:var(--cinza-medio);width:100%;margin-bottom:2px;font-weight:600;">Discípulas desta Célula:</span>
-            ${discipulas.map(d => `<div class="tree-discipula-pill">${d.foto_url ? `<img src="${d.foto_url}" />` : '👤'} ${d.nome} <small>(${d.status || 'Discípula'})</small></div>`).join('')}
+      return `
+        <div class="tree-root-level">
+          <div class="tree-card-node root-card">
+            <div class="tree-node-header" style="justify-content:center;">
+              <div class="tree-node-avatar">${iniciais(root.nome)}</div>
+              <div class="tree-node-info">
+                <h4>${root.nome}</h4>
+                <span style="color:var(--dourado);font-weight:700;">Líder Macrocélula • ${root.celular_que_lidera}</span>
+              </div>
+            </div>
           </div>
-        `;
-      }
+        </div>
 
-      function buildSubTree(parentId) {
-        const children = lideresAtivas.filter(l => l.parent_id === parentId);
-        if (!children.length) return '';
-        return children.map(l => {
-          const discipulasCount = db.discipulas.filter(d => d.lider_id === l.id).length;
-          return `
-            <div class="tree-branch">
+        <div class="tree-branch-grid">
+          ${g12Lideres.length ? g12Lideres.map(lider => {
+            const discipulasDiretas = db.discipulas.filter(d => d.lider_id === lider.id);
+            const subCelulas144 = lideresAtivas.filter(l => l.parent_id === lider.id);
+            const totalItens = discipulasDiretas.length + subCelulas144.length;
+
+            return `
               <div class="tree-card-node">
-                <div style="display:flex;align-items:center;gap:12px;">
-                  ${renderAvatarHTML(l.foto_url, l.nome)}
-                  <div class="tree-info">
-                    <h4>${l.nome} <span style="font-weight:500;color:var(--rosa);">(${l.celular_que_lidera})</span></h4>
-                    <span>👑 ${l.geracao || 'Líder de Célula'} • 👥 ${discipulasCount} discípulas diretas</span>
+                <div class="tree-node-header">
+                  <div class="tree-node-avatar">${iniciais(lider.nome)}</div>
+                  <div class="tree-node-info">
+                    <h4>${lider.nome}</h4>
+                    <span>${lider.celular_que_lidera} • <strong>${lider.geracao}</strong></span>
                   </div>
                 </div>
-                <button class="btn btn-outline btn-sm" onclick="fecharModal(); abrirCelulaseMembros(${l.id});">Ver Célula</button>
-              </div>
-              ${renderDiscipulasPills(l.id)}
-              ${buildSubTree(l.id)}
-            </div>`;
-        }).join('');
-      }
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                  <span style="font-size:0.78rem;color:var(--cinza);">👥 ${discipulasDiretas.length} discípula(s) • 🏠 ${subCelulas144.length} sub-célula(s)</span>
+                  ${totalItens > 0 ? `<button class="btn btn-rosa btn-sm" id="btn-ver-mais-${lider.id}" onclick="toggleSubCelulas(${lider.id})">▼ Ver 144 / 1728 / 20736</button>` : ''}
+                </div>
+                <div class="sub-celulas-container" id="sub-celulas-${lider.id}">
+                  ${subCelulas144.length > 0 ? `
+                    <span style="font-size:0.74rem;color:var(--dourado);font-weight:700;display:block;margin-bottom:6px;">Células 144, 1728 &amp; 20736:</span>
+                    ${subCelulas144.map(sub144 => {
+                      const disc144 = db.discipulas.filter(d => d.lider_id === sub144.id);
+                      const subCelulas1728 = lideresAtivas.filter(l => l.parent_id === sub144.id);
+                      return `
+                        <div class="sub-celula-item">
+                          <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div><strong>🏠 ${sub144.celular_que_lidera}</strong> (Líder: ${sub144.nome})</div>
+                            <span class="badge badge-dourado">${sub144.geracao}</span>
+                          </div>
+                          ${disc144.length > 0 || subCelulas1728.length > 0 ? `
+                            <div class="sub-1728-box">
+                              ${subCelulas1728.map(s17 => {
+                                const subCelulas20736 = lideresAtivas.filter(l => l.parent_id === s17.id);
+                                const disc1728 = db.discipulas.filter(d => d.lider_id === s17.id);
+                                return `
+                                  <div style="margin-bottom:4px;">
+                                    ↳ <strong>${s17.geracao}:</strong> ${s17.celular_que_lidera} (${s17.nome})
+                                    ${subCelulas20736.length > 0 || disc1728.length > 0 ? `
+                                      <div class="sub-20736-box">
+                                        ${subCelulas20736.map(s20 => `<div>↳ <strong>${s20.geracao}:</strong> ${s20.celular_que_lidera} (${s20.nome})</div>`).join('')}
+                                        ${disc1728.map(d17 => `<div>• ${d17.nome}</div>`).join('')}
+                                      </div>
+                                    ` : ''}
+                                  </div>
+                                `;
+                              }).join('')}
+                              ${disc144.map(d14 => `<div>• ${d14.nome} <span class="badge badge-rosa" style="font-size:0.65rem;">${d14.nivel_lideranca}</span></div>`).join('')}
+                            </div>
+                          ` : ''}
+                        </div>
+                      `;
+                    }).join('')}
+                  ` : ''}
 
-      return roots.map(root => {
-        const discipulasRootCount = db.discipulas.filter(d => d.lider_id === root.id).length;
-        return `
-          <div class="tree-root-box">
-            ${renderAvatarHTML(root.foto_url, root.nome)}
-            <div class="tree-info">
-              <h4 style="font-size:1.1rem;color:var(--preto);">👑 Topo da Rede: ${root.nome}</h4>
-              <span style="font-weight:600;color:var(--dourado);">${root.celular_que_lidera} • ${root.geracao || 'Macrocélula Principal'} (${discipulasRootCount} discípulas)</span>
-            </div>
-            <button class="btn btn-dourado btn-sm" onclick="fecharModal(); abrirCelulaseMembros(${root.id});">Gerenciar</button>
-          </div>
-          ${renderDiscipulasPills(root.id)}
-          ${buildSubTree(root.id)}
-        `;
-      }).join('');
+                  ${discipulasDiretas.length > 0 ? `
+                    <span style="font-size:0.74rem;color:var(--rosa);font-weight:700;display:block;margin:8px 0 6px;">Discípulas diretas desta célula:</span>
+                    ${discipulasDiretas.map(d => `
+                      <div class="sub-celula-item" style="flex-direction:row;justify-content:space-between;align-items:center;">
+                        <div><strong>${d.nome}</strong><br><small style="color:#888;">${d.nivel_lideranca}</small></div>
+                        <span class="badge badge-rosa">${d.cd}</span>
+                      </div>
+                    `).join('')}
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('') : '<div class="empty-state" style="grid-column:1/-1;"><p>Nenhuma célula G12 cadastrada ainda. Crie a primeira célula em "Células & Liderança".</p></div>'}
+        </div>
+      `;
     }
 
+    // =========================================================================
+    // 6. GESTÃO DE CÉLULAS (PERSISTÊNCIA NO SUPABASE)
+    // =========================================================================
     function renderPastasCelulas() {
       const container = document.getElementById('grid-pastas-celulas');
-      const lideresAtivas = db.lideres.filter(l => l.ativa);
+      const lideresVisiveis = getCelulasVisiveis();
 
-      if (!lideresAtivas.length) {
-        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>Nenhuma célula cadastrada.</p></div>';
+      if (!lideresVisiveis.length) {
+        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>Nenhuma célula encontrada para o seu perfil.</p></div>';
         return;
       }
 
-      container.innerHTML = lideresAtivas.map(l => {
+      container.innerHTML = lideresVisiveis.map(l => {
         const discipulasNaCelula = db.discipulas.filter(d => d.lider_id === l.id);
-        const estiloCapa = l.capa_url ? `background-image: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.75)), url('${l.capa_url}'); background-size: cover; background-position: center; color: white;` : '';
-        const corTextoClass = l.capa_url ? 'color: white;' : '';
+        const fotoCelulaHTML = l.foto_celula_url 
+          ? `<img src="${l.foto_celula_url}" alt="${l.celular_que_lidera}" />` 
+          : `🏠`;
+
+        const podeDarBaixa = l.parent_id !== null && (isMacroAdmin() || usuarioLogado.pode_dar_baixa);
+        const botaoBaixaHTML = podeDarBaixa 
+          ? `<button class="btn-baixa-x" title="Dar Baixa / Fechar Célula" onclick="abrirModalBaixaCelula(${l.id}, event)">✕</button>` 
+          : '';
 
         return `
-          <div class="celula-folder-card" style="${estiloCapa}">
+          <div class="celula-folder-card">
+            ${botaoBaixaHTML}
             <div onclick="abrirCelulaseMembros(${l.id})" style="cursor:pointer;">
               <div class="folder-header">
-                <div class="folder-icon" style="${l.capa_url ? 'background: rgba(255,255,255,0.25); color:white;' : ''}">🏠</div>
+                <div class="folder-icon">${fotoCelulaHTML}</div>
                 <div class="folder-info">
-                  <h3 style="${corTextoClass}">${l.celular_que_lidera}</h3>
-                  <p style="${l.capa_url ? 'color: #f0f0f0;' : ''}">Líder: ${l.nome}</p>
+                  <h3>${l.celular_que_lidera}</h3>
+                  <p>Líder: ${l.nome} • <span style="color:var(--rosa);">${l.geracao}</span></p>
                 </div>
               </div>
+              <div class="folder-details">
+                📍 ${l.local || 'Local não informado'}<br>
+                🗓️ ${l.dias || 'Dia a definir'} às ${l.horarios || '—'} (${l.modalidade || 'Presencial'})
+              </div>
             </div>
-            <div class="folder-meta" style="${l.capa_url ? 'border-top-color: rgba(255,255,255,0.3); color: white;' : ''}">
-              <span style="${corTextoClass}">👥 ${discipulasNaCelula.length} participante(s)</span>
+            <div class="folder-meta">
+              <span>👥 ${discipulasNaCelula.length} discípula(s)</span>
               <div style="display:flex;gap:6px;">
-                <button class="btn btn-outline btn-sm" style="${l.capa_url ? 'border-color:white; color:white;' : ''}" onclick="abrirCelulaseMembros(${l.id})">Abrir</button>
-                <button class="btn btn-outline btn-sm" style="${l.capa_url ? 'border-color:white; color:white;' : ''}" onclick="abrirModalLider(${l.id})" title="Editar Célula">✏️</button>
+                <button class="btn btn-outline btn-sm" onclick="abrirCelulaseMembros(${l.id})">Abrir</button>
+                <button class="btn btn-outline btn-sm" onclick="abrirModalLider(${l.id})" title="Editar Célula">✏️</button>
               </div>
             </div>
           </div>`;
       }).join('');
     }
 
-    async function excluirCelula(id) {
-      if (!confirm('Tem certeza que deseja excluir esta célula? As discípulas vinculadas ficarão sem célula atribuída.')) return;
-      await supabaseClient.from('discipulas').update({ lider_id: null }).eq('lider_id', id);
-      await supabaseClient.from('lideres').delete().eq('id', id);
-      await carregarDB();
-      renderPastasCelulas();
-      renderDashboard();
-      renderDiscipulas();
+    function abrirModalLider(id = null) {
+      const l = id ? db.lideres.find(x => x.id === id) : null;
+      tempFotoCelulaBase64 = l?.foto_celula_url || "";
+
+      let campoLiderHTML = '';
+      if (l) {
+        if (isMacroAdmin()) {
+          const opcoesLideres = db.discipulas.map(d => `<option value="${d.nome}" ${l.nome === d.nome ? 'selected' : ''}>${d.nome} (${d.nivel_lideranca})</option>`).join('');
+          campoLiderHTML = `
+            <div class="form-field">
+              <label>Líder Responsável *</label>
+              <select id="fl-nome" onchange="aoMudarLiderOuGeracao(${id}, ${l.parent_id || 'null'})" required>
+                <option value="Rosane Aleluia" ${l.nome === 'Rosane Aleluia' ? 'selected' : ''}>Rosane Aleluia</option>
+                ${opcoesLideres}
+              </select>
+            </div>`;
+        } else {
+          campoLiderHTML = `
+            <div class="form-field">
+              <label>Líder Responsável</label>
+              <input id="fl-nome" value="${l.nome}" readonly style="background:#eee;font-weight:600;" />
+            </div>`;
+        }
+      } else {
+        if (isMacroAdmin()) {
+          const opcoesLideres = db.discipulas.map(d => `<option value="${d.nome}">${d.nome} (${d.nivel_lideranca})</option>`).join('');
+          campoLiderHTML = `
+            <div class="form-field">
+              <label>Líder Responsável *</label>
+              <select id="fl-nome" onchange="aoMudarLiderOuGeracao(null, null)" required>
+                <option value="">Selecione a Líder...</option>
+                <option value="Rosane Aleluia">Rosane Aleluia</option>
+                ${opcoesLideres}
+              </select>
+            </div>`;
+        } else {
+          const minhasDisc = getDiscipulasVisiveis();
+          const opcoesMinhasDisc = minhasDisc.map(d => `<option value="${d.nome}">${d.nome} (${d.nivel_lideranca})</option>`).join('');
+          campoLiderHTML = `
+            <div class="form-field">
+              <label>Líder Responsável *</label>
+              <select id="fl-nome" onchange="aoMudarLiderOuGeracao(null, null)" required>
+                <option value="${usuarioLogado.nome}" selected>${usuarioLogado.nome} (Própria Líder)</option>
+                ${opcoesMinhasDisc}
+              </select>
+            </div>`;
+        }
+      }
+
+      let geracaoPadrao = l?.geracao || 'Liderança G12';
+      if (!l && !isMacroAdmin()) {
+        if (usuarioLogado.perfil_id === 'G12') geracaoPadrao = 'Liderança 144';
+        else if (usuarioLogado.perfil_id === '144') geracaoPadrao = 'Liderança 1728';
+        else if (usuarioLogado.perfil_id === '1728') geracaoPadrao = 'Liderança 20736';
+      }
+
+      const opcoesPerfisGeracao = db.perfisLideranca
+        .filter(p => p.id !== 'MACRO')
+        .map(p => `<option value="${p.nome}" ${geracaoPadrao === p.nome ? 'selected' : ''}>${p.nome}</option>`)
+        .join('');
+
+      abrirModal(l ? 'Editar Dados da Célula' : '📋 Questionário de Abertura de Célula', `
+        <div class="form-row">
+          <div class="form-field"><label>Data da Abertura *</label><input type="date" id="fl-data-abertura" value="${l?.data_abertura || new Date().toISOString().slice(0,10)}" required /></div>
+          ${campoLiderHTML}
+          <div class="form-field"><label>Nome da Célula *</label><input id="fl-cel" placeholder="Ex: Célula Amigas da Fé" value="${l?.celular_que_lidera||''}" required /></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field"><label>Local (Bairro / Cidade) *</label><input id="fl-local" placeholder="Ex: Pituba, Salvador - BA" value="${l?.local||''}" required /></div>
+          <div class="form-field"><label>Dia da Célula *</label><input id="fl-dias" placeholder="Ex: Terças-feiras" value="${l?.dias||''}" required /></div>
+          <div class="form-field"><label>Horário *</label><input id="fl-horarios" placeholder="Ex: 20:00" value="${l?.horarios||''}" required /></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Foto de Perfil da Célula (Abrir Arquivo)</label>
+            <div class="file-upload-box">
+              <img id="preview-foto-celula" class="file-preview-thumb" src="${tempFotoCelulaBase64}" style="display:${tempFotoCelulaBase64 ? 'block' : 'none'};" />
+              <input type="file" id="fl-foto-arquivo" accept="image/*" onchange="processarArquivoFotoCelula(this)" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Modalidade</label>
+            <select id="fl-modalidade">
+              <option value="Presencial" ${l?.modalidade==='Presencial'?'selected':''}>Presencial</option>
+              <option value="Híbrido" ${l?.modalidade==='Híbrido'?'selected':''}>Híbrido</option>
+              <option value="Online" ${l?.modalidade==='Online'?'selected':''}>Online</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Nível / Geração da Célula</label>
+            <select id="fl-ger" onchange="aoMudarLiderOuGeracao(${id || 'null'}, ${l?.parent_id || 'null'})">${opcoesPerfisGeracao}</select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label id="label-cobertura-espiritual">Cobertura Espiritual (Líder Superior)</label>
+          <select id="fl-parent"></select>
+        </div>
+        <div class="form-field" style="margin-top:14px;"><label>Observações da Abertura (Opcional)</label><textarea id="fl-obs" placeholder="Detalhes adicionais sobre o início desta célula...">${l?.obs||''}</textarea></div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-lider" onclick="salvarLider(${id||'null'})">${l ? 'Salvar Alterações' : 'Confirmar Abertura de Célula'}</button>`);
+
+      aoMudarLiderOuGeracao(id, l?.parent_id || null, true);
     }
 
+    function aoMudarLiderOuGeracao(celulaAtualId = null, parentSalvoId = null, inicializando = false) {
+      const selectNome = document.getElementById('fl-nome');
+      const selectGer = document.getElementById('fl-ger');
+      const selectParent = document.getElementById('fl-parent');
+      const labelCobertura = document.getElementById('label-cobertura-espiritual');
+      if (!selectParent || !selectGer) return;
+
+      const nomeLiderEscolhida = selectNome ? selectNome.value.trim() : '';
+
+      const ativasSemAutoLideranca = db.lideres.filter(x => 
+        x.ativa && 
+        (!celulaAtualId || x.id !== celulaAtualId)
+      );
+
+      const macroCelula = db.lideres.find(x => x.parent_id === null || x.geracao === 'Líder Macrocélula') || db.lideres[0];
+
+      const discEncontrada = db.discipulas.find(d => d.nome.toLowerCase() === nomeLiderEscolhida.toLowerCase());
+      const celulaExistenteDaLider = db.lideres.find(c => c.nome.toLowerCase() === nomeLiderEscolhida.toLowerCase());
+
+      if (!celulaAtualId && discEncontrada && !inicializando) {
+        if (discEncontrada.nivel_lideranca.includes('G12')) selectGer.value = 'Liderança G12';
+        else if (discEncontrada.nivel_lideranca.includes('144')) selectGer.value = 'Liderança 144';
+        else if (discEncontrada.nivel_lideranca.includes('1728')) selectGer.value = 'Liderança 1728';
+        else if (discEncontrada.nivel_lideranca.includes('20736')) selectGer.value = 'Liderança 20736';
+      }
+
+      const geracaoSelecionada = selectGer.value;
+
+      if (geracaoSelecionada.includes('G12')) {
+        selectParent.innerHTML = `<option value="${macroCelula.id}" selected>${macroCelula.nome} (${macroCelula.celular_que_lidera})</option>`;
+        selectParent.disabled = true;
+        labelCobertura.innerHTML = `Cobertura Espiritual (Líder Superior) <span style="color:var(--rosa);">🔒 Travado na Macrocélula</span>`;
+        return;
+      }
+
+      if (geracaoSelecionada.includes('144')) {
+        const celulasG12 = ativasSemAutoLideranca.filter(x => x.geracao.includes('G12'));
+        let idG12Real = parentSalvoId || (celulaExistenteDaLider ? celulaExistenteDaLider.parent_id : null) || (discEncontrada ? discEncontrada.lider_id : null);
+        const celulaG12Alvo = celulasG12.find(c => c.id === idG12Real);
+
+        if (celulaG12Alvo) {
+          selectParent.innerHTML = `<option value="${celulaG12Alvo.id}" selected>🔒 ${celulaG12Alvo.nome} (${celulaG12Alvo.celular_que_lidera})</option>`;
+          selectParent.disabled = true;
+          labelCobertura.innerHTML = `Cobertura Espiritual (Líder Superior) <span style="color:var(--rosa);">🔒 Travado na Líder G12 (${celulaG12Alvo.nome})</span>`;
+        } else if (celulasG12.length > 0) {
+          selectParent.innerHTML = celulasG12.map(c => `<option value="${c.id}">${c.nome} (${c.celular_que_lidera})</option>`).join('');
+          selectParent.disabled = celulasG12.length <= 1;
+          labelCobertura.innerHTML = `Cobertura Espiritual (Selecione a Líder G12 Superior)`;
+        } else {
+          selectParent.innerHTML = `<option value="${macroCelula.id}">${macroCelula.nome} (${macroCelula.celular_que_lidera})</option>`;
+          selectParent.disabled = true;
+        }
+        return;
+      }
+
+      if (geracaoSelecionada.includes('1728')) {
+        const celulas144 = ativasSemAutoLideranca.filter(x => x.geracao.includes('144'));
+        let id144Real = parentSalvoId || (celulaExistenteDaLider ? celulaExistenteDaLider.parent_id : null) || (discEncontrada ? discEncontrada.lider_id : null);
+        const celula144Alvo = celulas144.find(c => c.id === id144Real);
+
+        if (celula144Alvo) {
+          selectParent.innerHTML = `<option value="${celula144Alvo.id}" selected>🔒 ${celula144Alvo.nome} (${celula144Alvo.celular_que_lidera})</option>`;
+          selectParent.disabled = true;
+          labelCobertura.innerHTML = `Cobertura Espiritual (Líder Superior) <span style="color:var(--rosa);">🔒 Travado na Líder 144 (${celula144Alvo.nome})</span>`;
+        } else if (celulas144.length > 0) {
+          selectParent.innerHTML = celulas144.map(c => `<option value="${c.id}">${c.nome} (${c.celular_que_lidera})</option>`).join('');
+          selectParent.disabled = celulas144.length <= 1;
+          labelCobertura.innerHTML = `Cobertura Espiritual (Selecione a Líder 144 Superior)`;
+        } else {
+          selectParent.innerHTML = `<option value="">Nenhuma célula 144 disponível</option>`;
+          selectParent.disabled = true;
+        }
+        return;
+      }
+
+      if (geracaoSelecionada.includes('20736')) {
+        const celulas1728 = ativasSemAutoLideranca.filter(x => x.geracao.includes('1728'));
+        let id1728Real = parentSalvoId 
+          || (celulaExistenteDaLider && celulaExistenteDaLider.geracao.includes('1728') ? celulaExistenteDaLider.id : null)
+          || (discEncontrada ? discEncontrada.lider_id : null)
+          || (!isMacroAdmin() ? usuarioLogado.lider_id : null);
+
+        const celula1728Alvo = celulas1728.find(c => c.id === id1728Real);
+
+        if (celula1728Alvo) {
+          selectParent.innerHTML = `<option value="${celula1728Alvo.id}" selected>🔒 ${celula1728Alvo.nome} (${celula1728Alvo.celular_que_lidera})</option>`;
+          selectParent.disabled = true;
+          labelCobertura.innerHTML = `Cobertura Espiritual (Líder Superior) <span style="color:var(--rosa);">🔒 Travado na Líder 1728 (${celula1728Alvo.nome})</span>`;
+        } else if (celulas1728.length > 0) {
+          selectParent.innerHTML = celulas1728.map(c => `<option value="${c.id}">${c.nome} (${c.celular_que_lidera})</option>`).join('');
+          selectParent.disabled = celulas1728.length <= 1;
+          labelCobertura.innerHTML = `Cobertura Espiritual (Selecione a Líder 1728 Superior)`;
+        } else {
+          selectParent.innerHTML = `<option value="">Nenhuma célula 1728 disponível</option>`;
+          selectParent.disabled = true;
+        }
+        return;
+      }
+
+      selectParent.innerHTML = ativasSemAutoLideranca.map(c => 
+        `<option value="${c.id}" ${parentSalvoId == c.id ? 'selected' : ''}>${c.nome} (${c.celular_que_lidera})</option>`
+      ).join('');
+      selectParent.disabled = !isMacroAdmin();
+      labelCobertura.textContent = 'Cobertura Espiritual (Líder Superior)';
+    }
+
+    async function salvarLider(id) {
+      const nomeLider = document.getElementById('fl-nome').value.trim();
+      const celularLidera = document.getElementById('fl-cel').value.trim();
+      const local = document.getElementById('fl-local').value.trim();
+      const dias = document.getElementById('fl-dias').value.trim();
+      const horarios = document.getElementById('fl-horarios').value.trim();
+
+      if (!nomeLider || !celularLidera || !local || !dias || !horarios) {
+        alert('Preencha todos os campos obrigatórios da abertura da célula (*)!');
+        return;
+      }
+
+      const btn = document.getElementById('btn-salvar-lider');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando no Banco...'; }
+
+      const parentVal = document.getElementById('fl-parent').value;
+      const obj = {
+        id: id || Date.now(),
+        data_abertura: document.getElementById('fl-data-abertura').value || null,
+        nome: nomeLider,
+        celular_que_lidera: celularLidera,
+        local: local,
+        dias: dias,
+        horarios: horarios,
+        foto_celula_url: tempFotoCelulaBase64,
+        modalidade: document.getElementById('fl-modalidade').value,
+        geracao: document.getElementById('fl-ger').value,
+        parent_id: parentVal ? parseInt(parentVal) : 1,
+        obs: document.getElementById('fl-obs').value.trim(),
+        ativa: true
+      };
+
+      const { error } = await supabaseClient.from('lideres').upsert(obj);
+      if (error) {
+        alert('Erro ao salvar célula no Supabase: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Tentar Novamente'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      fecharModal();
+      atualizarInterfaceCompleta();
+    }
+
+    function abrirModalBaixaCelula(liderId, event) {
+      event.stopPropagation();
+      const celula = db.lideres.find(l => l.id === liderId);
+      if (!celula) return;
+
+      const qtdParticipantes = db.discipulas.filter(d => d.lider_id === liderId).length;
+
+      abrirModal(`⚠️ Fechamento & Baixa de Célula`, `
+        <div style="background:#FEF2F2;border:1px solid #FECACA;padding:14px;border-radius:12px;margin-bottom:18px;color:#991B1B;font-size:0.86rem;">
+          <strong>Atenção:</strong> Ao confirmar a baixa, a célula <strong>${celula.celular_que_lidera}</strong> e seus <strong>${qtdParticipantes} participante(s)</strong> vinculados serão excluídos permanentemente do banco após o registro do questionário.
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Data do Fechamento *</label><input type="date" id="fc-data" value="${new Date().toISOString().slice(0,10)}" required /></div>
+          <div class="form-field"><label>Nome da Líder</label><input type="text" id="fc-lider" value="${celula.nome}" readonly style="background:#eee;" /></div>
+          <div class="form-field"><label>Nome da Célula</label><input type="text" id="fc-celula" value="${celula.celular_que_lidera}" readonly style="background:#eee;" /></div>
+        </div>
+        <div class="form-field">
+          <label>Motivo do Fechamento (Questionário Pastoral) *</label>
+          <textarea id="fc-motivo" placeholder="Descreva detalhadamente o motivo pastoral do encerramento desta célula..." required></textarea>
+        </div>
+      `, `
+        <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-danger-solid" id="btn-confirmar-baixa" onclick="confirmarBaixaExclusaoCelula(${liderId})">🗑️ Dar Baixa e Excluir Célula</button>
+      `);
+    }
+
+    async function confirmarBaixaExclusaoCelula(liderId) {
+      const dataFechamento = document.getElementById('fc-data').value;
+      const motivo = document.getElementById('fc-motivo').value.trim();
+
+      if (!dataFechamento || !motivo) {
+        alert('Por favor, preencha a data e o motivo pastoral no questionário antes de dar baixa!');
+        return;
+      }
+
+      const celula = db.lideres.find(l => l.id === liderId);
+      if (!celula) return;
+
+      const btn = document.getElementById('btn-confirmar-baixa');
+      if (btn) { btn.disabled = true; btn.textContent = 'Processando Baixa...'; }
+
+      const participantesExcluidos = db.discipulas.filter(d => d.lider_id === liderId);
+
+      await supabaseClient.from('desistencias').insert({
+        id: Date.now(),
+        nome: `CÉLULA: ${celula.celular_que_lidera} (Líder: ${celula.nome})`,
+        celular_origem: `${participantesExcluidos.length} participante(s)`,
+        celular_nova: 'Célula Encerrada (Baixa)',
+        data: dataFechamento,
+        motivo: motivo
+      });
+
+      await supabaseClient.from('discipulas').delete().eq('lider_id', liderId);
+      const { error } = await supabaseClient.from('lideres').delete().eq('id', liderId);
+
+      if (error) {
+        alert('Erro ao excluir célula: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = '🗑️ Dar Baixa e Excluir Célula'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      fecharModal();
+      atualizarInterfaceCompleta();
+      alert(`Baixa realizada! A célula "${celula.celular_que_lidera}" e seus participantes foram excluídos do banco.`);
+    }
+
+    // =========================================================================
+    // 7. GERENCIAR MEMBROS DENTRO DA CÉLULA (CRIAR NOVA OU BUSCAR SEM CÉLULA)
+    // =========================================================================
     function abrirCelulaseMembros(liderId) {
       const lider = db.lideres.find(l => l.id === liderId);
+      if (!lider) return;
       const membros = db.discipulas.filter(d => d.lider_id === liderId);
+      const disponiveisSemCelula = db.discipulas.filter(d => !d.lider_id);
+
+      const opcoesDisponiveis = disponiveisSemCelula.map(d => 
+        `<option value="${d.id}">${d.nome} ${d.telefone ? '(' + d.telefone + ')' : ''}</option>`
+      ).join('');
 
       const htmlMembros = membros.length ? `
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Assiduidade</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Hierarquia</th><th>Ações</th></tr></thead>
             <tbody>
               ${membros.map(m => `
                 <tr>
                   <td>${renderAvatarDisc(m.foto_url, m.nome)}</td>
-                  <td><strong>${m.nome}</strong><br><small style="color:#999;">${m.email || '—'}</small></td>
+                  <td><strong>${m.nome}</strong></td>
                   <td>${m.telefone || '—'}</td>
-                  <td><span class="badge badge-success">${m.assiduidade || '—'}</span></td>
+                  <td><span class="badge badge-rosa">${m.nivel_lideranca}</span></td>
                   <td>
                     <div style="display:flex;gap:6px;">
-                      <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="editarDiscipulaNaCelula(${m.id}, ${liderId})">✏️</button>
-                      <button class="btn btn-danger btn-sm" title="Remover da Célula" onclick="removerParticipanteDaCelula(${m.id}, ${liderId})">Excluir</button>
+                      <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="fecharModal(); abrirModalDiscipula(${m.id}, ${liderId})">✏️ Editar</button>
+                      <button class="btn btn-danger btn-sm" title="Desvincular da Célula" onclick="removerParticipanteDaCelula(${m.id}, ${liderId})">Desvincular</button>
                     </div>
                   </td>
                 </tr>`).join('')}
             </tbody>
           </table>
-        </div>` : '<div class="empty-state"><p>Nenhum participante vinculado a esta célula.</p></div>';
+        </div>` : '<div class="empty-state"><p>Nenhuma discípula vinculada a esta célula ainda.</p></div>';
 
-      abrirModal(`🏠 Célula: ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
-        <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-          <span style="font-size:0.9rem;color:var(--cinza);">Participantes desta célula:</span>
-          <button class="btn btn-rosa btn-sm" onclick="abrirModalBuscaParticipante(${liderId})">+ Adicionar por Busca</button>
+      abrirModal(`🏠 ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
+        <div class="celula-add-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <strong style="font-size:0.9rem;color:var(--rosa-escuro);">➕ Adicionar Participante nesta Célula</strong>
+            <button class="btn btn-rosa btn-sm" onclick="fecharModal(); abrirModalDiscipula(null, ${liderId})">+ Cadastrar Nova Discípula do Zero</button>
+          </div>
+
+          <div style="border-top:1px dashed #E5C1D3;padding-top:10px;">
+            <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">
+              Ou buscar discípula disponível no sistema (Sem Célula Vinculada):
+            </label>
+            <div class="celula-add-row">
+              <input type="text" id="filtro-sem-celula-input" placeholder="Filtrar nome disponível..." oninput="filtrarSelectSemCelula(this.value)" />
+              <select id="select-discipula-disponivel">
+                ${disponiveisSemCelula.length 
+                  ? `<option value="">Selecione (${disponiveisSemCelula.length} disponível/is)...</option>${opcoesDisponiveis}` 
+                  : `<option value="">Nenhuma discípula sem célula no momento</option>`}
+              </select>
+              <button class="btn btn-dourado btn-sm" id="btn-vincular-existente" onclick="vincularDiscipulaExistente(${liderId})" ${!disponiveisSemCelula.length ? 'disabled' : ''}>
+                🔗 Vincular à Célula
+              </button>
+            </div>
+          </div>
         </div>
+
+        <h4 style="font-size:0.9rem;color:var(--preto);margin-bottom:10px;">👥 Participantes Atuais (${membros.length})</h4>
         ${htmlMembros}
       `, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
-    function editarDiscipulaNaCelula(discipulaId, liderId) {
-      fecharModal();
-      abrirModalDiscipula(discipulaId, liderId);
+    function filtrarSelectSemCelula(termo) {
+      const select = document.getElementById('select-discipula-disponivel');
+      if (!select) return;
+      const disponiveis = db.discipulas.filter(d => 
+        !d.lider_id && d.nome.toLowerCase().includes(termo.toLowerCase())
+      );
+
+      if (!disponiveis.length) {
+        select.innerHTML = `<option value="">Nenhuma encontrada com "${termo}"</option>`;
+        return;
+      }
+
+      select.innerHTML = disponiveis.map(d => 
+        `<option value="${d.id}">${d.nome} ${d.telefone ? '(' + d.telefone + ')' : ''}</option>`
+      ).join('');
+    }
+
+    async function vincularDiscipulaExistente(liderId) {
+      const select = document.getElementById('select-discipula-disponivel');
+      const discipulaId = select ? parseInt(select.value) : null;
+
+      if (!discipulaId) {
+        alert('Selecione uma discípula disponível na lista para vincular!');
+        return;
+      }
+
+      const d = db.discipulas.find(x => x.id === discipulaId);
+      if (!d) return;
+
+      const btn = document.getElementById('btn-vincular-existente');
+      if (btn) { btn.disabled = true; btn.textContent = 'Vinculando...'; }
+
+      const novoNivel = (!d.nivel_lideranca || d.nivel_lideranca === 'Discípula (Sem Célula)') ? 'Discípula' : d.nivel_lideranca;
+
+      const { error } = await supabaseClient
+        .from('discipulas')
+        .update({ lider_id: liderId, nivel_lideranca: novoNivel })
+        .eq('id', discipulaId);
+
+      if (error) {
+        alert('Erro ao vincular discípula: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = '🔗 Vincular à Célula'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      atualizarInterfaceCompleta();
+      abrirCelulaseMembros(liderId);
     }
 
     async function removerParticipanteDaCelula(discipulaId, liderId) {
-      if (!confirm('Deseja realmente excluir/remover esta participante da célula?')) return;
-      await supabaseClient.from('discipulas').update({ lider_id: null }).eq('id', discipulaId);
-      await carregarDB();
-      abrirCelulaseMembros(liderId);
-      renderDiscipulas();
-      renderPastasCelulas();
-    }
-
-    function abrirModalBuscaParticipante(liderId) {
-      fecharModal();
-      const semCelula = db.discipulas.filter(d => !d.lider_id || d.lider_id !== liderId);
+      if (!confirm('Deseja desvincular esta discípula desta célula? Ela voltará a ficar disponível como "Sem Célula Vinculada".')) return;
       
-      abrirModal('Adicionar Participante por Busca', `
-        <div class="form-field" style="margin-bottom:14px;">
-          <label>Buscar Discípula Disponível</label>
-          <input type="text" id="filtro-busca-add" placeholder="Digite o nome..." oninput="filtrarBuscaAdd(${liderId})" />
-        </div>
-        <div id="lista-busca-add" style="max-height:300px;overflow-y:auto;">
-          ${renderListaBuscaAdd(semCelula, liderId)}
-        </div>
-      `, `<button class="btn btn-outline" onclick="abrirCelulaseMembros(${liderId})">Voltar</button>`);
-    }
+      const { error } = await supabaseClient
+        .from('discipulas')
+        .update({ lider_id: null, nivel_lideranca: 'Discípula (Sem Célula)' })
+        .eq('id', discipulaId);
 
-    function renderListaBuscaAdd(lista, liderId) {
-      if (!lista.length) return '<p style="text-align:center;color:#999;padding:20px;">Nenhuma discípula disponível para adicionar.</p>';
-      return lista.map(m => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #eee;">
-          <div style="display:flex;align-items:center;gap:10px;">${renderAvatarDisc(m.foto_url, m.nome)}<div><strong>${m.nome}</strong><br><small style="color:#999;">${m.telefone || 'Sem tel'}</small></div></div>
-          <button class="btn btn-rosa btn-sm" onclick="adicionarParticipanteNaCelula(${m.id}, ${liderId})">+ Adicionar</button>
-        </div>
-      `).join('');
-    }
+      if (error) {
+        alert('Erro ao desvincular: ' + error.message);
+        return;
+      }
 
-    function filtrarBuscaAdd(liderId) {
-      const q = document.getElementById('filtro-busca-add').value.toLowerCase();
-      const filtradas = db.discipulas.filter(d => (!d.lider_id || d.lider_id !== liderId) && d.nome.toLowerCase().includes(q));
-      document.getElementById('lista-busca-add').innerHTML = renderListaBuscaAdd(filtradas, liderId);
-    }
-
-    async function adicionarParticipanteNaCelula(discipulaId, liderId) {
-      await supabaseClient.from('discipulas').update({ lider_id: liderId }).eq('id', discipulaId);
-      await carregarDB();
+      await carregarDadosDoSupabase();
       abrirCelulaseMembros(liderId);
-      renderDiscipulas();
-      renderPastasCelulas();
+      atualizarInterfaceCompleta();
     }
 
+    // =========================================================================
+    // 8. DISCÍPULAS & JORNADA ESPIRITUAL (PERSISTÊNCIA NO SUPABASE)
+    // =========================================================================
     function renderDiscipulas(filtro = '') {
-      let lista = db.discipulas;
+      let lista = getDiscipulasVisiveis();
       if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro.toLowerCase()));
+      
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => l.id === d.lider_id);
         const assBadge = d.assiduidade === 'Sim' ? 'badge-success' : 'badge-warning';
-        return `<tr><td>${renderAvatarDisc(d.foto_url, d.nome)}</td><td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td><td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">' + lider.nome + '</small>' : '<span style="color:#999;">Sem Célula</span>'}</td><td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td><td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td><td><span class="badge badge-info">${d.uv||'—'}</span></td><td>${d.capacitacao||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="editarDiscipula(${d.id})">Editar</button></td></tr>`;
-      }).join('') || '<tr><td colspan="8" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula encontrada.</td></tr>';
+        const cdBadge = d.cd === 'Desistiu' ? 'badge-danger' : 'badge-rosa';
+        const hierarquiaBadge = !d.lider_id ? 'badge-cinza' : (d.nivel_lideranca === 'Liderança G12' ? 'badge-dourado' : 'badge-rosa');
+
+        return `
+          <tr>
+            <td>${renderAvatarDisc(d.foto_url, d.nome)}</td>
+            <td><strong>${d.nome}</strong><br><small style="color:#999;">${d.telefone||'—'} • ${d.email||'Sem e-mail'}</small></td>
+            <td>${lider ? lider.celular_que_lidera + '<br><small style="color:#999;">Líder: ' + lider.nome + '</small>' : '<span class="badge badge-cinza">Sem Célula Vinculada</span>'}</td>
+            <td><span class="badge ${hierarquiaBadge}">${d.nivel_lideranca || 'Discípula (Sem Célula)'}</span></td>
+            <td><span class="badge ${assBadge}">${d.assiduidade || '—'}</span></td>
+            <td>${d.batizada?'<span class="badge badge-success">Sim</span>':'<span class="badge badge-danger">Não</span>'}</td>
+            <td><span class="badge badge-info">${d.uv||'—'}</span></td>
+            <td><span class="badge ${cdBadge}">${d.cd||'Nível 1'}</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="abrirModalDiscipula(${d.id})">Editar</button></td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="9" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula cadastrada ainda.</td></tr>';
     }
     function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
 
-    function renderDesistencias() {
-      document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `<tr><td><strong>${d.nome}</strong></td><td>${d.celular_origem}</td><td><strong>${d.celular_nova || '—'}</strong></td><td>${formatDate(d.data)}</td><td>${d.motivo}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;padding:36px;">Nenhum registro.</td></tr>';
+    function abrirModalDiscipula(id = null, celulaFixaId = null) {
+      const d = id ? db.discipulas.find(x => x.id === id) : null;
+      tempFotoDiscipulaBase64 = d?.foto_url || "";
+      const celulasPermitidas = getCelulasVisiveis();
+
+      const optionsCelulas = `
+        <option value="" ${(!d?.lider_id && !celulaFixaId) ? 'selected' : ''}>— Sem Célula Vinculada —</option>
+        ${celulasPermitidas.map(l => 
+          `<option value="${l.id}" ${(d && d.lider_id == l.id) || (celulaFixaId == l.id) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
+        ).join('')}
+      `;
+
+      const perfisNomes = db.perfisLideranca.filter(p => p.id !== 'MACRO').map(p => p.nome);
+      const listaNiveis = [...new Set(['Discípula', ...perfisNomes, 'Discípula (Sem Célula)'])];
+      const opcoesNivel = listaNiveis.map(nv => `<option value="${nv}" ${d?.nivel_lideranca===nv?'selected':''}>${nv}</option>`).join('');
+
+      abrirModal(d ? 'Editar Perfil da Discípula' : 'Cadastrar Nova Discípula', `
+        <div class="form-row">
+          <div class="form-field"><label>Nome Completo *</label><input id="f-nome" value="${d?.nome||''}" required /></div>
+          <div class="form-field"><label>Nível Hierárquico</label><select id="f-nivel-lideranca">${opcoesNivel}</select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Célula Pertencente (Opcional — pode deixar sem célula)</label>
+            <select id="f-lider-id">${optionsCelulas}</select>
+          </div>
+          <div class="form-field"><label>Data de Aniversário</label><input type="date" id="f-nasc" value="${d?.data_nascimento||''}" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Endereço</label><input id="f-endereco" value="${d?.endereco||''}" placeholder="Rua, Bairro, Cidade" /></div>
+          <div class="form-field">
+            <label>Estado Civil</label>
+            <select id="f-estado-civil">
+              <option value="Solteira" ${d?.estado_civil==='Solteira'?'selected':''}>Solteira</option>
+              <option value="Casada" ${d?.estado_civil==='Casada'?'selected':''}>Casada</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div>
+          <div class="form-field">
+            <label>Telefone / WhatsApp</label>
+            <input type="text" id="f-tel" value="${d?.telefone||''}" placeholder="(71) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Foto de Perfil da Discípula (Abrir Arquivo)</label>
+            <div class="file-upload-box">
+              <img id="preview-foto-discipula" class="file-preview-thumb" src="${tempFotoDiscipulaBase64}" style="display:${tempFotoDiscipulaBase64 ? 'block' : 'none'};" />
+              <input type="file" id="f-foto-arquivo" accept="image/*" onchange="processarArquivoFotoDiscipula(this)" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Capacitação Destino (CD)</label>
+            <select id="f-cd">
+              <option value="Nível 1" ${d?.cd==='Nível 1'?'selected':''}>Nível 1</option>
+              <option value="Nível 2" ${d?.cd==='Nível 2'?'selected':''}>Nível 2</option>
+              <option value="Nível 3" ${d?.cd==='Nível 3'?'selected':''}>Nível 3</option>
+              <option value="Concluído" ${d?.cd==='Concluído'?'selected':''}>Concluído</option>
+              <option value="Desistiu" ${d?.cd==='Desistiu'?'selected':''}>Desistiu</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Fez Universidade da Vida (UV)?</label><select id="f-uv"><option value="Não" ${d?.uv==='Não'?'selected':''}>Não</option><option value="Sim" ${d?.uv==='Sim'?'selected':''}>Sim</option></select></div>
+          <div class="form-field"><label>Fez Encontro com Deus?</label><select id="f-encontro"><option value="Não" ${d?.encontro==='Não'?'selected':''}>Não</option><option value="Sim" ${d?.encontro==='Sim'?'selected':''}>Sim</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>É Batizada?</label><select id="f-bat"><option value="0" ${!d?.batizada?'selected':''}>Não</option><option value="1" ${d?.batizada?'selected':''}>Sim</option></select></div>
+          <div class="form-field"><label>É Assídua na Célula?</label><select id="f-ass"><option value="Sim" ${d?.assiduidade==='Sim'?'selected':''}>Sim</option><option value="Não" ${d?.assiduidade==='Não'?'selected':''}>Não</option></select></div>
+        </div>
+      `, `<button class="btn btn-outline" onclick="${celulaFixaId ? `abrirCelulaseMembros(${celulaFixaId})` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-discipula" onclick="salvarDiscipula(${id || 'null'}, ${celulaFixaId || 'null'})">Salvar Cadastro</button>`);
     }
 
-    let mapInstance = null;
-    function initMapa() {
-      if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-      mapInstance = L.map('mapa-container').setView([-12.97, -38.51], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapInstance);
-      db.lideres.filter(l => l.ativa && l.lat && l.lng).forEach(l => {
-        const qtd = db.discipulas.filter(d => d.lider_id === l.id).length;
-        L.marker([l.lat, l.lng]).addTo(mapInstance).bindPopup(`<strong>${l.celular_que_lidera}</strong><br>${l.nome}<br>${l.bairro} • ${qtd} discípulas`);
+    async function salvarDiscipula(id, retornoCelulaId) {
+      const nome = document.getElementById('f-nome').value.trim();
+      const liderIdRaw = document.getElementById('f-lider-id').value;
+      if (!nome) return alert('O Nome Completo é obrigatório!');
+
+      const btn = document.getElementById('btn-salvar-discipula');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando no Banco...'; }
+
+      const liderIdParsed = liderIdRaw ? parseInt(liderIdRaw) : null;
+      let nivelSel = document.getElementById('f-nivel-lideranca').value;
+      if (!liderIdParsed && nivelSel !== 'Discípula (Sem Célula)') {
+        nivelSel = 'Discípula (Sem Célula)';
+      } else if (liderIdParsed && nivelSel === 'Discípula (Sem Célula)') {
+        nivelSel = 'Discípula';
+      }
+
+      const obj = {
+        id: id || Date.now(),
+        nome: nome,
+        nivel_lideranca: nivelSel,
+        lider_id: liderIdParsed,
+        data_nascimento: document.getElementById('f-nasc').value || null,
+        endereco: document.getElementById('f-endereco').value.trim(),
+        estado_civil: document.getElementById('f-estado-civil').value,
+        email: document.getElementById('f-email').value.trim(),
+        telefone: document.getElementById('f-tel').value.trim(),
+        foto_url: tempFotoDiscipulaBase64,
+        cd: document.getElementById('f-cd').value,
+        uv: document.getElementById('f-uv').value,
+        encontro: document.getElementById('f-encontro').value,
+        batizada: document.getElementById('f-bat').value === '1',
+        assiduidade: document.getElementById('f-ass').value
+      };
+
+      const { error } = await supabaseClient.from('discipulas').upsert(obj);
+      if (error) {
+        alert('Erro ao salvar discípula no Supabase: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Tentar Novamente'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      if (retornoCelulaId) {
+        abrirCelulaseMembros(retornoCelulaId);
+      } else {
+        fecharModal();
+      }
+      atualizarInterfaceCompleta();
+    }
+
+    // =========================================================================
+    // 9. PAINEL DE LOGIN, CRIAÇÃO DE LIDERANÇAS & DESIGNAÇÃO DE PERFIS
+    // =========================================================================
+    function renderTabelaAcessos() {
+      document.getElementById('lista-perfis-lideranca').innerHTML = db.perfisLideranca.map(p => `
+        <div style="background:var(--rosa-claro);border:1px solid var(--rosa-medio);padding:8px 14px;border-radius:12px;font-size:0.8rem;display:flex;align-items:center;gap:8px;">
+          <strong>${p.nome}</strong>
+          <span style="color:var(--cinza);font-size:0.72rem;">(${p.pode_criar_celula ? 'Cria Célula' : 'Sem Célula'} • ${p.pode_editar_discipulas ? 'Edita Discípulas' : 'Leitura'})</span>
+        </div>
+      `).join('');
+
+      document.getElementById('tabela-acessos').innerHTML = db.usuarios.map(u => {
+        const badgesPerm = [];
+        if (u.pode_criar_celula) badgesPerm.push('<span class="badge badge-success">Criar Célula</span>');
+        if (u.pode_editar_discipulas) badgesPerm.push('<span class="badge badge-info">Gerir Discípulas</span>');
+        if (u.pode_dar_baixa) badgesPerm.push('<span class="badge badge-danger">Dar Baixa (X)</span>');
+        if (u.pode_gerenciar_acessos) badgesPerm.push('<span class="badge badge-dourado">Admin Acessos</span>');
+
+        return `
+          <tr>
+            <td><strong>${u.nome}</strong></td>
+            <td><code>${u.login}</code></td>
+            <td><code>${u.senha}</code></td>
+            <td><span class="badge ${u.perfil_id === 'MACRO' ? 'badge-dourado' : 'badge-rosa'}">${u.perfil_nome}</span></td>
+            <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badgesPerm.join('') || '<span class="badge badge-cinza">Somente Leitura</span>'}</div></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-outline btn-sm" onclick="abrirModalAcesso(${u.id})">✏️ Editar Perfil/Senha</button>
+                ${u.perfil_id !== 'MACRO' ? `<button class="btn btn-danger btn-sm" onclick="excluirAcesso(${u.id})">Revogar</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function abrirModalNovoPerfilLideranca() {
+      abrirModal('✨ Criar Nova Liderança & Designar Permissões do Perfil', `
+        <p style="font-size:0.85rem;color:var(--cinza);margin-bottom:16px;">
+          Crie um novo nível de liderança (ex: <em>Liderança 20736</em>, <em>Líder em Treinamento</em>, <em>Supervisora de Rede</em>) e defina o que esse perfil poderá fazer no sistema.
+        </p>
+        <div class="form-row">
+          <div class="form-field"><label>Nome da Liderança / Cargo *</label><input type="text" id="np-nome" placeholder="Ex: Liderança 20736 ou Supervisora" required /></div>
+          <div class="form-field"><label>Nível Hierárquico (Ordem)</label><input type="number" id="np-nivel" value="5" min="1" max="15" /></div>
+        </div>
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Permissões Designadas a este Perfil:</label>
+        <div class="permissoes-grid">
+          <label class="perm-item"><input type="checkbox" id="np-criar-celula" checked /> Pode Criar / Editar Células</label>
+          <label class="perm-item"><input type="checkbox" id="np-editar-disc" checked /> Pode Cadastrar / Editar Discípulas</label>
+          <label class="perm-item"><input type="checkbox" id="np-dar-baixa" /> Pode Dar Baixa (X) em Células</label>
+          <label class="perm-item"><input type="checkbox" id="np-gerenciar-acessos" /> Pode Gerenciar Logins &amp; Lideranças</label>
+        </div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-perfil" onclick="salvarNovoPerfilLideranca()">Salvar Liderança</button>`);
+    }
+
+    async function salvarNovoPerfilLideranca() {
+      const nome = document.getElementById('np-nome').value.trim();
+      if (!nome) return alert('Informe o nome da liderança!');
+
+      const btn = document.getElementById('btn-salvar-perfil');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+      const novoPerfil = {
+        id: 'PERFIL_' + Date.now(),
+        nome: nome,
+        nivel: parseInt(document.getElementById('np-nivel').value) || 5,
+        pode_criar_celula: document.getElementById('np-criar-celula').checked,
+        pode_editar_discipulas: document.getElementById('np-editar-disc').checked,
+        pode_dar_baixa: document.getElementById('np-dar-baixa').checked,
+        pode_gerenciar_acessos: document.getElementById('np-gerenciar-acessos').checked
+      };
+
+      const { error } = await supabaseClient.from('perfis_lideranca').insert(novoPerfil);
+      if (error) {
+        alert('Erro ao salvar perfil: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Liderança'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      fecharModal();
+      renderTabelaAcessos();
+      alert(`Liderança "${nome}" salva no banco de dados!`);
+    }
+
+    function abrirModalAcesso(userId = null) {
+      const u = userId ? db.usuarios.find(x => x.id === userId) : null;
+      const opcoesDiscipulas = db.discipulas.map(d => `<option value="${d.nome}" ${u && u.nome === d.nome ? 'selected' : ''}>${d.nome}</option>`).join('');
+      const opcoesCelulas = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.id}" ${u && u.lider_id === l.id ? 'selected' : ''}>${l.celular_que_lidera} (${l.nome})</option>`).join('');
+      
+      const opcoesPerfis = db.perfisLideranca.map(p => 
+        `<option value="${p.id}" ${u && u.perfil_id === p.id ? 'selected' : ''}>${p.nome}</option>`
+      ).join('');
+
+      abrirModal(u ? 'Editar Login, Senha & Perfil' : 'Criar Login & Designar Liderança', `
+        <div class="form-row">
+          <div class="form-field">
+            <label>Selecionar Discípula / Líder *</label>
+            ${u ? `<input id="ac-nome" value="${u.nome}" readonly style="background:#eee;" />` : `<select id="ac-nome" required><option value="">Selecione...</option>${opcoesDiscipulas}</select>`}
+          </div>
+          <div class="form-field">
+            <label>Designar Liderança / Perfil *</label>
+            <select id="ac-perfil-id" onchange="aoMudarPerfilSelect(this.value)">
+              ${opcoesPerfis}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Login de Acesso *</label><input type="text" id="ac-login" value="${u?.login || ''}" placeholder="Ex: larissa" required /></div>
+          <div class="form-field"><label>Senha *</label><input type="text" id="ac-senha" value="${u?.senha || ''}" placeholder="Ex: 123" required /></div>
+          <div class="form-field">
+            <label>Célula Vinculada (Cobertura)</label>
+            <select id="ac-celula-id">
+              <option value="1">— Macrocélula / Sem Célula Fixa —</option>
+              ${opcoesCelulas}
+            </select>
+          </div>
+        </div>
+
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Domínios &amp; Permissões Específicas desta Usuária:</label>
+        <div class="permissoes-grid">
+          <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Células</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Discípulas</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-baixa" ${u?.pode_dar_baixa ? 'checked' : ''} /> Dar Baixa (X) em Células</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-acessos" ${u?.pode_gerenciar_acessos ? 'checked' : ''} /> Gerenciar Logins &amp; Lideranças</label>
+        </div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId || 'null'})">Salvar Credenciais</button>`);
+    }
+
+    function aoMudarPerfilSelect(perfilId) {
+      const p = db.perfisLideranca.find(x => x.id === perfilId);
+      if (!p) return;
+      document.getElementById('ac-perm-celula').checked = p.pode_criar_celula;
+      document.getElementById('ac-perm-disc').checked = p.pode_editar_discipulas;
+      document.getElementById('ac-perm-baixa').checked = p.pode_dar_baixa;
+      document.getElementById('ac-perm-acessos').checked = p.pode_gerenciar_acessos;
+    }
+
+    async function salvarAcesso(userId) {
+      const nome = document.getElementById('ac-nome').value.trim();
+      const login = document.getElementById('ac-login').value.trim().toLowerCase();
+      const senha = document.getElementById('ac-senha').value.trim();
+      const perfilId = document.getElementById('ac-perfil-id').value;
+      const perfilObj = db.perfisLideranca.find(p => p.id === perfilId) || { id: perfilId, nome: 'Liderança' };
+
+      const podeCriarCelula = document.getElementById('ac-perm-celula').checked;
+      const podeEditarDisc = document.getElementById('ac-perm-disc').checked;
+      const podeDarBaixa = document.getElementById('ac-perm-baixa').checked;
+      const podeGerenciarAcessos = document.getElementById('ac-perm-acessos').checked;
+      const liderId = parseInt(document.getElementById('ac-celula-id').value) || 1;
+
+      if (!nome || !login || !senha) return alert('Preencha nome, login e senha!');
+
+      const btn = document.getElementById('btn-salvar-acesso');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+      const disc = db.discipulas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
+      if (disc && perfilObj.id !== 'MACRO') {
+        await supabaseClient.from('discipulas').update({ nivel_lideranca: perfilObj.nome }).eq('id', disc.id);
+      }
+
+      const dadosUsuario = {
+        id: userId || Date.now(),
+        nome, login, senha,
+        perfil_id: perfilObj.id,
+        perfil_nome: perfilObj.nome,
+        pode_criar_celula: podeCriarCelula,
+        pode_editar_discipulas: podeEditarDisc,
+        pode_dar_baixa: podeDarBaixa,
+        pode_gerenciar_acessos: podeGerenciarAcessos,
+        lider_id: liderId
+      };
+
+      const { error } = await supabaseClient.from('usuarios').upsert(dadosUsuario);
+      if (error) {
+        alert('Erro ao salvar credenciais: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Credenciais'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      if (usuarioLogado && usuarioLogado.id === userId) {
+        usuarioLogado = db.usuarios.find(u => u.id === userId) || usuarioLogado;
+        aplicarPermissoesUsuario();
+      }
+
+      fecharModal();
+      atualizarInterfaceCompleta();
+    }
+
+    async function excluirAcesso(userId) {
+      if (!confirm('Deseja revogar o login e domínio desta líder?')) return;
+      const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
+      if (error) return alert('Erro ao revogar acesso: ' + error.message);
+      await carregarDadosDoSupabase();
+      renderTabelaAcessos();
+    }
+
+    // =========================================================================
+    // 10. HISTÓRICO, ANIVERSARIANTES, RELATÓRIOS & UTILITÁRIOS
+    // =========================================================================
+    function renderDesistencias() {
+      document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `
+        <tr>
+          <td><strong>${d.nome}</strong></td>
+          <td>${d.celular_origem}</td>
+          <td><span class="badge badge-danger">${d.celular_nova || '—'}</span></td>
+          <td>${formatDate(d.data)}</td>
+          <td>${d.motivo}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;padding:36px;">Nenhum registro de transferência ou baixa.</td></tr>';
+    }
+
+    function abrirModalDesistencia() {
+      const nomes = getDiscipulasVisiveis().map(d => d.nome);
+      const celulasOp = getCelulasVisiveis().map(l => `<option value="${l.celular_que_lidera}">`).join('');
+      
+      abrirModal('Registrar Transferência / Saída', `
+        <div class="form-field"><label>Nome da Discípula</label><input id="fd-nome" list="lista-nomes" placeholder="Digite ou selecione..." /><datalist id="lista-nomes">${nomes.map(n => `<option value="${n}">`).join('')}</datalist></div>
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-field"><label>Célula Anterior</label><input id="fd-ant" list="lista-cel" placeholder="Célula anterior..." /><datalist id="lista-cel">${celulasOp}</datalist></div>
+          <div class="form-field"><label>Célula Nova (ou Desistência)</label><input id="fd-nova" list="lista-cel" placeholder="Nova célula ou Desistência..." /></div>
+        </div>
+        <div class="form-field" style="margin-top:14px;"><label>Motivo Pastoral</label><textarea id="fd-motivo" placeholder="Descreva o motivo..."></textarea></div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-desistencia" onclick="salvarDesistencia()">Salvar Registro</button>`);
+    }
+
+    async function salvarDesistencia() {
+      const nome = document.getElementById('fd-nome').value.trim();
+      const ant = document.getElementById('fd-ant').value.trim();
+      const nova = document.getElementById('fd-nova').value.trim();
+      const motivo = document.getElementById('fd-motivo').value.trim();
+      if (!nome || !motivo) return alert('Preencha o nome e o motivo.');
+
+      const btn = document.getElementById('btn-salvar-desistencia');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+      const { error } = await supabaseClient.from('desistencias').insert({
+        id: Date.now(),
+        nome,
+        celular_origem: ant || '—',
+        celular_nova: nova || 'Desistência',
+        data: new Date().toISOString().slice(0,10),
+        motivo
       });
+
+      if (error) {
+        alert('Erro ao salvar registro: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Registro'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      fecharModal();
+      renderDesistencias();
     }
 
     function calcularIdade(dataNasc) {
       if (!dataNasc) return '';
-      const hoje = new Date();
-      const nasc = new Date(dataNasc);
+      const hoje = new Date(), nasc = new Date(dataNasc);
       let idade = hoje.getFullYear() - nasc.getFullYear();
       const m = hoje.getMonth() - nasc.getMonth();
       if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
@@ -796,7 +1925,7 @@
 
     function renderAniversariantes() {
       const mes = parseInt(document.getElementById('mes-aniversario').value);
-      const lista = db.discipulas.filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T12:00:00').getMonth() === mes);
+      const lista = getDiscipulasVisiveis().filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T12:00:00').getMonth() === mes);
       const c = document.getElementById('lista-aniversariantes');
       if (!lista.length) { c.innerHTML = '<div class="empty-state"><p>Nenhum aniversariante neste mês.</p></div>'; return; }
       
@@ -804,7 +1933,7 @@
         const d = new Date(p.data_nascimento + 'T12:00:00');
         const idade = calcularIdade(p.data_nascimento);
         const telLimpo = p.telefone ? p.telefone.replace(/\D/g, '') : '';
-        const msg = encodeURIComponent(`Olá ${p.nome}, a Macrocélula Aleluia te deseja um feliz aniversário! Muitas felicidades e bênçãos de Deus sobre sua vida! 🎂🎉`);
+        const msg = encodeURIComponent(`Olá ${p.nome}, a Macrocélula Aleluia te deseja um feliz aniversário! Muitas bênçãos de Deus sobre sua vida! 🎂🎉`);
         const linkWap = telLimpo ? `https://wa.me/55${telLimpo}?text=${msg}` : '#';
 
         return `
@@ -813,309 +1942,64 @@
               ${renderAvatarDisc(p.foto_url, p.nome)}
               <div>
                 <strong>${p.nome}</strong><br>
-                <span style="color:#999;font-size:0.85rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${idade !== '' ? idade + ' anos' : ''} • Tel: ${p.telefone || 'Não informado'}</span>
+                <span style="color:#999;font-size:0.85rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${idade !== '' ? idade + ' anos' : ''}</span>
               </div>
             </div>
-            ${telLimpo ? `<a href="${linkWap}" target="_blank" class="btn btn-whatsapp btn-sm">💬 Enviar Parabéns</a>` : '<span style="font-size:0.75rem;color:#999;">Sem WhatsApp</span>'}
+            ${telLimpo ? `<a href="${linkWap}" target="_blank" class="btn btn-whatsapp btn-sm">💬 Parabéns</a>` : ''}
           </div>`;
       }).join('');
     }
 
     function prepararFiltrosRelatorio() {
-      const cidades = [...new Set([...db.lideres.map(l => l.cidade), ...db.discipulas.map(d => d.cidade)])].filter(Boolean);
-      const bairros = [...new Set([...db.lideres.map(l => l.bairro), ...db.discipulas.map(d => d.bairro)])].filter(Boolean);
-      document.getElementById('filtro-cidade').innerHTML = '<option value="">Todas</option>' + cidades.map(c => `<option>${c}</option>`).join('');
-      document.getElementById('filtro-bairro').innerHTML = '<option value="">Todos</option>' + bairros.map(b => `<option>${b}</option>`).join('');
-      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas</option>' + db.lideres.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+      const celulas = getCelulasVisiveis();
+      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas</option><option value="SEM_CELULA">Sem Célula Vinculada</option>' + celulas.map(l => `<option value="${l.id}">${l.nome} (${l.celular_que_lidera})</option>`).join('');
     }
 
     function aplicarFiltrosRelatorio() {
-      const cidade = document.getElementById('filtro-cidade').value, bairro = document.getElementById('filtro-bairro').value, liderId = document.getElementById('filtro-lider').value, pend = document.getElementById('filtro-pendencia').value;
-      let lista = [...db.discipulas];
-      if (cidade) lista = lista.filter(d => d.cidade === cidade); if (bairro) lista = lista.filter(d => d.bairro === bairro); if (liderId) lista = lista.filter(d => d.lider_id == liderId);
-      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada); if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Não'); if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
-      document.getElementById('resultado-relatorio').innerHTML = `<p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p><div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Bairro</th><th>Assiduidade</th><th>Batismo</th></tr></thead><tbody>${lista.map(d => `<tr><td>${d.nome}</td><td>${d.email||'—'}</td><td>${d.cidade||'—'}</td><td>${d.bairro||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}</tbody></table></div>`;
+      const liderId = document.getElementById('filtro-lider').value;
+      const hierarquia = document.getElementById('filtro-hierarquia').value;
+      const pend = document.getElementById('filtro-pendencia').value;
+      let lista = [...getDiscipulasVisiveis()];
+
+      if (liderId === 'SEM_CELULA') lista = lista.filter(d => !d.lider_id);
+      else if (liderId) lista = lista.filter(d => d.lider_id == liderId);
+
+      if (hierarquia === 'Sem Célula') lista = lista.filter(d => !d.lider_id);
+      else if (hierarquia) lista = lista.filter(d => (d.nivel_lideranca || '').includes(hierarquia));
+
+      if (pend === 'nao-batizada') lista = lista.filter(d => !d.batizada);
+      if (pend === 'sem-uv') lista = lista.filter(d => !d.uv || d.uv === 'Não');
+      if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
+
+      document.getElementById('resultado-relatorio').innerHTML = `
+        <p style="margin-bottom:14px;"><strong>${lista.length}</strong> resultado(s)</p>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Hierarquia</th><th>Telefone</th><th>Assiduidade</th><th>Batismo</th><th>UV</th></tr></thead><tbody>
+          ${lista.map(d => `<tr><td>${d.nome}</td><td>${d.nivel_lideranca}</td><td>${d.telefone||'—'}</td><td>${d.assiduidade}</td><td>${d.batizada?'Sim':'Não'}</td><td>${d.uv||'—'}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum resultado</td></tr>'}
+        </tbody></table></div>`;
     }
     function gerarRelatorioPDF() { window.print(); }
 
     function abrirModal(title, bodyHTML, footerHTML) {
-      document.getElementById('modal-title').textContent = title; document.getElementById('modal-body').innerHTML = bodyHTML; document.getElementById('modal-footer').innerHTML = footerHTML;
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHTML;
+      document.getElementById('modal-footer').innerHTML = footerHTML;
       document.getElementById('modal').classList.add('active');
     }
     function fecharModal() { document.getElementById('modal').classList.remove('active'); }
 
-    function abrirModalDiscipula(id = null, retornoLiderId = null) {
-      const d = id ? db.discipulas.find(x => x.id === id) : null;
-      const optionsCelulas = db.lideres.filter(l => l.ativa).map(l => 
-        `<option value="${l.id}" ${d && d.lider_id == l.id ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
-      ).join('');
-
-      abrirModal(d ? 'Editar Perfil da Discípula' : 'Cadastrar Nova Discípula', `
-        <div class="form-row"><div class="form-field"><label>Nome Completo</label><input id="f-nome" value="${d?.nome||''}" /></div><div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Telefone</label><input id="f-tel" value="${d?.telefone||''}" /></div><div class="form-field"><label>URL da Foto de Perfil</label><input type="url" id="f-foto" value="${d?.foto_url||''}" placeholder="https://exemplo.com/foto.jpg" /></div></div>
-        <div class="form-row"><div class="form-field"><label>Data de Nascimento</label><input type="date" id="f-nasc" min="1920-01-01" max="2026-12-31" value="${d?.data_nascimento||''}" /></div></div>
-        <div class="form-row">
-          <div class="form-field"><label>Status (Cargo)</label><select id="f-status"><option value="Discípula" ${d?.status==='Discípula'?'selected':''}>Discípula</option><option value="Líder Superior" ${d?.status==='Líder Superior'?'selected':''}>Líder Superior</option></select></div>
-          <div class="form-field"><label>Célula Pertencente (Cobertura)</label><select id="f-lider-id"><option value="">— Nenhuma / Macrocélula —</option>${optionsCelulas}</select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-field"><label>Universidade da Vida (UV)</label><select id="f-uv"><option value="">—</option><option ${d?.uv==='Sim'?'selected':''}>Sim</option><option ${d?.uv==='Não'?'selected':''}>Não</option></select></div>
-          <div class="form-field"><label>Encontro</label><select id="f-encontro"><option value="">—</option><option ${d?.encontro==='Sim'?'selected':''}>Sim</option><option ${d?.encontro==='Não'?'selected':''}>Não</option></select></div>
-          <div class="form-field"><label>Reencontro</label><select id="f-reencontro"><option value="">—</option><option ${d?.reencontro==='Sim'?'selected':''}>Sim</option><option ${d?.reencontro==='Não'?'selected':''}>Não</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-field"><label>Capacitação</label><input id="f-capacitacao" value="${d?.capacitacao||''}" /></div>
-          <div class="form-field"><label>Batismo</label><select id="f-bat"><option value="1" ${d?.batizada?'selected':''}>Sim</option><option value="0" ${!d?.batizada?'selected':''}>Não</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-field"><label>É Assídua na Célula?</label><select id="f-ass"><option value="">—</option><option ${d?.assiduidade==='Sim'?'selected':''}>Sim</option><option ${d?.assiduidade==='Não'?'selected':''}>Não</option></select></div>
-          <div class="form-field"><label>Frequenta Culto de Sábado?</label><select id="f-culto"><option value="">—</option><option ${d?.frequencia_culto==='Sim'?'selected':''}>Sim</option><option ${d?.frequencia_culto==='Não'?'selected':''}>Não</option></select></div>
-        </div>
-      `, `<button class="btn btn-outline" onclick="${retornoLiderId ? `abrirCelulaseMembros(${retornoLiderId})` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" onclick="salvarDiscipula(${id || 'null'}, ${retornoLiderId || 'null'})">Salvar</button>`);
+    function renderAvatarDisc(url, nome) {
+      if (url && url.trim() !== '') return `<div class="foto-disc"><img src="${url}" alt="${nome}" /></div>`;
+      return `<div class="foto-disc">${iniciais(nome)}</div>`;
     }
-
-    async function salvarDiscipula(id, retornoLiderId) {
-      const liderIdVal = document.getElementById('f-lider-id').value;
-      const obj = {
-        nome: document.getElementById('f-nome').value.trim(),
-        email: document.getElementById('f-email').value.trim(),
-        telefone: document.getElementById('f-tel').value.trim(),
-        foto_url: document.getElementById('f-foto').value.trim(),
-        data_nascimento: document.getElementById('f-nasc').value || null,
-        status: document.getElementById('f-status').value,
-        lider_id: liderIdVal ? parseInt(liderIdVal) : null,
-        uv: document.getElementById('f-uv').value,
-        encontro: document.getElementById('f-encontro').value,
-        reencontro: document.getElementById('f-reencontro').value,
-        capacitacao: document.getElementById('f-capacitacao').value.trim(),
-        batizada: document.getElementById('f-bat').value === '1',
-        assiduidade: document.getElementById('f-ass').value,
-        frequencia_culto: document.getElementById('f-culto').value
-      };
-      if (!obj.nome) return alert('Nome é obrigatório');
-
-      if (id) {
-        await supabaseClient.from('discipulas').update(obj).eq('id', id);
-      } else {
-        await supabaseClient.from('discipulas').insert([obj]);
-      }
-
-      await carregarDB();
-      if (retornoLiderId) {
-        abrirCelulaseMembros(retornoLiderId);
-      } else {
-        fecharModal();
-      }
-      renderDiscipulas(); renderPastasCelulas(); renderDashboard(); atualizarAvatarTopo();
-    }
-    function editarDiscipula(id) { abrirModalDiscipula(id); }
-
-    function abrirModalLider(id = null) {
-      const l = id ? db.lideres.find(x => x.id === id) : null;
-      const optionsNomesDiscipulas = db.discipulas.map(d => `<option value="${d.nome}" ${l && l.nome === d.nome ? 'selected' : ''}>${d.nome}</option>`).join('');
-      const optionsParent = db.lideres.filter(x => x.ativa && (!l || x.id !== l.id)).map(x => `<option value="${x.id}" ${l && l.parent_id===x.id?'selected':''}>${x.nome} (${x.celular_que_lidera})</option>`).join('');
-
-      abrirModal(l ? 'Editar Célula' : 'Nova Célula', `
-        <div class="form-row">
-          <div class="form-field"><label>Nome da Líder</label><select id="fl-nome" required><option value="">Selecione...</option>${optionsNomesDiscipulas}</select></div>
-          <div class="form-field"><label>Geração</label><select id="fl-ger"><option ${l?.geracao==='3ª Geração (12)'?'selected':''}>3ª Geração (12)</option><option ${l?.geracao==='4ª Geração'?'selected':''}>4ª Geração</option><option ${l?.geracao==='5ª Geração'?'selected':''}>5ª Geração</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-field"><label>Nome da Célula</label><input id="fl-cel" placeholder="Ex: Amigas da Fé" value="${l?.celular_que_lidera||''}" /></div>
-          <div class="form-field"><label>URL da Foto de Capa (Banner)</label><input type="url" id="fl-capa" placeholder="https://exemplo.com/capa.jpg" value="${l?.capa_url||''}" /></div>
-        </div>
-        <div class="form-field"><label>Líder Superior</label><select id="fl-parent"><option value="">— Macrocélula —</option>${optionsParent}</select></div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarLider(${id||'null'})">Salvar Célula</button>`);
-    }
-
-    async function salvarLider(id) {
-      const nomeLider = document.getElementById('fl-nome').value.trim();
-      const parentVal = document.getElementById('fl-parent').value;
-      const celularLidera = document.getElementById('fl-cel').value.trim();
-      const capaUrl = document.getElementById('fl-capa').value.trim();
-      
-      if (!nomeLider || !celularLidera) {
-        alert('Selecione a líder da lista e preencha o nome da célula.');
-        return;
-      }
-
-      const existente = db.lideres.find(l => !id && (l.nome.toLowerCase() === nomeLider.toLowerCase() || l.celular_que_lidera.toLowerCase() === celularLidera.toLowerCase()));
-      if (existente) {
-        alert('Já existe uma célula ou líder cadastrada com este nome ou nome de célula.');
-        return;
-      }
-
-      // Sincronizar foto_url da líder baseada no cadastro da discípula
-      const discipulaObj = db.discipulas.find(d => d.nome.toLowerCase() === nomeLider.toLowerCase());
-      const fotoLider = discipulaObj ? (discipulaObj.foto_url || '') : '';
-
-      const obj = {
-        nome: nomeLider,
-        geracao: document.getElementById('fl-ger').value,
-        celular_que_lidera: celularLidera,
-        celular_onde_e_discipula: parentVal ? (db.lideres.find(x=>x.id==parentVal)?.celular_que_lidera || '') : '—',
-        telefone: discipulaObj?.telefone || '',
-        foto_url: fotoLider,
-        capa_url: capaUrl,
-        cidade: 'Salvador',
-        bairro: '',
-        lat: null,
-        lng: null,
-        ativa: true,
-        parent_id: parentVal ? parseInt(parentVal) : null
-      };
-
-      try {
-        if (id) {
-          const { error } = await supabaseClient.from('lideres').update(obj).eq('id', id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabaseClient.from('lideres').insert([obj]);
-          if (error) throw error;
-          await supabaseClient.from('movimentacoes').insert([{ data: new Date().toISOString().slice(0,10), texto: `Nova célula aberta: ${obj.celular_que_lidera} sob ${obj.nome}` }]);
-        }
-        fecharModal(); 
-        await carregarDB(); 
-        renderPastasCelulas(); 
-        renderDashboard();
-      } catch (err) {
-        console.error('Erro ao salvar célula:', err);
-        alert('Erro ao salvar célula no banco de dados. Verifique se esta líder ou nome de célula já está cadastrada (Erro 409).');
-      }
-    }
-
-    async function salvarAberturaCelula(e) {
-      e.preventDefault();
-      const data = document.getElementById('ab-data').value;
-      const lider = document.getElementById('ab-lider').value.trim();
-      const celula = document.getElementById('ab-celula').value.trim();
-      const local = document.getElementById('ab-local').value.trim();
-      const dia = document.getElementById('ab-dia').value.trim();
-      const horario = document.getElementById('ab-horario').value.trim();
-
-      await supabaseClient.from('lideres').insert([{
-        nome: lider,
-        geracao: 'Nova Célula',
-        celular_que_lidera: celula,
-        cidade: local,
-        ativa: true
-      }]);
-      await supabaseClient.from('movimentacoes').insert([{
-        data: data,
-        texto: `Abertura da ${celula} liderada por ${lider} (${dia} às ${horario} em ${local})`
-      }]);
-
-      alert('Célula aberta e cadastrada com sucesso!');
-      document.getElementById('form-abertura-celula').reset();
-      await carregarDB();
-      renderPastasCelulas();
-      renderDashboard();
-    }
-
-    async function salvarFechamentoCelula(e) {
-      e.preventDefault();
-      const data = document.getElementById('fc-data').value;
-      const lider = document.getElementById('fc-lider').value.trim();
-      const celula = document.getElementById('fc-celula').value.trim();
-      const motivo = document.getElementById('fc-motivo').value.trim();
-
-      const liderObj = db.lideres.find(l => l.celular_que_lidera.toLowerCase() === celula.toLowerCase());
-      if (liderObj) {
-        await supabaseClient.from('lideres').update({ ativa: false }).eq('id', liderObj.id);
-      }
-      await supabaseClient.from('movimentacoes').insert([{
-        data: data,
-        texto: `Fechamento da ${celula} (${lider}). Motivo: ${motivo}`
-      }]);
-
-      alert('Fechamento registrado com sucesso!');
-      document.getElementById('form-fechamento-celula').reset();
-      await carregarDB();
-      renderPastasCelulas();
-      renderDashboard();
-    }
-
-    function abrirModalDesistencia() {
-      const nomes = db.discipulas.map(d => d.nome);
-      const celulasOp = db.lideres.filter(l => l.ativa).map(l => `<option value="${l.celular_que_lidera}">`).join('');
-      
-      abrirModal('Registrar Transferência / Saída', `
-        <div class="form-field"><label>Nome da Discípula</label><input id="fd-nome" list="lista-nomes" placeholder="Digite ou selecione..." /><datalist id="lista-nomes">${nomes.map(n => `<option value="${n}">`).join('')}</datalist></div>
-        <div class="form-row" style="margin-top:14px;"><div class="form-field"><label>Célula Anterior</label><input id="fd-ant" list="lista-cel" placeholder="Célula anterior..." /><datalist id="lista-cel">${celulasOp}</datalist></div><div class="form-field"><label>Célula Nova (ou Deixou a Rede)</label><input id="fd-nova" list="lista-cel" placeholder="Nova célula ou Desistência..." /></div></div>
-        <div class="form-field" style="margin-top:14px;"><label>Motivo Pastoral</label><textarea id="fd-motivo" placeholder="Descreva o motivo da transferência ou saída..."></textarea></div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" onclick="salvarDesistencia()">Salvar Movimentação</button>`);
-    }
-
-    async function salvarDesistencia() {
-      const nome = document.getElementById('fd-nome').value.trim();
-      const ant = document.getElementById('fd-ant').value.trim();
-      const nova = document.getElementById('fd-nova').value.trim();
-      const motivo = document.getElementById('fd-motivo').value.trim();
-
-      if (!nome || !motivo) return alert('Preencha o nome e o motivo.');
-
-      const disc = db.discipulas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
-      
-      await supabaseClient.from('desistencias').insert([{
-        nome,
-        celular_origem: ant || '—',
-        celular_nova: nova || 'Desistência',
-        data: new Date().toISOString().slice(0,10),
-        motivo,
-        registrado_por: 'Rosane Aleluia'
-      }]);
-
-      if (nova.toLowerCase().includes('desistência') || nova.toLowerCase().includes('saída') || !nova) {
-        if (disc) {
-          await supabaseClient.from('discipulas').delete().eq('id', disc.id);
-        }
-      } else if (disc) {
-        const novaLiderObj = db.lideres.find(l => l.celular_que_lidera.toLowerCase() === nova.toLowerCase());
-        if (novaLiderObj) {
-          await supabaseClient.from('discipulas').update({ lider_id: novaLiderObj.id }).eq('id', disc.id);
-        }
-      }
-
-      await supabaseClient.from('movimentacoes').insert([{
-        data: new Date().toISOString().slice(0,10),
-        texto: `Movimentação de discípula: ${nome} (De: ${ant} Para: ${nova || 'Saída'})`
-      }]);
-
-      fecharModal(); await carregarDB(); renderDesistencias(); renderDiscipulas(); renderPastasCelulas(); renderDashboard();
-    }
-
-    function atualizarAvatarTopo() {
-      const rosane = db.discipulas.find(d => d.nome.toLowerCase().includes('rosane')) || db.lideres.find(l => l.nome.toLowerCase().includes('rosane'));
-      const el = document.getElementById('topbar-avatar');
-      if (rosane && rosane.foto_url) {
-        el.innerHTML = `<img src="${rosane.foto_url}" />`;
-      } else {
-        el.innerHTML = 'RA';
-      }
-    }
-
     function iniciais(nome) { return nome ? nome.split(' ').filter(Boolean).slice(0,2).map(p => p[0]).join('').toUpperCase() : '—'; }
     function formatDate(iso) { if (!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
 
-    async function initApp() {
-      await carregarDB();
-      renderDashboard(); renderPastasCelulas(); renderDiscipulas(); renderDesistencias(); atualizarAvatarTopo();
-      
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.onclick = () => {
-          const page = item.getAttribute('data-page');
-          if (page) window.navegar(page);
-        };
-      });
-    }
-
-    document.getElementById('login-form').addEventListener('submit', login);
-
-    if (sessionStorage.getItem('logado') === '1') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      initApp();
-    }
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.onclick = () => {
+        const page = item.getAttribute('data-page');
+        if (page) window.navegar(page);
+      };
+    });
   </script>
 </body>
 </html>
