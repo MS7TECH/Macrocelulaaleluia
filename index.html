@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Biblioteca para Download Direto de PDF (sem print) -->
+  <!-- Biblioteca para Download Direto de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
@@ -89,9 +89,7 @@
       filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
       transition: height var(--trans), transform var(--trans);
     }
-    .sidebar:hover .sidebar-header img {
-      height: 82px;
-    }
+    .sidebar:hover .sidebar-header img { height: 82px; }
     .sidebar-header-text { opacity: 0; transition: opacity var(--trans); margin-top: 8px; }
     .sidebar:hover .sidebar-header-text { opacity: 1; }
     .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--rosa); margin-bottom: 2px; font-weight: 700; }
@@ -178,7 +176,7 @@
     .rel-mini-card.verde .r-val { color: var(--sucesso); }
     .rel-mini-card.vermelho .r-val { color: var(--erro); }
 
-    /* ================= DOCUMENTO OFICIAL DE RELATÓRIO (SEM PRINT) ================= */
+    /* ================= DOCUMENTO OFICIAL DE RELATÓRIO ================= */
     .doc-oficial-container {
       background: #FFFFFF;
       border: 1px solid #E5E5E5;
@@ -487,7 +485,8 @@
       </form>
       <div class="login-hint">
         <strong>Acesso Administrativo:</strong><br>
-        • <strong>Macrocélula (Rosane):</strong> <code>rosane</code> | Senha: <code>123</code>
+        • <strong>Macrocélula (Rosane):</strong> <code>rosane</code> | Senha: <code>123</code><br>
+        • <strong>Líderes G12 / 144 / 1728:</strong> Entrem com seu login para gerir sua célula e dar domínio às suas discípulas.
       </div>
     </div>
   </div>
@@ -555,7 +554,7 @@
             </div>
             <div class="nav-item" data-page="acessos" id="menu-acessos-admin">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-              <span>Acessos &amp; Liderança</span>
+              <span>Acessos &amp; Domínios</span>
             </div>
           </div>
         </div>
@@ -583,7 +582,6 @@
       <section id="page-dashboard" class="page active">
         <div class="stats-grid" id="stats-grid"></div>
 
-        <!-- Capacitação de Discípulas (CD) -->
         <div class="cd-dashboard-card" id="cd-dashboard-card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div>
@@ -594,7 +592,6 @@
           <div class="cd-grid" id="cd-grid-stats"></div>
         </div>
         
-        <!-- Árvore Geracional G12 -> 144 -> 1728 -> 20736 -->
         <div class="card">
           <div class="card-header">
             <h2>Árvore Geracional (Macro ➔ G12 ➔ 144 ➔ 1728 ➔ 20736)</h2>
@@ -765,16 +762,18 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <h2>🔐 Painel de Login, Perfis &amp; Domínio de Liderança</h2>
-              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;">Crie novas lideranças (G12, 144, 1728, 20736 ou perfis personalizados), configure logins/senhas e designe os domínios de cada perfil.</p>
+              <h2 id="titulo-painel-acessos">🔐 Painel de Login, Perfis &amp; Domínio de Liderança</h2>
+              <p style="color:var(--cinza-medio);font-size:0.85rem;margin-top:4px;" id="subtitulo-painel-acessos">
+                Crie logins e dê domínio às suas discípulas para abrirem células seguindo a hierarquia da sua rede.
+              </p>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button class="btn btn-dourado" onclick="abrirModalNovoPerfilLideranca()">✨ Criar Tipo de Liderança / Perfil</button>
-              <button class="btn btn-rosa" onclick="abrirModalAcesso()">+ Criar Login &amp; Designar Liderança</button>
+              <button class="btn btn-dourado" id="btn-novo-perfil-global" onclick="abrirModalNovoPerfilLideranca()">✨ Criar Tipo de Liderança / Perfil</button>
+              <button class="btn btn-rosa" onclick="abrirModalAcesso()">+ Criar Login &amp; Dar Domínio à Discípula</button>
             </div>
           </div>
 
-          <div style="margin-bottom:22px;">
+          <div id="bloco-perfis-globais" style="margin-bottom:22px;">
             <h3 style="font-size:0.95rem;color:var(--preto);margin-bottom:10px;">📋 Perfis de Liderança Disponíveis no Sistema</h3>
             <div id="lista-perfis-lideranca" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
           </div>
@@ -783,10 +782,10 @@
             <table>
               <thead>
                 <tr>
-                  <th>Líder / Usuária</th>
+                  <th>Líder / Discípula</th>
                   <th>Login</th>
                   <th>Senha</th>
-                  <th>Perfil / Liderança</th>
+                  <th>Hierarquia / Cargo</th>
                   <th>Domínios Liberados</th>
                   <th>Ações</th>
                 </tr>
@@ -925,7 +924,7 @@
     }
 
     // =========================================================================
-    // 3. SISTEMA DE LOGIN & BLINDAGEM DE LIDERANÇA (SÓ EDITA A PRÓPRIA CÉLULA)
+    // 3. SISTEMA DE LOGIN, HIERARQUIA DE DOMÍNIO & BLINDAGEM DE LIDERANÇA
     // =========================================================================
     async function realizarLogin(e) {
       e.preventDefault();
@@ -969,6 +968,15 @@
       return usuarioLogado && (usuarioLogado.perfil_id === 'MACRO' || usuarioLogado.pode_gerenciar_acessos);
     }
 
+    // Verifica se a usuária é Líder G12 (ou pode delegar domínio para suas discípulas)
+    function isLiderG12OuSuperior() {
+      if (!usuarioLogado) return false;
+      if (isMacroAdmin()) return true;
+      const pId = (usuarioLogado.perfil_id || '').toUpperCase();
+      const pNome = (usuarioLogado.perfil_nome || '').toUpperCase();
+      return pId.includes('G12') || pNome.includes('G12') || usuarioLogado.pode_criar_celula;
+    }
+
     function aplicarPermissoesUsuario() {
       document.getElementById('topbar-nome').textContent = usuarioLogado.nome;
       document.getElementById('topbar-avatar').textContent = iniciais(usuarioLogado.nome);
@@ -977,22 +985,32 @@
       const menuAcessos = document.getElementById('menu-acessos-admin');
       const btnNovaCelula = document.getElementById('btn-nova-celula');
       const btnNovaDiscipula = document.getElementById('btn-nova-discipula');
+      const btnNovoPerfilGlobal = document.getElementById('btn-novo-perfil-global');
+      const blocoPerfisGlobais = document.getElementById('bloco-perfis-globais');
 
-      menuAcessos.style.display = usuarioLogado.pode_gerenciar_acessos ? 'flex' : 'none';
+      // Libera o menu de Acessos & Domínios tanto para a Macro quanto para líderes G12 (e líderes que podem delegar)
+      menuAcessos.style.display = isLiderG12OuSuperior() ? 'flex' : 'none';
       btnNovaCelula.style.display = usuarioLogado.pode_criar_celula ? 'inline-flex' : 'none';
       btnNovaDiscipula.style.display = usuarioLogado.pode_editar_discipulas ? 'inline-flex' : 'none';
+
+      // Apenas a Macro cria tipos de perfis globais; a líder G12 cria logins e dá domínio às suas discípulas
+      if (btnNovoPerfilGlobal) btnNovoPerfilGlobal.style.display = isMacroAdmin() ? 'inline-flex' : 'none';
+      if (blocoPerfisGlobais) blocoPerfisGlobais.style.display = isMacroAdmin() ? 'block' : 'none';
 
       if (isMacroAdmin()) {
         document.getElementById('subtitulo-celulas').textContent = 'Visão Geral da Macro: gerencie todas as células (G12, 144, 1728, 20736) ou dê baixa no "X".';
         document.getElementById('subtitulo-discipulas').textContent = 'Cadastro completo de Liderança G12, 144, 1728, 20736 e Discípulas sem célula.';
+        document.getElementById('titulo-painel-acessos').textContent = '🔐 Painel de Login, Perfis & Domínio de Liderança (Macro)';
+        document.getElementById('subtitulo-painel-acessos').textContent = 'Crie novas lideranças, configure logins/senhas e designe os domínios de toda a rede.';
       } else {
         document.getElementById('subtitulo-celulas').textContent = 'Acesso exclusivo às células em que VOCÊ é a líder (a célula onde você é discípula fica protegida).';
         document.getElementById('subtitulo-discipulas').textContent = 'Cadastre e edite apenas as discípulas das células que você lidera.';
+        document.getElementById('titulo-painel-acessos').textContent = '🔐 Dar Domínio às Minhas Discípulas (Geração Seguinte)';
+        document.getElementById('subtitulo-painel-acessos').textContent = 'Crie logins para as discípulas da sua célula e dê domínio para elas abrirem suas próprias células na hierarquia.';
       }
     }
 
-    // REGRA DE OURO: Retorna SOMENTE as células em que a usuária logada é a LÍDER (l.nome)
-    // e as sub-células descendentes dela. Nunca retorna a célula onde ela participa como discípula!
+    // Retorna SOMENTE as células em que a usuária logada é a LÍDER (l.nome) e suas sub-células descendentes
     function getCelulasVisiveis() {
       const ativas = db.lideres.filter(l => l.ativa);
       if (isMacroAdmin()) return ativas;
@@ -1001,7 +1019,6 @@
       const minhasPropriasCelulas = ativas.filter(l => l.nome.trim().toLowerCase() === nomeLogada);
       const resultadoIds = new Set(minhasPropriasCelulas.map(c => c.id));
 
-      // Inclui apenas as sub-células criadas abaixo das células que ela lidera
       let adicionou = true;
       while (adicionou) {
         adicionou = false;
@@ -1015,7 +1032,6 @@
       return ativas.filter(c => resultadoIds.has(c.id));
     }
 
-    // Verifica se a usuária logada tem permissão real para abrir/editar aquela célula específica
     function podeGerenciarCelula(celulaId) {
       if (isMacroAdmin()) return true;
       if (!celulaId) return false;
@@ -1023,11 +1039,27 @@
       return permitidas.some(c => c.id === parseInt(celulaId));
     }
 
-    // Retorna SOMENTE as discípulas vinculadas às células que ela lidera
     function getDiscipulasVisiveis() {
       if (isMacroAdmin()) return db.discipulas;
       const minhasCelulasIds = getCelulasVisiveis().map(c => c.id);
       return db.discipulas.filter(d => d.lider_id && minhasCelulasIds.includes(d.lider_id));
+    }
+
+    // Descobre automaticamente qual é o perfil/hierarquia imediatamente abaixo da usuária logada
+    function getProximoPerfilHierarquico() {
+      const pNome = (usuarioLogado?.perfil_nome || '').toUpperCase();
+      const pId = (usuarioLogado?.perfil_id || '').toUpperCase();
+
+      if (pNome.includes('G12') || pId.includes('G12')) {
+        return db.perfisLideranca.find(p => p.nome.includes('144') || p.id.includes('144')) || { id: '144', nome: 'Liderança 144' };
+      }
+      if (pNome.includes('144') || pId.includes('144')) {
+        return db.perfisLideranca.find(p => p.nome.includes('1728') || p.id.includes('1728')) || { id: '1728', nome: 'Liderança 1728' };
+      }
+      if (pNome.includes('1728') || pId.includes('1728')) {
+        return db.perfisLideranca.find(p => p.nome.includes('20736') || p.id.includes('20736')) || { id: '20736', nome: 'Liderança 20736' };
+      }
+      return db.perfisLideranca.find(p => p.nome.includes('144')) || db.perfisLideranca[db.perfisLideranca.length - 1] || { id: '144', nome: 'Liderança 144' };
     }
 
     function atualizarInterfaceCompleta() {
@@ -1035,7 +1067,7 @@
       renderPastasCelulas();
       renderDiscipulas();
       renderDesistencias();
-      if (usuarioLogado && usuarioLogado.pode_gerenciar_acessos) renderTabelaAcessos();
+      if (isLiderG12OuSuperior()) renderTabelaAcessos();
     }
 
     // =========================================================================
@@ -1045,7 +1077,7 @@
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
     window.navegar = function(page) {
-      if (page === 'acessos' && !usuarioLogado.pode_gerenciar_acessos) return;
+      if (page === 'acessos' && !isLiderG12OuSuperior()) return;
 
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1063,7 +1095,7 @@
         desistencias: 'Histórico de Transferências & Baixas', 
         aniversariantes: 'Aniversariantes', 
         relatorios: 'Relatórios Pastorais',
-        acessos: 'Painel de Login, Perfis & Domínio de Liderança'
+        acessos: 'Acessos & Domínio de Liderança'
       };
       
       document.getElementById('page-title').textContent = titles[page] || page;
@@ -1340,9 +1372,11 @@
 
       let geracaoPadrao = l?.geracao || 'Liderança G12';
       if (!l && !isMacroAdmin()) {
-        if (usuarioLogado.perfil_id === 'G12') geracaoPadrao = 'Liderança 144';
-        else if (usuarioLogado.perfil_id === '144') geracaoPadrao = 'Liderança 1728';
-        else if (usuarioLogado.perfil_id === '1728') geracaoPadrao = 'Liderança 20736';
+        const pNome = (usuarioLogado.perfil_nome || '').toUpperCase();
+        if (pNome.includes('G12')) geracaoPadrao = 'Liderança G12';
+        else if (pNome.includes('144')) geracaoPadrao = 'Liderança 144';
+        else if (pNome.includes('1728')) geracaoPadrao = 'Liderança 1728';
+        else if (pNome.includes('20736')) geracaoPadrao = 'Liderança 20736';
       }
 
       const opcoesPerfisGeracao = db.perfisLideranca
@@ -1624,7 +1658,7 @@
     }
 
     // =========================================================================
-    // 7. GERENCIAR MEMBROS DENTRO DA CÉLULA (PROTEGIDO CONTRA ACESSO INDEVIDO)
+    // 7. GERENCIAR MEMBROS DENTRO DA CÉLULA
     // =========================================================================
     function abrirCelulaseMembros(liderId) {
       if (!podeGerenciarCelula(liderId)) {
@@ -1832,7 +1866,6 @@
     function abrirModalDiscipula(id = null, celulaFixaId = null) {
       const d = id ? db.discipulas.find(x => x.id === id) : null;
 
-      // Impede uma líder de editar discípula que não pertence às células que ela lidera
       if (d && d.lider_id && !podeGerenciarCelula(d.lider_id)) {
         alert('🔒 Acesso Negado: Você só pode editar discípulas vinculadas às suas próprias células.');
         return;
@@ -1947,7 +1980,6 @@
 
       const liderIdParsed = liderIdRaw ? parseInt(liderIdRaw) : null;
 
-      // Impede salvar discípula em célula que não pertence à líder logada
       if (!isMacroAdmin() && (!liderIdParsed || !podeGerenciarCelula(liderIdParsed))) {
         alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
         return;
@@ -2010,17 +2042,33 @@
     }
 
     // =========================================================================
-    // 9. PAINEL DE LOGIN, CRIAÇÃO DE LIDERANÇAS & DESIGNAÇÃO DE PERFIS
+    // 9. PAINEL DE LOGIN & DELEGAÇÃO DE DOMÍNIO (MACRO + G12 / LÍDERES)
     // =========================================================================
-    function renderTabelaAcessos() {
-      document.getElementById('lista-perfis-lideranca').innerHTML = db.perfisLideranca.map(p => `
-        <div style="background:var(--rosa-claro);border:1px solid var(--rosa-medio);padding:8px 14px;border-radius:12px;font-size:0.8rem;display:flex;align-items:center;gap:8px;">
-          <strong>${p.nome}</strong>
-          <span style="color:var(--cinza);font-size:0.72rem;">(${p.pode_criar_celula ? 'Cria Célula' : 'Sem Célula'} • ${p.pode_editar_discipulas ? 'Edita Discípulas' : 'Leitura'})</span>
-        </div>
-      `).join('');
+    function getUsuariosVisiveisNoPainel() {
+      if (isMacroAdmin()) return db.usuarios;
 
-      document.getElementById('tabela-acessos').innerHTML = db.usuarios.map(u => {
+      // Líder G12 (ou outra líder) vê apenas os logins criados para as discípulas da sua própria rede
+      const nomesMinhasDiscipulas = new Set(getDiscipulasVisiveis().map(d => d.nome.trim().toLowerCase()));
+      return db.usuarios.filter(u => 
+        u.perfil_id !== 'MACRO' && 
+        u.nome.trim().toLowerCase() !== usuarioLogado.nome.trim().toLowerCase() &&
+        nomesMinhasDiscipulas.has(u.nome.trim().toLowerCase())
+      );
+    }
+
+    function renderTabelaAcessos() {
+      if (isMacroAdmin()) {
+        document.getElementById('lista-perfis-lideranca').innerHTML = db.perfisLideranca.map(p => `
+          <div style="background:var(--rosa-claro);border:1px solid var(--rosa-medio);padding:8px 14px;border-radius:12px;font-size:0.8rem;display:flex;align-items:center;gap:8px;">
+            <strong>${p.nome}</strong>
+            <span style="color:var(--cinza);font-size:0.72rem;">(${p.pode_criar_celula ? 'Cria Célula' : 'Sem Célula'} • ${p.pode_editar_discipulas ? 'Edita Discípulas' : 'Leitura'})</span>
+          </div>
+        `).join('');
+      }
+
+      const listaUsuarios = getUsuariosVisiveisNoPainel();
+
+      document.getElementById('tabela-acessos').innerHTML = listaUsuarios.map(u => {
         const badgesPerm = [];
         if (u.pode_criar_celula) badgesPerm.push('<span class="badge badge-success">Criar Célula</span>');
         if (u.pode_editar_discipulas) badgesPerm.push('<span class="badge badge-info">Gerir Discípulas</span>');
@@ -2036,16 +2084,17 @@
             <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badgesPerm.join('') || '<span class="badge badge-cinza">Somente Leitura</span>'}</div></td>
             <td>
               <div style="display:flex;gap:6px;">
-                <button class="btn btn-outline btn-sm" onclick="abrirModalAcesso(${u.id})">✏️ Editar Perfil/Senha</button>
+                <button class="btn btn-outline btn-sm" onclick="abrirModalAcesso(${u.id})">✏️ Editar Login/Domínio</button>
                 ${u.perfil_id !== 'MACRO' ? `<button class="btn btn-danger btn-sm" onclick="excluirAcesso(${u.id})">Revogar</button>` : ''}
               </div>
             </td>
           </tr>
         `;
-      }).join('');
+      }).join('') || `<tr><td colspan="6" style="text-align:center;color:#999;padding:32px;">Nenhuma discípula da sua rede recebeu login de domínio ainda. Clique em <strong>"+ Criar Login &amp; Dar Domínio à Discípula"</strong> acima.</td></tr>`;
     }
 
     function abrirModalNovoPerfilLideranca() {
+      if (!isMacroAdmin()) return;
       abrirModal('✨ Criar Nova Liderança & Designar Permissões do Perfil', `
         <p style="font-size:0.85rem;color:var(--cinza);margin-bottom:16px;">
           Crie um novo nível de liderança (ex: <em>Liderança 20736</em>, <em>Líder em Treinamento</em>, <em>Supervisora de Rede</em>) e defina o que esse perfil poderá fazer no sistema.
@@ -2096,20 +2145,31 @@
 
     function abrirModalAcesso(userId = null) {
       const u = userId ? db.usuarios.find(x => x.id === userId) : null;
-      const opcoesDiscipulas = db.discipulas.map(d => `<option value="${d.nome}" ${u && u.nome === d.nome ? 'selected' : ''}>${d.nome}</option>`).join('');
-      const opcoesPerfis = db.perfisLideranca.map(p => 
-        `<option value="${p.id}" ${u && u.perfil_id === p.id ? 'selected' : ''}>${p.nome}</option>`
-      ).join('');
+      
+      // Para Macro: lista todas as discípulas. Para G12 (e líderes): lista APENAS as discípulas sob a liderança dela!
+      const baseDiscipulas = isMacroAdmin() ? db.discipulas : getDiscipulasVisiveis();
+      if (!u && !isMacroAdmin() && baseDiscipulas.length === 0) {
+        alert('⚠️ Você ainda não possui discípulas cadastradas na sua célula. Cadastre a discípula primeiro em "Discípulas & Jornada" para depois dar domínio a ela.');
+        return;
+      }
 
-      abrirModal(u ? 'Editar Login, Senha & Perfil' : 'Criar Login & Designar Liderança', `
+      const opcoesDiscipulas = baseDiscipulas.map(d => `<option value="${d.nome}" ${u && u.nome === d.nome ? 'selected' : ''}>${d.nome} (${d.nivel_lideranca || 'Discípula'})</option>`).join('');
+      
+      // Para Macro: todos os perfis. Para G12: trava na hierarquia imediatamente abaixo (ex: Liderança 144)
+      const proximoPerfil = getProximoPerfilHierarquico();
+      const opcoesPerfis = isMacroAdmin()
+        ? db.perfisLideranca.map(p => `<option value="${p.id}" ${u && u.perfil_id === p.id ? 'selected' : ''}>${p.nome}</option>`).join('')
+        : `<option value="${proximoPerfil.id}" selected>${proximoPerfil.nome} (Hierarquia Seguinte)</option>`;
+
+      abrirModal(u ? 'Editar Login, Senha & Domínio' : 'Criar Login & Dar Domínio à Discípula', `
         <div class="form-row">
           <div class="form-field">
-            <label>Selecionar Discípula / Líder *</label>
-            ${u ? `<input id="ac-nome" value="${u.nome}" readonly style="background:#eee;" />` : `<select id="ac-nome" required><option value="">Selecione...</option>${opcoesDiscipulas}</select>`}
+            <label>Selecionar Discípula *</label>
+            ${u ? `<input id="ac-nome" value="${u.nome}" readonly style="background:#eee;" />` : `<select id="ac-nome" required><option value="">Selecione a discípula...</option>${opcoesDiscipulas}</select>`}
           </div>
           <div class="form-field">
-            <label>Designar Liderança / Perfil *</label>
-            <select id="ac-perfil-id" onchange="aoMudarPerfilSelect(this.value)">
+            <label>Hierarquia Designada *</label>
+            <select id="ac-perfil-id" onchange="aoMudarPerfilSelect(this.value)" ${!isMacroAdmin() ? 'disabled' : ''}>
               ${opcoesPerfis}
             </select>
           </div>
@@ -2120,17 +2180,22 @@
         </div>
 
         <div style="background:#FFFDF5;border:1px solid #F3E3B2;padding:10px 14px;border-radius:10px;font-size:0.78rem;color:#8A6D14;margin-bottom:14px;">
-          🔒 <strong>Regra de Isolamento:</strong> Ao entrar com este login, a líder terá acesso exclusivo apenas às células em que <strong>ela mesma for a líder</strong>, nunca podendo alterar a célula onde participa como discípula.
+          🔒 <strong>Hierarquia &amp; Cobertura Automática:</strong> Ao entrar com este login, a discípula poderá abrir a sua própria célula como <strong>${isMacroAdmin() ? 'Líder designada' : proximoPerfil.nome}</strong> vinculada automaticamente à sua cobertura, sem poder alterar a sua célula.
         </div>
 
-        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Domínios &amp; Permissões Específicas desta Usuária:</label>
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Domínios &amp; Permissões Liberadas:</label>
         <div class="permissoes-grid">
-          <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Células Próprias</label>
-          <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Discípulas Próprias</label>
-          <label class="perm-item"><input type="checkbox" id="ac-perm-baixa" ${u?.pode_dar_baixa ? 'checked' : ''} /> Dar Baixa (X) em Células Próprias</label>
-          <label class="perm-item"><input type="checkbox" id="ac-perm-acessos" ${u?.pode_gerenciar_acessos ? 'checked' : ''} /> Gerenciar Logins &amp; Lideranças</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Própria Célula</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Suas Discípulas</label>
+          ${isMacroAdmin() ? `
+            <label class="perm-item"><input type="checkbox" id="ac-perm-baixa" ${u?.pode_dar_baixa ? 'checked' : ''} /> Dar Baixa (X) em Células Próprias</label>
+            <label class="perm-item"><input type="checkbox" id="ac-perm-acessos" ${u?.pode_gerenciar_acessos ? 'checked' : ''} /> Admin Global de Acessos</label>
+          ` : `
+            <input type="checkbox" id="ac-perm-baixa" style="display:none;" ${u?.pode_dar_baixa ? 'checked' : ''} />
+            <input type="checkbox" id="ac-perm-acessos" style="display:none;" />
+          `}
         </div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId || 'null'})">Salvar Credenciais</button>`);
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId || 'null'})">Salvar &amp; Liberar Domínio</button>`);
     }
 
     function aoMudarPerfilSelect(perfilId) {
@@ -2138,33 +2203,46 @@
       if (!p) return;
       document.getElementById('ac-perm-celula').checked = p.pode_criar_celula;
       document.getElementById('ac-perm-disc').checked = p.pode_editar_discipulas;
-      document.getElementById('ac-perm-baixa').checked = p.pode_dar_baixa;
-      document.getElementById('ac-perm-acessos').checked = p.pode_gerenciar_acessos;
+      const chkBaixa = document.getElementById('ac-perm-baixa');
+      const chkAcessos = document.getElementById('ac-perm-acessos');
+      if (chkBaixa) chkBaixa.checked = p.pode_dar_baixa;
+      if (chkAcessos) chkAcessos.checked = p.pode_gerenciar_acessos;
     }
 
     async function salvarAcesso(userId) {
       const nome = document.getElementById('ac-nome').value.trim();
       const login = document.getElementById('ac-login').value.trim().toLowerCase();
       const senha = document.getElementById('ac-senha').value.trim();
-      const perfilId = document.getElementById('ac-perfil-id').value;
-      const perfilObj = db.perfisLideranca.find(p => p.id === perfilId) || { id: perfilId, nome: 'Liderança' };
+      
+      let perfilId = document.getElementById('ac-perfil-id').value;
+      let perfilObj = db.perfisLideranca.find(p => p.id === perfilId);
+      if (!perfilObj) {
+        perfilObj = isMacroAdmin() ? { id: perfilId, nome: 'Liderança' } : getProximoPerfilHierarquico();
+      }
 
       const podeCriarCelula = document.getElementById('ac-perm-celula').checked;
       const podeEditarDisc = document.getElementById('ac-perm-disc').checked;
-      const podeDarBaixa = document.getElementById('ac-perm-baixa').checked;
-      const podeGerenciarAcessos = document.getElementById('ac-perm-acessos').checked;
+      const podeDarBaixa = isMacroAdmin() ? (document.getElementById('ac-perm-baixa')?.checked || false) : false;
+      const podeGerenciarAcessos = isMacroAdmin() ? (document.getElementById('ac-perm-acessos')?.checked || false) : false;
 
       if (!nome || !login || !senha) return alert('Preencha nome, login e senha!');
+
+      // Verifica se já existe outro usuário com o mesmo login
+      const loginDuplicado = db.usuarios.find(u => u.login.toLowerCase() === login && u.id !== userId);
+      if (loginDuplicado) {
+        alert(`O login "${login}" já está em uso por ${loginDuplicado.nome}. Escolha outro login!`);
+        return;
+      }
 
       const btn = document.getElementById('btn-salvar-acesso');
       if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
 
+      // Atualiza automaticamente o nível hierárquico da discípula no cadastro (ex: de Discípula para Liderança 144)
       const disc = db.discipulas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
       if (disc && perfilObj.id !== 'MACRO') {
         await supabaseClient.from('discipulas').update({ nivel_lideranca: perfilObj.nome }).eq('id', disc.id);
       }
 
-      // Vincula apenas à célula onde ela já é líder (se existir), nunca à célula onde ela é discípula
       const celulaPropria = db.lideres.find(l => l.ativa && l.nome.trim().toLowerCase() === nome.toLowerCase());
 
       const dadosUsuario = {
@@ -2182,7 +2260,7 @@
       const { error } = await supabaseClient.from('usuarios').upsert(dadosUsuario);
       if (error) {
         alert('Erro ao salvar credenciais: ' + error.message);
-        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Credenciais'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar & Liberar Domínio'; }
         return;
       }
 
@@ -2194,10 +2272,11 @@
 
       fecharModal();
       atualizarInterfaceCompleta();
+      alert(`✅ Domínio liberado para ${nome} (${perfilObj.nome})! Login: ${login}`);
     }
 
     async function excluirAcesso(userId) {
-      if (!confirm('Deseja revogar o login e domínio desta líder?')) return;
+      if (!confirm('Deseja revogar o login e domínio desta discípula?')) return;
       const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
       if (error) return alert('Erro ao revogar acesso: ' + error.message);
       await carregarDadosDoSupabase();
