@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Biblioteca html2pdf para baixar PDF diretamente -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- Biblioteca Chart.js para gráficos no Relatório Pastoral -->
+  <!-- Biblioteca Chart.js para gráficos no Relatório Pastoral (Atualizado) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -1913,13 +1913,32 @@
       const lider = db.lideres.find(l => Number(l.id) === celulaIdNum);
       if (!lider) return;
 
-      const m = calcularMetricasCobertura();
-      const membros = m.discipulasUnicas.filter(
-        d => Number(d.lider_id) === celulaIdNum && normalizarNome(d.nome) !== normalizarNome(lider.nome)
-      );
+      const nomeMacroNorm = normalizarNome((getCelulaMacroRoot() || {}).nome || '');
+      const nomeLiderNorm = normalizarNome(lider.nome);
+      const registrosVisiveis = getDiscipulasVisiveis();
 
-      // Considera todas as discípulas únicas que não estão nesta célula (incluindo registros duplicados se houver)
-      const outrasDiscipulas = m.discipulasUnicas.filter(d => Number(d.lider_id) !== celulaIdNum);
+      // Membros desta célula (registros reais, sem duplicar o mesmo nome)
+      const nomesNaCelula = new Set();
+      const membros = [];
+      registrosVisiveis.forEach(d => {
+        const chave = normalizarNome(d.nome);
+        if (!chave || Number(d.lider_id) !== celulaIdNum || chave === nomeLiderNorm) return;
+        if (nomesNaCelula.has(chave)) return;
+        nomesNaCelula.add(chave);
+        membros.push(d);
+      });
+
+      // Discípulas de outras células (ignora quem já está nesta célula, a líder e a Macro)
+      const nomesOutras = new Set();
+      const outrasDiscipulas = [];
+      registrosVisiveis.forEach(d => {
+        const chave = normalizarNome(d.nome);
+        if (!chave || chave === nomeMacroNorm || chave === nomeLiderNorm) return;
+        if (Number(d.lider_id) === celulaIdNum || nomesNaCelula.has(chave)) return;
+        if (nomesOutras.has(chave)) return;
+        nomesOutras.add(chave);
+        outrasDiscipulas.push(d);
+      });
 
       const htmlMembros = membros.length ? `
         <div class="table-wrap">
@@ -1965,7 +1984,7 @@
                   const celAtual = db.lideres.find(c => Number(c.id) === Number(d.lider_id));
                   return `
                     <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;padding:3px 0;border-bottom:1px dashed #F3E8EE;">
-                      <input type="checkbox" class="chk-transferir-discipula" data-id="${d.id}" value="${d.id}" style="width:16px;height:16px;accent-color:var(--rosa);cursor:pointer;" />
+                      <input type="checkbox" class="chk-transferir-discipula" data-id="${d.id}" data-nome="${String(d.nome).replace(/"/g,'&quot;')}" value="${d.id}" style="width:16px;height:16px;accent-color:var(--rosa);cursor:pointer;" />
                       <span><strong>${d.nome}</strong> <small style="color:var(--cinza);">(${d.nivel_lideranca || 'Discípula'} • Atual: ${celAtual ? celAtual.celular_que_lidera : 'Outra Célula'})</small></span>
                     </label>
                   `;
@@ -1995,56 +2014,80 @@
 
     async function vincularDiscipulaExistente(liderId) {
       const celulaIdNum = Number(liderId);
+      if (!Number.isFinite(celulaIdNum) || celulaIdNum <= 0) {
+        alert('⚠️ Célula de destino inválida.');
+        return;
+      }
+
       if (!podeGerenciarCelula(celulaIdNum)) {
         alert('🔒 Acesso Negado: Você não pode transferir para esta célula.');
         return;
       }
 
       const checkboxes = Array.from(document.querySelectorAll('.chk-transferir-discipula:checked'));
-      const idsSelecionados = checkboxes
-        .map(chk => {
-          const raw = chk.getAttribute('data-id') || chk.value;
-          const num = Number(raw);
-          return Number.isSafeInteger(num) && num > 0 ? num : raw;
-        })
-        .filter(Boolean);
-
-      if (!idsSelecionados.length) {
+      if (!checkboxes.length) {
         alert('Marque pelo menos uma discípula na lista para transferir!');
         return;
       }
 
-      const btn = document.getElementById('btn-vincular-existente');
-      if (btn) { btn.disabled = true; btn.textContent = `Transferindo (${idsSelecionados.length})...`; }
-      setSyncStatus('⏳ Transferindo discípulas...', 'loading');
+      const nomesMarcados = new Set(checkboxes.map(chk => normalizarNome(chk.getAttribute('data-nome') || '')));
+      const idsSelecionados = checkboxes.map(chk => chk.getAttribute('data-id') || chk.value);
+      const registros = db.discipulas.filter(d =>
+        Number(d.lider_id) !== celulaIdNum &&
+        (nomesMarcados.has(normalizarNome(d.nome)) || idsSelecionados.some(id => String(id) === String(d.id)))
+      );
+      const idsParaAtualizar = [...new Set(registros.map(d => d.id))];
 
-      // Atualiza individualmente ou em lote com verificação explícita por item
-      const erros = [];
-      for (const discId of idsSelecionados) {
-        const { error } = await supabaseClient
-          .from('discipulas')
-          .update({ lider_id: celulaIdNum })
-          .eq('id', discId);
-
-        if (error) {
-          erros.push(`ID ${discId}: ${error.message}`);
-        }
-      }
-
-      if (erros.length > 0) {
-        setSyncStatus('🔴 Erro na transferência', 'error');
-        alert(`⚠️ Algumas transferências falharam:\n${erros.join('\n')}`);
-        if (btn) { btn.disabled = false; btn.textContent = '🔄 Transferir Selecionadas para Esta Célula'; }
-        await carregarDadosDoSupabase();
-        atualizarInterfaceCompleta();
-        abrirCelulaseMembros(celulaIdNum);
+      if (!idsParaAtualizar.length) {
+        alert('Nenhum registro encontrado para transferir. Atualize a página e tente novamente.');
         return;
       }
 
-      await carregarDadosDoSupabase();
-      atualizarInterfaceCompleta();
-      abrirCelulaseMembros(celulaIdNum);
-      alert(`✅ ${idsSelecionados.length} discípula(s) transferida(s) com sucesso!`);
+      const btn = document.getElementById('btn-vincular-existente');
+      if (btn) { btn.disabled = true; btn.textContent = `Transferindo (${checkboxes.length})...`; }
+      setSyncStatus('⏳ Transferindo discípulas...', 'loading');
+
+      try {
+        const { data: atualizadas, error } = await supabaseClient
+          .from('discipulas')
+          .update({ lider_id: celulaIdNum })
+          .in('id', idsParaAtualizar)
+          .select('id, nome, lider_id');
+
+        const idsOk = new Set((atualizadas || []).map(r => String(r.id)));
+        const faltantes = idsParaAtualizar.filter(id => !idsOk.has(String(id)));
+
+        await carregarDadosDoSupabase();
+        atualizarInterfaceCompleta();
+        abrirCelulaseMembros(celulaIdNum);
+
+        if (error) {
+          console.error('Erro ao transferir:', error);
+          setSyncStatus('🔴 Erro na transferência', 'error');
+          alert('⚠️ Erro ao transferir: ' + error.message);
+          return;
+        }
+
+        if (faltantes.length > 0) {
+          console.error('Linhas não atualizadas (provável bloqueio de RLS/permissão):', faltantes);
+          setSyncStatus('🔴 Transferência bloqueada', 'error');
+          alert(
+            `⚠️ ${faltantes.length} registro(s) NÃO foram alterados no banco.\n\n` +
+            `Isso acontece quando o Supabase bloqueia a atualização (política RLS sem permissão de UPDATE na tabela "discipulas").\n\n` +
+            `Rode no SQL Editor do Supabase:\n` +
+            `create policy "permitir update discipulas" on public.discipulas for update using (true) with check (true);`
+          );
+          return;
+        }
+
+        setSyncStatus('🟢 Supabase Conectado', 'online');
+        alert(`✅ ${checkboxes.length} discípula(s) transferida(s) com sucesso!`);
+      } catch (err) {
+        console.error('Exceção inesperada na transferência:', err);
+        setSyncStatus('🔴 Erro na transferência', 'error');
+        alert('⚠️ Falha inesperada ao transferir discípulas: ' + (err?.message || err));
+        if (btn) { btn.disabled = false; btn.textContent = '🔄 Transferir Selecionadas para Esta Célula'; }
+      }
     }
 
     // =========================================================================
@@ -2468,23 +2511,31 @@
         culto_dia_horario: cultoDiaHoraVal
       };
 
-      const { data, error } = await supabaseClient.from('discipulas').upsert(obj).select();
-      if (error) {
-        console.error('Erro ao salvar discípula no Supabase:', error);
-        setSyncStatus('🔴 Erro ao enviar', 'error');
-        alert(`❌ O banco NÃO recebeu o envio!\n\nMotivo: ${error.message}\nCódigo: ${error.code || '—'}`);
-        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Cadastro'; }
-        return;
-      }
+      try {
+        const { data, error } = await supabaseClient.from('discipulas').upsert(obj).select();
+        if (error) {
+          console.error('Erro ao salvar discípula no Supabase:', error);
+          setSyncStatus('🔴 Erro ao enviar', 'error');
+          alert(`❌ O banco NÃO recebeu o envio!\n\nMotivo: ${error.message}\nCódigo: ${error.code || '—'}`);
+          if (btn) { btn.disabled = false; btn.textContent = 'Salvar Cadastro'; }
+          return;
+        }
 
-      console.log('Discípula salva no Supabase:', data);
-      await carregarDadosDoSupabase();
-      if (retornoCelulaId) {
-        abrirCelulaseMembros(retornoCelulaId);
-      } else {
-        fecharModal();
+        console.log('Discípula salva no Supabase:', data);
+        setSyncStatus('🟢 Supabase Conectado', 'online');
+        await carregarDadosDoSupabase();
+        if (retornoCelulaId) {
+          abrirCelulaseMembros(retornoCelulaId);
+        } else {
+          fecharModal();
+        }
+        atualizarInterfaceCompleta();
+      } catch (err) {
+        console.error('Exceção ao salvar discípula:', err);
+        setSyncStatus('🔴 Erro ao enviar', 'error');
+        alert(`❌ Falha inesperada ao salvar cadastro: ${err?.message || err}`);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Cadastro'; }
       }
-      atualizarInterfaceCompleta();
     }
 
     // =========================================================================
