@@ -300,6 +300,111 @@
     .btn-danger-solid:hover { background: #B91C1C; }
     .btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: 9px; }
 
+    /* ================= QUESTIONÁRIO HIERÁRQUICO & TOGGLE OLHO (RELATÓRIOS) ================= */
+    .quest-step {
+      background: var(--fundo);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+    .quest-step-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .quest-badge-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--rosa);
+      color: var(--branco);
+      font-size: 0.76rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .quest-step-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--preto);
+    }
+    .quest-step-sub {
+      font-size: 0.75rem;
+      color: var(--cinza);
+      margin-left: auto;
+    }
+
+    .bloco-toggle-card {
+      background: var(--branco);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    .bloco-toggle-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .bloco-toggle-header h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--preto);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-olho {
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--borda);
+      background: var(--fundo);
+      color: var(--preto);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-olho:hover {
+      border-color: var(--rosa);
+      color: var(--rosa);
+      background: var(--rosa-claro);
+    }
+    .btn-olho.oculto {
+      background: #F4F4F6;
+      color: var(--cinza);
+    }
+    .bloco-corpo-ocultavel {
+      margin-top: 14px;
+    }
+    .bloco-corpo-ocultavel.oculto {
+      display: none;
+    }
+
+    .quest-footer-acao {
+      background: linear-gradient(135deg, #FCEBF3 0%, #FDF8E7 100%);
+      border: 1px solid var(--rosa-medio);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
     /* ================= TABELAS ================= */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -329,7 +434,7 @@
     .badge-cinza { background: #F0F0F3; color: #5E5E68; }
 
     /* ================= FORMULÁRIOS & MODAIS ================= */
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 0; }
     .form-field { display: flex; flex-direction: column; gap: 6px; }
     .form-field label { font-size: 0.75rem; font-weight: 600; color: var(--cinza); }
     .form-field input, .form-field select, .form-field textarea {
@@ -341,7 +446,7 @@
 
     .g12-color-box {
       background: #FFFDF5; border: 1px solid #F3E3B2; border-radius: 12px;
-      padding: 12px 14px; margin-bottom: 14px;
+      padding: 12px 14px; margin-top: 14px;
     }
     .g12-color-box label { color: #8A6D14; font-weight: 700; font-size: 0.78rem; display: block; margin-bottom: 6px; }
     .g12-color-inputs { display: flex; gap: 10px; align-items: center; }
@@ -353,7 +458,7 @@
 
     .culto-box {
       background: #F4F9FD; border: 1px solid #D3E6F8; border-radius: 12px;
-      padding: 12px 14px; margin-bottom: 14px;
+      padding: 12px 14px; margin-top: 14px;
     }
 
     .file-upload-box {
@@ -396,7 +501,7 @@
 
     .relatorio-resumo-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
-      gap: 12px; margin-bottom: 22px;
+      gap: 12px;
     }
     .rel-mini-card {
       background: var(--fundo); border: 1px solid var(--borda);
@@ -412,7 +517,7 @@
     /* ================= GRÁFICOS DO RELATÓRIO ================= */
     .charts-relatorio-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 18px; margin: 18px 0 22px;
+      gap: 18px;
     }
     .chart-box-card {
       background: var(--branco); border: 1px solid var(--borda);
@@ -658,121 +763,190 @@
           </div>
         </section>
 
-        <!-- 6. RELATÓRIOS PASTORAIS -->
+        <!-- 6. RELATÓRIOS PASTORAIS (QUESTIONÁRIO HIERÁRQUICO + OLHO OCULTAR/EXIBIR) -->
         <section id="page-relatorios" class="page">
           <div class="section-card">
             <div class="section-header">
               <div>
-                <h3>📑 Relatórios Pastorais &amp; Estatísticas de Cobertura</h3>
-                <p style="font-size:0.8rem;color:var(--cinza);">Filtre por célula, bairro, hierarquia ou período e gere gráficos e PDF.</p>
+                <h3>📑 Questionário de Relatório Pastoral</h3>
+                <p style="font-size:0.8rem;color:var(--cinza);">Responda às etapas na ordem e gere o relatório oficial ao final.</p>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="limparQuestionarioRelatorio()">↺ Limpar Filtros</button>
+              </div>
+            </div>
+
+            <!-- ETAPA 1 DO QUESTIONÁRIO: ESCOPO -->
+            <div class="quest-step">
+              <div class="quest-step-head">
+                <span class="quest-badge-num">1</span>
+                <span class="quest-step-title">Qual escopo você deseja analisar?</span>
+                <span class="quest-step-sub">Célula • Bairro • Hierarquia</span>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>1.1 • Célula</label>
+                  <select id="filtro-lider" onchange="aplicarFiltrosRelatorio()"><option value="">Todas as Células</option></select>
+                </div>
+                <div class="form-field">
+                  <label>1.2 • Bairro / Município</label>
+                  <select id="filtro-bairro" onchange="aplicarFiltrosRelatorio()"><option value="">Todos os Bairros / Municípios</option></select>
+                </div>
+                <div class="form-field">
+                  <label>1.3 • Nível Hierárquico</label>
+                  <select id="filtro-hierarquia" onchange="aplicarFiltrosRelatorio()">
+                    <option value="">Todas as Hierarquias</option>
+                    <option value="apenas-lideres">Apenas Líderes (G12, 144, 1728, 20736)</option>
+                    <option value="Liderança G12">Liderança G12</option>
+                    <option value="Liderança 144">Liderança 144</option>
+                    <option value="Liderança 1728">Liderança 1728</option>
+                    <option value="Liderança 20736">Liderança 20736</option>
+                    <option value="Discípula">Apenas Discípulas (Não Líderes)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ETAPA 2 DO QUESTIONÁRIO: CRITÉRIO / JORNADA -->
+            <div class="quest-step">
+              <div class="quest-step-head">
+                <span class="quest-badge-num">2</span>
+                <span class="quest-step-title">Qual critério ou etapa da jornada você quer filtrar?</span>
+                <span class="quest-step-sub">Batismo • UV • CD • Frequência</span>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>2.1 • Filtro de Jornada &amp; Geografia</label>
+                  <select id="filtro-pendencia" onchange="aplicarFiltrosRelatorio()">
+                    <option value="">Visão Geral da Macrocélula</option>
+                    <optgroup label="Bairros &amp; Municípios">
+                      <option value="celulas-por-bairro">Células por Bairros &amp; Municípios</option>
+                      <option value="qtd-discipulas-bairro">Quantidade de Discípulas por Bairros</option>
+                      <option value="lista-discipulas-bairro">Lista de Discípulas por Bairros</option>
+                    </optgroup>
+                    <optgroup label="Status de Células">
+                      <option value="celulas-abertas">Células Abertas (Ativas)</option>
+                      <option value="celulas-fechadas">Células Fechadas (Baixas)</option>
+                    </optgroup>
+                    <optgroup label="Batismo &amp; UV">
+                      <option value="batizada">Batizadas</option>
+                      <option value="nao-batizada">Não Batizadas</option>
+                      <option value="com-uv">Concluintes UV</option>
+                      <option value="sem-uv">Sem UV</option>
+                      <option value="com-reencontro">Fizeram Reencontro</option>
+                    </optgroup>
+                    <optgroup label="Capacitação Destino (CD)">
+                      <option value="cd-ainda-nao">CD — Ainda não fez</option>
+                      <option value="cd-1">CD — Nível 1</option>
+                      <option value="cd-2">CD — Nível 2</option>
+                      <option value="cd-3">CD — Nível 3</option>
+                      <option value="cd-concluido">CD — Concluído</option>
+                      <option value="cd-desistiu">CD — Desistiu</option>
+                      <option value="cd-formatura-sim">Formatura CD — Sim</option>
+                      <option value="cd-formatura-nao">Formatura CD — Não</option>
+                    </optgroup>
+                    <optgroup label="Frequência &amp; Culto">
+                      <option value="assidua">Assíduas na Célula</option>
+                      <option value="nao-assidua">Não Assíduas na Célula</option>
+                      <option value="culto-sim">Frequentam Culto Regularmente (Sim)</option>
+                      <option value="culto-nao">Não Frequentam Culto Regularmente (Não)</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ETAPA 3 DO QUESTIONÁRIO: PERÍODO & FORMATO DA LISTA -->
+            <div class="quest-step">
+              <div class="quest-step-head">
+                <span class="quest-badge-num">3</span>
+                <span class="quest-step-title">Qual período e formato de lista você deseja?</span>
+                <span class="quest-step-sub">Data Inicial/Final • Lista Nominal</span>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>3.1 • Data Inicial (Opcional)</label>
+                  <input type="date" id="filtro-data-inicio" onchange="aplicarFiltrosRelatorio()" />
+                </div>
+                <div class="form-field">
+                  <label>3.2 • Data Final (Opcional)</label>
+                  <input type="date" id="filtro-data-fim" onchange="aplicarFiltrosRelatorio()" />
+                </div>
+                <div class="form-field">
+                  <label>3.3 • Formato da Lista Nominal</label>
+                  <select id="filtro-modo-lista" onchange="aplicarFiltrosRelatorio()">
+                    <option value="resumo-apenas" selected>Ocultar Lista de Discípulas (Apenas Totais e Gráficos)</option>
+                    <option value="completa">Mostrar Lista Completa Filtrada</option>
+                    <option value="por-celula">Mostrar Agrupado por Célula</option>
+                    <option value="por-bairro">Mostrar Agrupado por Bairro / Município</option>
+                    <option value="so-lideres">Mostrar Apenas Líderes</option>
+                    <option value="so-discipulas">Mostrar Apenas Discípulas (Sem Líderes)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ETAPA 4: VISUALIZAÇÃO NA TELA COM BOTÃO DE OLHO (OCULTAR / MOSTRAR) -->
+            <div class="bloco-toggle-card">
+              <div class="bloco-toggle-header">
+                <h4>📊 Indicadores &amp; Números da Macrocélula</h4>
+                <button type="button" class="btn-olho" id="btn-olho-indicadores" onclick="toggleBlocoRelatorio('indicadores')">
+                  👁️ Ocultar Números
+                </button>
+              </div>
+              <div class="bloco-corpo-ocultavel" id="corpo-indicadores">
+                <div class="relatorio-resumo-grid" id="relatorio-resumo-indicadores"></div>
+              </div>
+            </div>
+
+            <div class="bloco-toggle-card">
+              <div class="bloco-toggle-header">
+                <h4>📈 Gráficos Visuais da Macrocélula</h4>
+                <button type="button" class="btn-olho" id="btn-olho-graficos" onclick="toggleBlocoRelatorio('graficos')">
+                  👁️ Ocultar Gráficos
+                </button>
+              </div>
+              <div class="bloco-corpo-ocultavel" id="corpo-graficos">
+                <div class="charts-relatorio-grid">
+                  <div class="chart-box-card">
+                    <h5>📊 Jornada Espiritual &amp; Formação</h5>
+                    <div class="chart-canvas-wrap">
+                      <canvas id="grafico-jornada-tela"></canvas>
+                    </div>
+                  </div>
+                  <div class="chart-box-card">
+                    <h5 id="titulo-grafico-secundario-tela">📈 Composição da Macrocélula</h5>
+                    <div class="chart-canvas-wrap">
+                      <canvas id="grafico-secundario-tela"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bloco-toggle-card">
+              <div class="bloco-toggle-header">
+                <h4>📝 Prévia / Relação Filtrada na Tela</h4>
+                <button type="button" class="btn-olho" id="btn-olho-lista" onclick="toggleBlocoRelatorio('lista')">
+                  👁️ Ocultar Lista
+                </button>
+              </div>
+              <div class="bloco-corpo-ocultavel" id="corpo-lista">
+                <div id="resultado-relatorio"></div>
+              </div>
+            </div>
+
+            <!-- RODAPÉ DO QUESTIONÁRIO: BOTÕES DE GERAR RELATÓRIO EMBAIXO -->
+            <div class="quest-footer-acao">
+              <div>
+                <strong style="font-size:0.92rem;color:var(--preto);display:block;">4 • Pronto para emitir o relatório?</strong>
+                <span style="font-size:0.78rem;color:var(--cinza);">Gere o documento oficial com gráficos e PDF ou copie o texto formatado.</span>
               </div>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Relatório (Texto)</button>
-                <button class="btn btn-rosa" onclick="abrirModalRelatorioOficial()">📄 Gerar Relatório Oficial (Gráficos &amp; PDF)</button>
+                <button type="button" class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Relatório (Texto)</button>
+                <button type="button" class="btn btn-rosa" onclick="abrirModalRelatorioOficial()">📄 Gerar Relatório Oficial (Gráficos &amp; PDF)</button>
               </div>
             </div>
-
-            <div class="relatorio-resumo-grid" id="relatorio-resumo-indicadores"></div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <label>Filtrar por Célula</label>
-                <select id="filtro-lider" onchange="aplicarFiltrosRelatorio()"><option value="">Todas as Células</option></select>
-              </div>
-              <div class="form-field">
-                <label>Filtrar por Bairro / Município</label>
-                <select id="filtro-bairro" onchange="aplicarFiltrosRelatorio()"><option value="">Todos os Bairros / Municípios</option></select>
-              </div>
-              <div class="form-field">
-                <label>Filtrar por Hierarquia</label>
-                <select id="filtro-hierarquia" onchange="aplicarFiltrosRelatorio()">
-                  <option value="">Todas as Hierarquias</option>
-                  <option value="apenas-lideres">Apenas Líderes (G12, 144, 1728, 20736)</option>
-                  <option value="Liderança G12">Liderança G12</option>
-                  <option value="Liderança 144">Liderança 144</option>
-                  <option value="Liderança 1728">Liderança 1728</option>
-                  <option value="Liderança 20736">Liderança 20736</option>
-                  <option value="Discípula">Apenas Discípulas (Não Líderes)</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Filtro de Jornada &amp; Geografia</label>
-                <select id="filtro-pendencia" onchange="aplicarFiltrosRelatorio()">
-                  <option value="">Visão Geral da Macrocélula</option>
-                  <optgroup label="Bairros &amp; Municípios">
-                    <option value="celulas-por-bairro">Células por Bairros &amp; Municípios</option>
-                    <option value="qtd-discipulas-bairro">Quantidade de Discípulas por Bairros</option>
-                    <option value="lista-discipulas-bairro">Lista de Discípulas por Bairros</option>
-                  </optgroup>
-                  <optgroup label="Status de Células">
-                    <option value="celulas-abertas">Células Abertas (Ativas)</option>
-                    <option value="celulas-fechadas">Células Fechadas (Baixas)</option>
-                  </optgroup>
-                  <optgroup label="Batismo &amp; UV">
-                    <option value="batizada">Batizadas</option>
-                    <option value="nao-batizada">Não Batizadas</option>
-                    <option value="com-uv">Concluintes UV</option>
-                    <option value="sem-uv">Sem UV</option>
-                    <option value="com-reencontro">Fizeram Reencontro</option>
-                  </optgroup>
-                  <optgroup label="Capacitação Destino (CD)">
-                    <option value="cd-ainda-nao">CD — Ainda não fez</option>
-                    <option value="cd-1">CD — Nível 1</option>
-                    <option value="cd-2">CD — Nível 2</option>
-                    <option value="cd-3">CD — Nível 3</option>
-                    <option value="cd-concluido">CD — Concluído</option>
-                    <option value="cd-desistiu">CD — Desistiu</option>
-                    <option value="cd-formatura-sim">Formatura CD — Sim</option>
-                    <option value="cd-formatura-nao">Formatura CD — Não</option>
-                  </optgroup>
-                  <optgroup label="Frequência &amp; Culto">
-                    <option value="assidua">Assíduas na Célula</option>
-                    <option value="nao-assidua">Não Assíduas na Célula</option>
-                    <option value="culto-sim">Frequentam Culto Regularmente (Sim)</option>
-                    <option value="culto-nao">Não Frequentam Culto Regularmente (Não)</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <label>📅 Período — Data Inicial (Opcional)</label>
-                <input type="date" id="filtro-data-inicio" onchange="aplicarFiltrosRelatorio()" />
-              </div>
-              <div class="form-field">
-                <label>📅 Período — Data Final (Opcional)</label>
-                <input type="date" id="filtro-data-fim" onchange="aplicarFiltrosRelatorio()" />
-              </div>
-              <div class="form-field">
-                <label>📄 Exibição da Lista Nominal no Relatório / PDF</label>
-                <select id="filtro-modo-lista" onchange="aplicarFiltrosRelatorio()">
-                  <option value="resumo-apenas" selected>Ocultar Lista de Discípulas (Apenas Totais e Gráficos)</option>
-                  <option value="completa">Mostrar Lista Completa Filtrada</option>
-                  <option value="por-celula">Mostrar Agrupado por Célula</option>
-                  <option value="por-bairro">Mostrar Agrupado por Bairro / Município</option>
-                  <option value="so-lideres">Mostrar Apenas Líderes</option>
-                  <option value="so-discipulas">Mostrar Apenas Discípulas (Sem Líderes)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="charts-relatorio-grid">
-              <div class="chart-box-card">
-                <h5>📊 Jornada Espiritual &amp; Formação</h5>
-                <div class="chart-canvas-wrap">
-                  <canvas id="grafico-jornada-tela"></canvas>
-                </div>
-              </div>
-              <div class="chart-box-card">
-                <h5 id="titulo-grafico-secundario-tela">📈 Composição da Macrocélula</h5>
-                <div class="chart-canvas-wrap">
-                  <canvas id="grafico-secundario-tela"></canvas>
-                </div>
-              </div>
-            </div>
-
-            <div id="resultado-relatorio"></div>
           </div>
         </section>
 
@@ -854,6 +1028,12 @@
     let chartSecundarioTela = null;
     let chartJornadaModal = null;
     let chartSecundarioModal = null;
+
+    const estadoBlocosRelatorio = {
+      indicadores: true,
+      graficos: true,
+      lista: true
+    };
 
     let ultimoIdGerado = 0;
     function gerarNovoId() {
@@ -1895,13 +2075,13 @@
           <div class="form-field"><label>Nome da Célula *</label><input id="fl-cel" placeholder="Ex: Célula Amigas da Fé" value="${l?.celular_que_lidera||''}" required /></div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field"><label>Bairro / Município *</label><input id="fl-local" placeholder="Ex: Pituba, Salvador - BA" value="${l?.local||''}" required /></div>
           <div class="form-field"><label>Dia da Célula *</label><input id="fl-dias" placeholder="Ex: Terças-feiras" value="${l?.dias||''}" required /></div>
           <div class="form-field"><label>Horário *</label><input id="fl-horarios" placeholder="Ex: 20:00" value="${l?.horarios||''}" required /></div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
             <label>Foto de Perfil da Célula (Abrir Arquivo)</label>
             <div class="file-upload-box">
@@ -1923,7 +2103,7 @@
           </div>
         </div>
 
-        <div class="form-field">
+        <div class="form-field" style="margin-top:14px;">
           <label id="label-cobertura-espiritual">Cobertura Espiritual (Líder Superior)</label>
           <select id="fl-parent"></select>
         </div>
@@ -2107,7 +2287,7 @@
           <div class="form-field"><label>Nome da Líder</label><input type="text" id="fc-lider" value="${celula.nome}" readonly style="background:#eee;" /></div>
           <div class="form-field"><label>Nome da Célula</label><input type="text" id="fc-celula" value="${celula.celular_que_lidera}" readonly style="background:#eee;" /></div>
         </div>
-        <div class="form-field">
+        <div class="form-field" style="margin-top:14px;">
           <label>Motivo do Fechamento (Questionário Pastoral) *</label>
           <textarea id="fc-motivo" placeholder="Descreva detalhadamente o motivo pastoral do encerramento desta célula..." required></textarea>
         </div>
@@ -2559,7 +2739,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
             <label>Célula Pertencente *</label>
             <select id="f-lider-id" required>
@@ -2570,7 +2750,7 @@
           <div class="form-field"><label>Data de Aniversário</label><input type="date" id="f-nasc" value="${d?.data_nascimento||''}" /></div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field"><label>Bairro / Município / Endereço</label><input id="f-endereco" value="${d?.endereco||''}" placeholder="Ex: Pituba, Salvador - BA" /></div>
           <div class="form-field">
             <label>Estado Civil *</label>
@@ -2581,7 +2761,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div>
           <div class="form-field">
             <label>Telefone / WhatsApp</label>
@@ -2589,7 +2769,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
             <label>Foto de Perfil da Discípula (Abrir Arquivo)</label>
             <div class="file-upload-box">
@@ -2632,7 +2812,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
             <label>Fez Universidade da Vida (UV)? *</label>
             <select id="f-uv" required>
@@ -2660,7 +2840,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
             <label>Capacitação Destino (CD) *</label>
             <select id="f-cd" required>
@@ -2859,7 +3039,7 @@
           <div class="form-field"><label>Nome da Liderança / Cargo *</label><input type="text" id="np-nome" placeholder="Ex: Liderança 20736 ou Supervisora" required /></div>
           <div class="form-field"><label>Nível Hierárquico (Ordem)</label><input type="number" id="np-nivel" value="5" min="1" max="15" /></div>
         </div>
-        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Permissões Designadas a este Perfil:</label>
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin:12px 0 6px;">Permissões Designadas a este Perfil:</label>
         <div class="permissoes-grid">
           <label class="perm-item"><input type="checkbox" id="np-criar-celula" checked /> Pode Criar / Editar Células</label>
           <label class="perm-item"><input type="checkbox" id="np-editar-disc" checked /> Pode Cadastrar / Editar Discípulas</label>
@@ -2928,12 +3108,12 @@
             </select>
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field"><label>Login de Acesso *</label><input type="text" id="ac-login" value="${u?.login || ''}" placeholder="Ex: larissa" required /></div>
           <div class="form-field"><label>Senha *</label><input type="text" id="ac-senha" value="${u?.senha || ''}" placeholder="Ex: 123" required /></div>
         </div>
 
-        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Domínios &amp; Permissões Liberadas:</label>
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin:12px 0 6px;">Domínios &amp; Permissões Liberadas:</label>
         <div class="permissoes-grid">
           <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Própria Célula</label>
           <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Suas Discípulas</label>
@@ -3101,7 +3281,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
             <label>Tipo de Movimentação (Destino) *</label>
             <select id="fd-tipo-movimentacao" onchange="aoMudarTipoMovimentacao()" required>
@@ -3118,7 +3298,7 @@
           </div>
         </div>
 
-        <div class="form-field" style="margin-top:8px;">
+        <div class="form-field" style="margin-top:14px;">
           <label>Motivo Pastoral *</label>
           <textarea id="fd-motivo" placeholder="Descreva obrigatoriamente o motivo pastoral..." required></textarea>
         </div>
@@ -3181,7 +3361,7 @@
     }
 
     // =========================================================================
-    // 12. ANIVERSARIANTES & RELATÓRIOS PASTORAIS
+    // 12. ANIVERSARIANTES & RELATÓRIOS PASTORAIS (QUESTIONÁRIO + OLHO)
     // =========================================================================
     function calcularIdade(dataNasc) {
       if (!dataNasc) return '';
@@ -3217,6 +3397,52 @@
             ${telLimpo ? `<a href="${linkWap}" target="_blank" class="btn btn-whatsapp btn-sm">💬 Parabéns</a>` : ''}
           </div>`;
       }).join('');
+    }
+
+    function toggleBlocoRelatorio(chave) {
+      estadoBlocosRelatorio[chave] = !estadoBlocosRelatorio[chave];
+      const visivel = estadoBlocosRelatorio[chave];
+
+      const corpo = document.getElementById('corpo-' + chave);
+      const btn = document.getElementById('btn-olho-' + chave);
+
+      const rotulos = {
+        indicadores: ['👁️ Ocultar Números', '🙈 Mostrar Números'],
+        graficos: ['👁️ Ocultar Gráficos', '🙈 Mostrar Gráficos'],
+        lista: ['👁️ Ocultar Lista', '🙈 Mostrar Lista']
+      };
+
+      if (corpo) {
+        corpo.classList.toggle('oculto', !visivel);
+      }
+      if (btn) {
+        btn.classList.toggle('oculto', !visivel);
+        btn.textContent = visivel ? rotulos[chave][0] : rotulos[chave][1];
+      }
+
+      if (chave === 'graficos' && visivel) {
+        renderizarGraficosRelatorio(obterDadosRelatorioAtual(), 'tela');
+      }
+    }
+
+    function limparQuestionarioRelatorio() {
+      const fLider = document.getElementById('filtro-lider');
+      const fBairro = document.getElementById('filtro-bairro');
+      const fHier = document.getElementById('filtro-hierarquia');
+      const fPend = document.getElementById('filtro-pendencia');
+      const fIni = document.getElementById('filtro-data-inicio');
+      const fFim = document.getElementById('filtro-data-fim');
+      const fModo = document.getElementById('filtro-modo-lista');
+
+      if (fLider) fLider.value = '';
+      if (fBairro) fBairro.value = '';
+      if (fHier) fHier.value = '';
+      if (fPend) fPend.value = '';
+      if (fIni) fIni.value = '';
+      if (fFim) fFim.value = '';
+      if (fModo) fModo.value = 'resumo-apenas';
+
+      aplicarFiltrosRelatorio();
     }
 
     function prepararFiltrosRelatorio() {
@@ -3503,6 +3729,7 @@
 
     function renderizarGraficosRelatorio(dados, prefixoCanvas = 'tela') {
       if (typeof Chart === 'undefined') return;
+      if (prefixoCanvas === 'tela' && !estadoBlocosRelatorio.graficos) return;
 
       const idJornada = prefixoCanvas === 'tela' ? 'grafico-jornada-tela' : 'grafico-jornada-modal';
       const idSecundario = prefixoCanvas === 'tela' ? 'grafico-secundario-tela' : 'grafico-secundario-modal';
