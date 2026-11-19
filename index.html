@@ -845,7 +845,6 @@
     let chartJornadaModal = null;
     let chartSecundarioModal = null;
 
-    // Gera ID único evitando colisões em operações rápidas consecutivas
     let ultimoIdGerado = 0;
     function gerarNovoId() {
       const agora = Date.now();
@@ -882,7 +881,7 @@
       if (d.endereco && d.endereco.trim() !== '') {
         return extrairBairroEMunicipio(d.endereco);
       }
-      const cel = db.lideres.find(l => l.id === d.lider_id);
+      const cel = db.lideres.find(l => String(l.id) === String(d.lider_id));
       if (cel && cel.local && cel.local.trim() !== '') {
         return extrairBairroEMunicipio(cel.local);
       }
@@ -892,7 +891,7 @@
     function obterDataCadastroDiscipula(d) {
       if (d.data_cadastro) return d.data_cadastro.slice(0, 10);
       if (d.created_at) return d.created_at.slice(0, 10);
-      if (d.id && d.id > 1000000000000) {
+      if (d.id && Number(d.id) > 1000000000000) {
         try {
           return new Date(Number(d.id)).toISOString().slice(0, 10);
         } catch (e) { return null; }
@@ -932,6 +931,23 @@
            normalizarNome(l.nome).includes('celula aleluia'))
         ) || null
       );
+    }
+
+    // Retorna os IDs de uma célula e de eventuais sub-células filhas ativas (para contagem de rede)
+    function getIdsCelulaERede(celulaId) {
+      const targetStr = String(celulaId);
+      const ids = new Set([targetStr]);
+      let adicionou = true;
+      while (adicionou) {
+        adicionou = false;
+        db.lideres.forEach(l => {
+          if (l.ativa && l.parent_id != null && ids.has(String(l.parent_id)) && !ids.has(String(l.id))) {
+            ids.add(String(l.id));
+            adicionou = true;
+          }
+        });
+      }
+      return ids;
     }
 
     async function carregarDadosDoSupabase() {
@@ -1206,32 +1222,32 @@
 
       const nomeLogada = normalizarNome(usuarioLogado.nome);
       const minhasPropriasCelulas = ativas.filter(l => normalizarNome(l.nome) === nomeLogada);
-      const resultadoIds = new Set(minhasPropriasCelulas.map(c => c.id));
+      const resultadoIds = new Set(minhasPropriasCelulas.map(c => String(c.id)));
 
       let adicionou = true;
       while (adicionou) {
         adicionou = false;
         ativas.forEach(c => {
-          if (c.parent_id && resultadoIds.has(c.parent_id) && !resultadoIds.has(c.id)) {
-            resultadoIds.add(c.id);
+          if (c.parent_id != null && resultadoIds.has(String(c.parent_id)) && !resultadoIds.has(String(c.id))) {
+            resultadoIds.add(String(c.id));
             adicionou = true;
           }
         });
       }
-      return ativas.filter(c => resultadoIds.has(c.id));
+      return ativas.filter(c => resultadoIds.has(String(c.id)));
     }
 
     function podeGerenciarCelula(celulaId) {
       if (isMacroAdmin()) return true;
-      if (!celulaId) return false;
+      if (celulaId == null || celulaId === '') return false;
       const permitidas = getCelulasVisiveis();
-      return permitidas.some(c => Number(c.id) === Number(celulaId));
+      return permitidas.some(c => String(c.id) === String(celulaId));
     }
 
     function getDiscipulasVisiveis() {
       if (isMacroAdmin()) return db.discipulas;
-      const minhasCelulasIds = getCelulasVisiveis().map(c => Number(c.id));
-      return db.discipulas.filter(d => d.lider_id && minhasCelulasIds.includes(Number(d.lider_id)));
+      const minhasCelulasIds = getCelulasVisiveis().map(c => String(c.id));
+      return db.discipulas.filter(d => d.lider_id != null && minhasCelulasIds.includes(String(d.lider_id)));
     }
 
     function getProximoPerfilHierarquico() {
@@ -1373,7 +1389,7 @@
       const htmlLista = filtradas.length ? `
         <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Célula</th></tr></thead><tbody>
           ${filtradas.map(disc => {
-            const lider = db.lideres.find(l => Number(l.id) === Number(disc.lider_id));
+            const lider = db.lideres.find(l => String(l.id) === String(disc.lider_id));
             return `<tr><td>${renderAvatarDisc(disc.foto_url, disc.nome)}</td><td><strong>${disc.nome}</strong></td><td>${disc.telefone || '—'}</td><td>${lider ? lider.celular_que_lidera : '—'}</td></tr>`;
           }).join('')}
         </tbody></table></div>` : '<div class="empty-state"><p>Nenhuma discípula neste status.</p></div>';
@@ -1405,7 +1421,7 @@
       const g12CelulasAbertas = lideresAtivas.filter(l => 
         !isRegistroMacroOrganizacao(l) &&
         normalizarNome(l.nome) !== nomeRootNorm &&
-        (Number(l.parent_id) === Number(root.id) || (l.geracao || '').toUpperCase().includes('G12'))
+        (String(l.parent_id) === String(root.id) || (l.geracao || '').toUpperCase().includes('G12'))
       );
 
       return `
@@ -1430,8 +1446,8 @@
         <div class="tree-branch-grid">
           ${g12CelulasAbertas.map(lider => {
             const nomeLiderNorm = normalizarNome(lider.nome);
-            const discipulasDiretas = m.discipulasUnicas.filter(d => Number(d.lider_id) === Number(lider.id) && normalizarNome(d.nome) !== nomeLiderNorm);
-            const subCelulas144 = lideresAtivas.filter(l => Number(l.parent_id) === Number(lider.id) && Number(l.id) !== Number(lider.id) && normalizarNome(l.nome) !== nomeRootNorm);
+            const discipulasDiretas = m.discipulasUnicas.filter(d => String(d.lider_id) === String(lider.id) && normalizarNome(d.nome) !== nomeLiderNorm);
+            const subCelulas144 = lideresAtivas.filter(l => String(l.parent_id) === String(lider.id) && String(l.id) !== String(lider.id) && normalizarNome(l.nome) !== nomeRootNorm);
             const totalItens = discipulasDiretas.length + subCelulas144.length;
 
             return `
@@ -1445,14 +1461,14 @@
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
                   <span style="font-size:0.78rem;color:var(--cinza);">👥 ${discipulasDiretas.length} discípula(s) • 🏠 ${subCelulas144.length} sub-célula(s)</span>
-                  ${totalItens > 0 ? `<button class="btn btn-rosa btn-sm" id="btn-ver-mais-${lider.id}" onclick="toggleSubCelulas(${lider.id})">▼ Ver Integrantes / Ramificações</button>` : ''}
+                  ${totalItens > 0 ? `<button class="btn btn-rosa btn-sm" id="btn-ver-mais-${lider.id}" onclick="toggleSubCelulas('${lider.id}')">▼ Ver Integrantes / Ramificações</button>` : ''}
                 </div>
                 <div class="sub-celulas-container" id="sub-celulas-${lider.id}">
                   ${subCelulas144.length > 0 ? `
                     <span style="font-size:0.74rem;color:var(--dourado);font-weight:700;display:block;margin-bottom:6px;">Células 144, 1728 &amp; 20736:</span>
                     ${subCelulas144.map(sub144 => {
-                      const disc144 = m.discipulasUnicas.filter(d => Number(d.lider_id) === Number(sub144.id) && normalizarNome(d.nome) !== normalizarNome(sub144.nome));
-                      const subCelulas1728 = lideresAtivas.filter(l => Number(l.parent_id) === Number(sub144.id) && Number(l.id) !== Number(sub144.id));
+                      const disc144 = m.discipulasUnicas.filter(d => String(d.lider_id) === String(sub144.id) && normalizarNome(d.nome) !== normalizarNome(sub144.nome));
+                      const subCelulas1728 = lideresAtivas.filter(l => String(l.parent_id) === String(sub144.id) && String(l.id) !== String(sub144.id));
                       return `
                         <div class="sub-celula-item">
                           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1462,8 +1478,8 @@
                           ${disc144.length > 0 || subCelulas1728.length > 0 ? `
                             <div class="sub-1728-box">
                               ${subCelulas1728.map(s17 => {
-                                const subCelulas20736 = lideresAtivas.filter(l => Number(l.parent_id) === Number(s17.id) && Number(l.id) !== Number(s17.id));
-                                const disc1728 = m.discipulasUnicas.filter(d => Number(d.lider_id) === Number(s17.id) && normalizarNome(d.nome) !== normalizarNome(s17.nome));
+                                const subCelulas20736 = lideresAtivas.filter(l => String(l.parent_id) === String(s17.id) && String(l.id) !== String(s17.id));
+                                const disc1728 = m.discipulasUnicas.filter(d => String(d.lider_id) === String(s17.id) && normalizarNome(d.nome) !== normalizarNome(s17.nome));
                                 return `
                                   <div style="margin-bottom:4px;">
                                     ↳ <strong>${s17.geracao}:</strong> ${s17.celular_que_lidera} (${s17.nome})
@@ -1504,6 +1520,22 @@
     // =========================================================================
     // 7. GESTÃO DE CÉLULAS
     // =========================================================================
+    function contarDiscipulasDaCelula(celula, discipulasUnicas) {
+      const idsRede = getIdsCelulaERede(celula.id);
+      const nomeLiderNorm = normalizarNome(celula.nome);
+      const nomes = new Set();
+
+      discipulasUnicas.forEach(d => {
+        if (d.lider_id == null) return;
+        if (!idsRede.has(String(d.lider_id))) return;
+        const chave = normalizarNome(d.nome);
+        if (!chave || chave === nomeLiderNorm) return;
+        nomes.add(chave);
+      });
+
+      return nomes.size;
+    }
+
     function renderPastasCelulas() {
       const container = document.getElementById('grid-pastas-celulas');
       const m = calcularMetricasCobertura();
@@ -1519,11 +1551,7 @@
       }
 
       container.innerHTML = celulasReais.map(l => {
-        const qtdMembrosCelula = new Set(
-          m.discipulasUnicas
-            .filter(d => Number(d.lider_id) === Number(l.id) && normalizarNome(d.nome) !== normalizarNome(l.nome))
-            .map(d => normalizarNome(d.nome))
-        ).size;
+        const qtdMembrosCelula = contarDiscipulasDaCelula(l, m.discipulasUnicas);
 
         const fotoCelulaHTML = l.foto_celula_url 
           ? `<img src="${l.foto_celula_url}" alt="${l.celular_que_lidera}" />` 
@@ -1531,13 +1559,13 @@
 
         const podeDarBaixa = podeGerenciarCelula(l.id) && (isMacroAdmin() || usuarioLogado.pode_dar_baixa);
         const botaoBaixaHTML = podeDarBaixa 
-          ? `<button class="btn-baixa-x" title="Dar Baixa / Fechar Célula" onclick="abrirModalBaixaCelula(${l.id}, event)">✕</button>` 
+          ? `<button class="btn-baixa-x" title="Dar Baixa / Fechar Célula" onclick="abrirModalBaixaCelula('${l.id}', event)">✕</button>` 
           : '';
 
         return `
           <div class="celula-folder-card">
             ${botaoBaixaHTML}
-            <div onclick="abrirCelulaseMembros(${l.id})" style="cursor:pointer;">
+            <div onclick="abrirCelulaseMembros('${l.id}')" style="cursor:pointer;">
               <div class="folder-header">
                 <div class="folder-icon">${fotoCelulaHTML}</div>
                 <div class="folder-info">
@@ -1553,8 +1581,8 @@
             <div class="folder-meta">
               <span>👥 <strong>${qtdMembrosCelula}</strong> discípula(s)</span>
               <div style="display:flex;gap:6px;">
-                <button class="btn btn-outline btn-sm" onclick="abrirCelulaseMembros(${l.id})">Abrir</button>
-                <button class="btn btn-outline btn-sm" onclick="abrirModalLider(${l.id})" title="Editar Célula">✏️</button>
+                <button class="btn btn-outline btn-sm" onclick="abrirCelulaseMembros('${l.id}')">Abrir</button>
+                <button class="btn btn-outline btn-sm" onclick="abrirModalLider('${l.id}')" title="Editar Célula">✏️</button>
               </div>
             </div>
           </div>`;
@@ -1567,7 +1595,7 @@
         return;
       }
 
-      const l = id ? db.lideres.find(x => Number(x.id) === Number(id)) : null;
+      const l = id ? db.lideres.find(x => String(x.id) === String(id)) : null;
       tempFotoCelulaBase64 = l?.foto_celula_url || "";
       const discUnicas = getDiscipulasUnicasVisiveis();
 
@@ -1578,7 +1606,7 @@
           campoLiderHTML = `
             <div class="form-field">
               <label>Líder Responsável *</label>
-              <select id="fl-nome" onchange="aoMudarLiderOuGeracao(${id}, ${l.parent_id || 'null'})" required>
+              <select id="fl-nome" onchange="aoMudarLiderOuGeracao('${id}', ${l.parent_id ? `'${l.parent_id}'` : 'null'})" required>
                 ${opcoesLideres}
               </select>
             </div>`;
@@ -1658,7 +1686,7 @@
           </div>
           <div class="form-field">
             <label>Nível / Geração da Célula</label>
-            <select id="fl-ger" onchange="aoMudarLiderOuGeracao(${id || 'null'}, ${l?.parent_id || 'null'})">${opcoesPerfisGeracao}</select>
+            <select id="fl-ger" onchange="aoMudarLiderOuGeracao(${id ? `'${id}'` : 'null'}, ${l?.parent_id ? `'${l.parent_id}'` : 'null'})">${opcoesPerfisGeracao}</select>
           </div>
         </div>
 
@@ -1667,7 +1695,7 @@
           <select id="fl-parent"></select>
         </div>
         <div class="form-field" style="margin-top:14px;"><label>Observações da Abertura (Opcional)</label><textarea id="fl-obs" placeholder="Detalhes adicionais sobre o início desta célula...">${l?.obs||''}</textarea></div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-lider" onclick="salvarLider(${id||'null'})">${l ? 'Salvar Alterações' : 'Confirmar Abertura de Célula'}</button>`);
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-lider" onclick="salvarLider(${id ? `'${id}'` : 'null'})">${l ? 'Salvar Alterações' : 'Confirmar Abertura de Célula'}</button>`);
 
       aoMudarLiderOuGeracao(id, l?.parent_id || null, true);
     }
@@ -1682,7 +1710,7 @@
       const nomeLiderEscolhida = selectNome ? selectNome.value.trim() : '';
 
       const ativasSemAutoLideranca = db.lideres.filter(x => 
-        x.ativa && (!celulaAtualId || Number(x.id) !== Number(celulaAtualId))
+        x.ativa && (!celulaAtualId || String(x.id) !== String(celulaAtualId))
       );
 
       const macroRoot = getCelulaMacroRoot() || db.lideres[0];
@@ -1709,7 +1737,7 @@
       if (geracaoSelecionada.includes('144')) {
         const celulasG12 = ativasSemAutoLideranca.filter(x => x.geracao.includes('G12'));
         let idG12Real = parentSalvoId || (celulaExistenteDaLider ? celulaExistenteDaLider.parent_id : null) || (discEncontrada ? discEncontrada.lider_id : null);
-        const celulaG12Alvo = celulasG12.find(c => Number(c.id) === Number(idG12Real));
+        const celulaG12Alvo = celulasG12.find(c => String(c.id) === String(idG12Real));
 
         if (celulaG12Alvo) {
           selectParent.innerHTML = `<option value="${celulaG12Alvo.id}" selected>🔒 ${celulaG12Alvo.nome} (${celulaG12Alvo.celular_que_lidera})</option>`;
@@ -1729,7 +1757,7 @@
       if (geracaoSelecionada.includes('1728')) {
         const celulas144 = ativasSemAutoLideranca.filter(x => x.geracao.includes('144'));
         let id144Real = parentSalvoId || (celulaExistenteDaLider ? celulaExistenteDaLider.parent_id : null) || (discEncontrada ? discEncontrada.lider_id : null);
-        const celula144Alvo = celulas144.find(c => Number(c.id) === Number(id144Real));
+        const celula144Alvo = celulas144.find(c => String(c.id) === String(id144Real));
 
         if (celula144Alvo) {
           selectParent.innerHTML = `<option value="${celula144Alvo.id}" selected>🔒 ${celula144Alvo.nome} (${celula144Alvo.celular_que_lidera})</option>`;
@@ -1752,7 +1780,7 @@
           || (celulaExistenteDaLider && celulaExistenteDaLider.geracao.includes('1728') ? celulaExistenteDaLider.id : null)
           || (discEncontrada ? discEncontrada.lider_id : null);
 
-        const celula1728Alvo = celulas1728.find(c => Number(c.id) === Number(id1728Real));
+        const celula1728Alvo = celulas1728.find(c => String(c.id) === String(id1728Real));
 
         if (celula1728Alvo) {
           selectParent.innerHTML = `<option value="${celula1728Alvo.id}" selected>🔒 ${celula1728Alvo.nome} (${celula1728Alvo.celular_que_lidera})</option>`;
@@ -1770,7 +1798,7 @@
       }
 
       selectParent.innerHTML = ativasSemAutoLideranca.map(c => 
-        `<option value="${c.id}" ${Number(parentSalvoId) === Number(c.id) ? 'selected' : ''}>${c.nome} (${c.celular_que_lidera})</option>`
+        `<option value="${c.id}" ${String(parentSalvoId) === String(c.id) ? 'selected' : ''}>${c.nome} (${c.celular_que_lidera})</option>`
       ).join('');
       selectParent.disabled = !isMacroAdmin();
       labelCobertura.textContent = 'Cobertura Espiritual (Líder Superior)';
@@ -1808,7 +1836,7 @@
         foto_celula_url: tempFotoCelulaBase64,
         modalidade: document.getElementById('fl-modalidade').value,
         geracao: document.getElementById('fl-ger').value,
-        parent_id: parentVal ? parseInt(parentVal, 10) : 1,
+        parent_id: parentVal ? (isNaN(Number(parentVal)) ? parentVal : parseInt(parentVal, 10)) : 1,
         obs: document.getElementById('fl-obs').value.trim(),
         ativa: true
       };
@@ -1832,10 +1860,10 @@
         return;
       }
 
-      const celula = db.lideres.find(l => Number(l.id) === Number(liderId));
+      const celula = db.lideres.find(l => String(l.id) === String(liderId));
       if (!celula) return;
 
-      const qtdParticipantes = db.discipulas.filter(d => Number(d.lider_id) === Number(liderId)).length;
+      const qtdParticipantes = db.discipulas.filter(d => String(d.lider_id) === String(liderId)).length;
 
       abrirModal(`⚠️ Fechamento & Baixa de Célula`, `
         <div style="background:#FEF2F2;border:1px solid #FECACA;padding:14px;border-radius:12px;margin-bottom:18px;color:#991B1B;font-size:0.86rem;">
@@ -1852,7 +1880,7 @@
         </div>
       `, `
         <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
-        <button class="btn btn-danger-solid" id="btn-confirmar-baixa" onclick="confirmarBaixaExclusaoCelula(${liderId})">🗑️ Dar Baixa e Excluir Célula</button>
+        <button class="btn btn-danger-solid" id="btn-confirmar-baixa" onclick="confirmarBaixaExclusaoCelula('${liderId}')">🗑️ Dar Baixa e Excluir Célula</button>
       `);
     }
 
@@ -1867,13 +1895,13 @@
         return;
       }
 
-      const celula = db.lideres.find(l => Number(l.id) === Number(liderId));
+      const celula = db.lideres.find(l => String(l.id) === String(liderId));
       if (!celula) return;
 
       const btn = document.getElementById('btn-confirmar-baixa');
       if (btn) { btn.disabled = true; btn.textContent = 'Processando Baixa...'; }
 
-      const participantesExcluidos = db.discipulas.filter(d => Number(d.lider_id) === Number(liderId));
+      const participantesExcluidos = db.discipulas.filter(d => String(d.lider_id) === String(liderId));
       const autorBaixa = usuarioLogado ? usuarioLogado.nome : 'Sistema';
 
       await supabaseClient.from('desistencias').insert({
@@ -1901,40 +1929,37 @@
     }
 
     // =========================================================================
-    // 8. GERENCIAR MEMBROS DENTRO DA CÉLULA (TRANSFERÊNCIA MÚLTIPLA CORRIGIDA)
+    // 8. GERENCIAR MEMBROS DENTRO DA CÉLULA
     // =========================================================================
     function abrirCelulaseMembros(liderId) {
-      const celulaIdNum = Number(liderId);
-      if (!podeGerenciarCelula(celulaIdNum)) {
+      if (!podeGerenciarCelula(liderId)) {
         alert('🔒 Acesso Negado: Você não pode gerenciar membros de uma célula onde você não é a líder.');
         return;
       }
 
-      const lider = db.lideres.find(l => Number(l.id) === celulaIdNum);
+      const lider = db.lideres.find(l => String(l.id) === String(liderId));
       if (!lider) return;
 
       const nomeMacroNorm = normalizarNome((getCelulaMacroRoot() || {}).nome || '');
       const nomeLiderNorm = normalizarNome(lider.nome);
       const registrosVisiveis = getDiscipulasVisiveis();
 
-      // Membros desta célula (registros reais, sem duplicar o mesmo nome)
       const nomesNaCelula = new Set();
       const membros = [];
       registrosVisiveis.forEach(d => {
         const chave = normalizarNome(d.nome);
-        if (!chave || Number(d.lider_id) !== celulaIdNum || chave === nomeLiderNorm) return;
+        if (!chave || String(d.lider_id) !== String(lider.id) || chave === nomeLiderNorm) return;
         if (nomesNaCelula.has(chave)) return;
         nomesNaCelula.add(chave);
         membros.push(d);
       });
 
-      // Discípulas de outras células (ignora quem já está nesta célula, a líder e a Macro)
       const nomesOutras = new Set();
       const outrasDiscipulas = [];
       registrosVisiveis.forEach(d => {
         const chave = normalizarNome(d.nome);
         if (!chave || chave === nomeMacroNorm || chave === nomeLiderNorm) return;
-        if (Number(d.lider_id) === celulaIdNum || nomesNaCelula.has(chave)) return;
+        if (String(d.lider_id) === String(lider.id) || nomesNaCelula.has(chave)) return;
         if (nomesOutras.has(chave)) return;
         nomesOutras.add(chave);
         outrasDiscipulas.push(d);
@@ -1952,18 +1977,18 @@
                   <td>${disc.telefone || '—'}</td>
                   <td><span class="badge ${(disc.nivel_lideranca || '').includes('G12') ? 'badge-dourado' : 'badge-rosa'}">${disc.nivel_lideranca || 'Discípula'}</span></td>
                   <td>
-                    <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="fecharModal(); abrirModalDiscipula(${disc.id}, ${celulaIdNum})">✏️ Editar</button>
+                    <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="fecharModal(); abrirModalDiscipula('${disc.id}', '${lider.id}')">✏️ Editar</button>
                   </td>
                 </tr>`).join('')}
             </tbody>
           </table>
-        </div>` : '<div class="empty-state"><p>Nenhuma discípula vinculada a esta célula ainda.</p></div>';
+        </div>` : '<div class="empty-state"><p>Nenhuma discípula vinculada diretamente a esta célula ainda.</p></div>';
 
       abrirModal(`🏠 ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
         <div class="celula-add-panel">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
             <strong style="font-size:0.9rem;color:var(--rosa-escuro);">➕ Adicionar ou Transferir Discípula para esta Célula</strong>
-            <button class="btn btn-rosa btn-sm" onclick="fecharModal(); abrirModalDiscipula(null, ${celulaIdNum})">+ Cadastrar Nova Discípula Nesta Célula</button>
+            <button class="btn btn-rosa btn-sm" onclick="fecharModal(); abrirModalDiscipula(null, '${lider.id}')">+ Cadastrar Nova Discípula Nesta Célula</button>
           </div>
 
           <div style="border-top:1px dashed #E5C1D3;padding-top:10px;margin-top:10px;">
@@ -1981,7 +2006,7 @@
             ${outrasDiscipulas.length ? `
               <div id="lista-checkbox-transferencia" style="max-height:190px;overflow-y:auto;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
                 ${outrasDiscipulas.map(d => {
-                  const celAtual = db.lideres.find(c => Number(c.id) === Number(d.lider_id));
+                  const celAtual = db.lideres.find(c => String(c.id) === String(d.lider_id));
                   return `
                     <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;padding:3px 0;border-bottom:1px dashed #F3E8EE;">
                       <input type="checkbox" class="chk-transferir-discipula" data-id="${d.id}" data-nome="${String(d.nome).replace(/"/g,'&quot;')}" value="${d.id}" style="width:16px;height:16px;accent-color:var(--rosa);cursor:pointer;" />
@@ -1991,7 +2016,7 @@
                 }).join('')}
               </div>
               <div style="display:flex;justify-content:flex-end;">
-                <button type="button" class="btn btn-dourado btn-sm" id="btn-vincular-existente" onclick="vincularDiscipulaExistente(${celulaIdNum})">
+                <button type="button" class="btn btn-dourado btn-sm" id="btn-vincular-existente" onclick="vincularDiscipulaExistente('${lider.id}')">
                   🔄 Transferir Selecionadas para Esta Célula
                 </button>
               </div>
@@ -2001,7 +2026,7 @@
           </div>
         </div>
 
-        <h4 style="font-size:0.9rem;color:var(--preto);margin-bottom:10px;">👥 Discípulas Atuais desta Célula (${membros.length})</h4>
+        <h4 style="font-size:0.9rem;color:var(--preto);margin-bottom:10px;">👥 Discípulas Diretas desta Célula (${membros.length})</h4>
         ${htmlMembros}
       `, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
@@ -2013,13 +2038,12 @@
     }
 
     async function vincularDiscipulaExistente(liderId) {
-      const celulaIdNum = Number(liderId);
-      if (!Number.isFinite(celulaIdNum) || celulaIdNum <= 0) {
+      if (!liderId) {
         alert('⚠️ Célula de destino inválida.');
         return;
       }
 
-      if (!podeGerenciarCelula(celulaIdNum)) {
+      if (!podeGerenciarCelula(liderId)) {
         alert('🔒 Acesso Negado: Você não pode transferir para esta célula.');
         return;
       }
@@ -2033,7 +2057,7 @@
       const nomesMarcados = new Set(checkboxes.map(chk => normalizarNome(chk.getAttribute('data-nome') || '')));
       const idsSelecionados = checkboxes.map(chk => chk.getAttribute('data-id') || chk.value);
       const registros = db.discipulas.filter(d =>
-        Number(d.lider_id) !== celulaIdNum &&
+        String(d.lider_id) !== String(liderId) &&
         (nomesMarcados.has(normalizarNome(d.nome)) || idsSelecionados.some(id => String(id) === String(d.id)))
       );
       const idsParaAtualizar = [...new Set(registros.map(d => d.id))];
@@ -2043,6 +2067,9 @@
         return;
       }
 
+      const liderDestino = db.lideres.find(c => String(c.id) === String(liderId));
+      const novoLiderId = liderDestino ? liderDestino.id : liderId;
+
       const btn = document.getElementById('btn-vincular-existente');
       if (btn) { btn.disabled = true; btn.textContent = `Transferindo (${checkboxes.length})...`; }
       setSyncStatus('⏳ Transferindo discípulas...', 'loading');
@@ -2050,7 +2077,7 @@
       try {
         const { data: atualizadas, error } = await supabaseClient
           .from('discipulas')
-          .update({ lider_id: celulaIdNum })
+          .update({ lider_id: novoLiderId })
           .in('id', idsParaAtualizar)
           .select('id, nome, lider_id');
 
@@ -2059,7 +2086,7 @@
 
         await carregarDadosDoSupabase();
         atualizarInterfaceCompleta();
-        abrirCelulaseMembros(celulaIdNum);
+        abrirCelulaseMembros(liderId);
 
         if (error) {
           console.error('Erro ao transferir:', error);
@@ -2117,7 +2144,7 @@
       if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro.toLowerCase()));
       
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
-        const lider = db.lideres.find(l => Number(l.id) === Number(d.lider_id));
+        const lider = db.lideres.find(l => String(l.id) === String(d.lider_id));
         const nomeCelula = lider ? lider.celular_que_lidera : '—';
         const nomeLiderCel = lider ? lider.nome : '—';
 
@@ -2155,8 +2182,8 @@
             </td>
             <td>
               <div style="display:flex;gap:5px;">
-                <button class="btn btn-outline btn-sm" onclick="abrirModalDiscipula(${d.id})">Editar</button>
-                <button class="btn btn-danger btn-sm" title="Excluir cadastro" onclick="excluirDiscipulaCadastro(${d.id})">🗑️</button>
+                <button class="btn btn-outline btn-sm" onclick="abrirModalDiscipula('${d.id}')">Editar</button>
+                <button class="btn btn-danger btn-sm" title="Excluir cadastro" onclick="excluirDiscipulaCadastro('${d.id}')">🗑️</button>
               </div>
             </td>
           </tr>`;
@@ -2181,7 +2208,7 @@
     }
 
     async function excluirDiscipulaCadastro(id) {
-      const d = db.discipulas.find(x => Number(x.id) === Number(id));
+      const d = db.discipulas.find(x => String(x.id) === String(id));
       if (!d) return;
       if (!confirm(`Deseja excluir o cadastro de "${d.nome}"?`)) return;
 
@@ -2240,7 +2267,7 @@
     }
 
     function abrirModalDiscipula(id = null, celulaFixaId = null) {
-      const d = id ? db.discipulas.find(x => Number(x.id) === Number(id)) : null;
+      const d = id ? db.discipulas.find(x => String(x.id) === String(id)) : null;
 
       if (d && d.lider_id && !podeGerenciarCelula(d.lider_id)) {
         alert('🔒 Acesso Negado: Você só pode editar discípulas vinculadas às suas próprias células.');
@@ -2256,7 +2283,7 @@
       tempFotoDiscipulaBase64 = d?.foto_url || "";
 
       const optionsCelulas = celulasPermitidas.map(l => 
-        `<option value="${l.id}" ${(d && Number(d.lider_id) === Number(l.id)) || (celulaFixaId && Number(celulaFixaId) === Number(l.id)) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
+        `<option value="${l.id}" ${(d && String(d.lider_id) === String(l.id)) || (celulaFixaId && String(celulaFixaId) === String(l.id)) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
       ).join('');
 
       const perfisNomes = db.perfisLideranca
@@ -2422,7 +2449,7 @@
             </select>
           </div>
         </div>
-      `, `<button class="btn btn-outline" onclick="${celulaFixaId ? `abrirCelulaseMembros(${celulaFixaId})` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-discipula" onclick="salvarDiscipula(${id || 'null'}, ${celulaFixaId || 'null'})">Salvar Cadastro</button>`);
+      `, `<button class="btn btn-outline" onclick="${celulaFixaId ? `abrirCelulaseMembros('${celulaFixaId}')` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-discipula" onclick="salvarDiscipula(${id ? `'${id}'` : 'null'}, ${celulaFixaId ? `'${celulaFixaId}'` : 'null'})">Salvar Cadastro</button>`);
 
       if (mostrarCorInicial) {
         verificarExibicaoCorG12();
@@ -2445,7 +2472,7 @@
       if (!nome) return alert('⚠️ O Nome Completo é obrigatório!');
       if (!liderIdRaw) return alert('⚠️ É obrigatório selecionar a Célula Pertencente!');
 
-      const jaExiste = db.discipulas.find(x => normalizarNome(x.nome) === normalizarNome(nome) && Number(x.id) !== Number(id));
+      const jaExiste = db.discipulas.find(x => normalizarNome(x.nome) === normalizarNome(nome) && String(x.id) !== String(id));
       if (jaExiste) {
         alert(`⚠️ "${jaExiste.nome}" já está cadastrada no sistema! Para evitar duplicidade, edite o cadastro existente dela em vez de criar um novo.`);
         return;
@@ -2469,9 +2496,11 @@
       const isG12 = nivelSel.toUpperCase().includes('G12');
       const celulaAleluia = getCelulaAleluiaReal();
 
-      const liderIdParsed = (isG12 && celulaAleluia) ? Number(celulaAleluia.id) : parseInt(liderIdRaw, 10);
+      const liderIdFinal = (isG12 && celulaAleluia)
+        ? celulaAleluia.id
+        : (isNaN(Number(liderIdRaw)) ? liderIdRaw : parseInt(liderIdRaw, 10));
 
-      if (!isMacroAdmin() && !podeGerenciarCelula(liderIdParsed)) {
+      if (!isMacroAdmin() && !podeGerenciarCelula(liderIdFinal)) {
         alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
         return;
       }
@@ -2493,7 +2522,7 @@
         nome: nome,
         nivel_lideranca: nivelSel,
         cor_favorita: corFavoritaVal,
-        lider_id: liderIdParsed,
+        lider_id: liderIdFinal,
         data_nascimento: document.getElementById('f-nasc').value || null,
         endereco: document.getElementById('f-endereco').value.trim(),
         estado_civil: document.getElementById('f-estado-civil').value,
@@ -2580,8 +2609,8 @@
             <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badgesPerm.join('') || '<span class="badge badge-cinza">Somente Leitura</span>'}</div></td>
             <td>
               <div style="display:flex;gap:6px;">
-                <button class="btn btn-outline btn-sm" onclick="abrirModalAcesso(${u.id})">✏️ Editar Login/Domínio</button>
-                ${u.perfil_id !== 'MACRO' ? `<button class="btn btn-danger btn-sm" onclick="excluirAcesso(${u.id})">Revogar</button>` : ''}
+                <button class="btn btn-outline btn-sm" onclick="abrirModalAcesso('${u.id}')">✏️ Editar Login/Domínio</button>
+                ${u.perfil_id !== 'MACRO' ? `<button class="btn btn-danger btn-sm" onclick="excluirAcesso('${u.id}')">Revogar</button>` : ''}
               </div>
             </td>
           </tr>
@@ -2637,7 +2666,7 @@
     }
 
     function abrirModalAcesso(userId = null) {
-      const u = userId ? db.usuarios.find(x => Number(x.id) === Number(userId)) : null;
+      const u = userId ? db.usuarios.find(x => String(x.id) === String(userId)) : null;
       const unicasDiscipulas = getDiscipulasUnicasVisiveis();
 
       if (!u && !isMacroAdmin() && unicasDiscipulas.length === 0) {
@@ -2682,7 +2711,7 @@
             <input type="checkbox" id="ac-perm-acessos" style="display:none;" />
           `}
         </div>
-      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId || 'null'})">Salvar &amp; Liberar Domínio</button>`);
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId ? `'${userId}'` : 'null'})">Salvar &amp; Liberar Domínio</button>`);
     }
 
     function aoMudarPerfilSelect(perfilId) {
@@ -2714,7 +2743,7 @@
 
       if (!nome || !login || !senha) return alert('Preencha nome, login e senha!');
 
-      const loginDuplicado = db.usuarios.find(u => u.login.toLowerCase() === login && Number(u.id) !== Number(userId));
+      const loginDuplicado = db.usuarios.find(u => u.login.toLowerCase() === login && String(u.id) !== String(userId));
       if (loginDuplicado) {
         alert(`O login "${login}" já está em uso por ${loginDuplicado.nome}. Escolha outro login!`);
         return;
@@ -2755,8 +2784,8 @@
       }
 
       await carregarDadosDoSupabase();
-      if (usuarioLogado && Number(usuarioLogado.id) === Number(userId)) {
-        usuarioLogado = db.usuarios.find(u => Number(u.id) === Number(userId)) || usuarioLogado;
+      if (usuarioLogado && String(usuarioLogado.id) === String(userId)) {
+        usuarioLogado = db.usuarios.find(u => String(u.id) === String(userId)) || usuarioLogado;
         aplicarPermissoesUsuario();
       }
 
@@ -2795,7 +2824,7 @@
 
       const disc = getDiscipulasUnicasVisiveis().find(d => normalizarNome(d.nome) === normalizarNome(nomeVal));
       if (disc && disc.lider_id) {
-        const cel = db.lideres.find(l => Number(l.id) === Number(disc.lider_id));
+        const cel = db.lideres.find(l => String(l.id) === String(disc.lider_id));
         if (cel) inpOrigem.value = cel.celular_que_lidera;
       }
     }
@@ -3030,7 +3059,7 @@
       );
 
       let lista = [...mGlobal.discipulasUnicas];
-      if (liderId) lista = lista.filter(d => Number(d.lider_id) === Number(liderId));
+      if (liderId) lista = lista.filter(d => String(d.lider_id) === String(liderId));
       if (bairroFiltro) {
         lista = lista.filter(d => normalizarNome(obterLocalidadeDiscipula(d)).includes(normalizarNome(bairroFiltro)));
       }
@@ -3085,7 +3114,7 @@
 
       if (pend === 'celulas-por-bairro' || pend === 'celulas-abertas') {
         let abertas = mGlobal.celulasReaisAtivas;
-        if (liderId) abertas = abertas.filter(c => Number(c.id) === Number(liderId));
+        if (liderId) abertas = abertas.filter(c => String(c.id) === String(liderId));
         if (bairroFiltro) {
           abertas = abertas.filter(c => normalizarNome(extrairBairroEMunicipio(c.local)).includes(normalizarNome(bairroFiltro)));
         }
@@ -3194,7 +3223,7 @@
       if (pend === 'lista-discipulas-bairro' || modoLista === 'por-bairro') {
         listaParaExibir.sort((a, b) => obterLocalidadeDiscipula(a).localeCompare(obterLocalidadeDiscipula(b)));
       } else if (modoLista === 'por-celula') {
-        listaParaExibir.sort((a, b) => (Number(a.lider_id) || 0) - (Number(b.lider_id) || 0));
+        listaParaExibir.sort((a, b) => String(a.lider_id || '').localeCompare(String(b.lider_id || '')));
       }
 
       const efetivoModoAgrupamento = (pend === 'lista-discipulas-bairro' && modoLista === 'resumo-apenas') ? 'por-bairro' : modoLista;
@@ -3215,7 +3244,7 @@
         graficoJornada: dadosGraficoJornada,
         graficoSecundario: dadosGraficoSecundario,
         itens: listaParaExibir.map(d => {
-          const cel = db.lideres.find(l => Number(l.id) === Number(d.lider_id));
+          const cel = db.lideres.find(l => String(l.id) === String(d.lider_id));
           const bairroDisc = obterLocalidadeDiscipula(d);
           const corStr = (d.nivel_lideranca && d.nivel_lideranca.includes('G12') && d.cor_favorita) ? ` • Cor G12: ${d.cor_favorita}` : '';
           const cultoInfo = d.culto_regular === 'Sim' 
