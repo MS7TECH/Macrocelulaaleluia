@@ -148,7 +148,6 @@
     }
     .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--rosa); }
     .stat-card.gold-highlight::after { background: var(--dourado); }
-    .stat-card.alert-highlight::after { background: #C0392B; }
     .stat-card .label { font-size: 0.78rem; color: var(--cinza); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
     .stat-card .value { font-size: 1.9rem; font-weight: 700; color: var(--preto); margin: 6px 0 4px; }
     .stat-card .sub-desc { font-size: 0.74rem; color: var(--cinza-medio); }
@@ -158,8 +157,6 @@
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
     .stat-card.gold-highlight .icon { background: var(--dourado-claro); color: var(--dourado); }
-    .stat-card.alert-highlight .icon { background: #FDECEA; color: #C0392B; }
-    .stat-card-action { margin-top: 10px; }
 
     /* ================= PAINEL CAPACITAÇÃO DESTINO ================= */
     .cd-panel {
@@ -177,44 +174,6 @@
     .cd-item-header h4 { font-size: 0.85rem; color: var(--cinza); font-weight: 600; }
     .cd-item-header .val { font-size: 1.45rem; font-weight: 700; color: var(--rosa); }
     .cd-item-box.desistiu-box .val { color: #C0392B; }
-
-    /* ================= ÁREA DE GERAÇÃO DE RELATÓRIO ================= */
-    .gerador-relatorio-box {
-      background: linear-gradient(180deg, #FFFDFE 0%, #FBF9FA 100%);
-      border: 1px solid #E8D5DF;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 22px;
-    }
-    .gerador-relatorio-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px dashed #E5D0DA;
-    }
-    .gerador-relatorio-header h4 {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--rosa-escuro);
-    }
-    .gerador-relatorio-header span {
-      font-size: 0.76rem;
-      color: var(--cinza);
-    }
-    .gerador-acoes-footer {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid var(--borda);
-    }
 
     /* ================= PASTAS DE CÉLULAS ================= */
     .folders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(305px, 1fr)); gap: 20px; margin-top: 18px; }
@@ -696,107 +655,95 @@
             <div class="section-header">
               <div>
                 <h3>📑 Relatórios Pastorais &amp; Estatísticas de Cobertura</h3>
-                <p style="font-size:0.8rem;color:var(--cinza);">Escolha os parâmetros na área de geração antes de emitir o relatório em PDF, texto ou visualizar na tela.</p>
+                <p style="font-size:0.8rem;color:var(--cinza);">Filtre por célula, bairro, hierarquia ou período e gere gráficos e PDF.</p>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Relatório (Texto)</button>
+                <button class="btn btn-rosa" onclick="abrirModalRelatorioOficial()">📄 Gerar Relatório Oficial (Gráficos &amp; PDF)</button>
               </div>
             </div>
 
             <div class="relatorio-resumo-grid" id="relatorio-resumo-indicadores"></div>
 
-            <div class="gerador-relatorio-box">
-              <div class="gerador-relatorio-header">
-                <div>
-                  <h4>⚙️ Área de Geração do Relatório</h4>
-                  <span>Selecione célula, bairro, hierarquia, status de batismo/CD, período e formato da lista antes de gerar.</span>
-                </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Filtrar por Célula</label>
+                <select id="filtro-lider" onchange="aplicarFiltrosRelatorio()"><option value="">Todas as Células</option></select>
               </div>
-
-              <div class="form-row">
-                <div class="form-field">
-                  <label>Filtrar por Célula</label>
-                  <select id="filtro-lider" onchange="aplicarFiltrosRelatorio()"><option value="">Todas as Células</option></select>
-                </div>
-                <div class="form-field">
-                  <label>Filtrar por Bairro / Município</label>
-                  <select id="filtro-bairro" onchange="aplicarFiltrosRelatorio()"><option value="">Todos os Bairros / Municípios</option></select>
-                </div>
-                <div class="form-field">
-                  <label>Filtrar por Hierarquia</label>
-                  <select id="filtro-hierarquia" onchange="aplicarFiltrosRelatorio()">
-                    <option value="">Todas as Hierarquias</option>
-                    <option value="apenas-lideres">Apenas Líderes (G12, 144, 1728, 20736)</option>
-                    <option value="Liderança G12">Liderança G12</option>
-                    <option value="Liderança 144">Liderança 144</option>
-                    <option value="Liderança 1728">Liderança 1728</option>
-                    <option value="Liderança 20736">Liderança 20736</option>
-                    <option value="Discípula">Apenas Discípulas (Não Líderes)</option>
-                  </select>
-                </div>
-                <div class="form-field">
-                  <label>Filtro de Jornada &amp; Geografia</label>
-                  <select id="filtro-pendencia" onchange="aplicarFiltrosRelatorio()">
-                    <option value="">Visão Geral da Macrocélula</option>
-                    <optgroup label="Bairros &amp; Municípios">
-                      <option value="celulas-por-bairro">Células por Bairros &amp; Municípios</option>
-                      <option value="qtd-discipulas-bairro">Quantidade de Discípulas por Bairros</option>
-                      <option value="lista-discipulas-bairro">Lista de Discípulas por Bairros</option>
-                    </optgroup>
-                    <optgroup label="Status de Células">
-                      <option value="celulas-abertas">Células Abertas (Ativas)</option>
-                      <option value="celulas-fechadas">Células Fechadas (Baixas)</option>
-                    </optgroup>
-                    <optgroup label="Batismo &amp; UV">
-                      <option value="batizada">Batizadas</option>
-                      <option value="nao-batizada">Não Batizadas</option>
-                      <option value="com-uv">Concluintes UV</option>
-                      <option value="sem-uv">Sem UV</option>
-                      <option value="com-reencontro">Fizeram Reencontro</option>
-                    </optgroup>
-                    <optgroup label="Capacitação Destino (CD)">
-                      <option value="cd-ainda-nao">CD — Ainda não fez</option>
-                      <option value="cd-1">CD — Nível 1</option>
-                      <option value="cd-2">CD — Nível 2</option>
-                      <option value="cd-3">CD — Nível 3</option>
-                      <option value="cd-concluido">CD — Concluído</option>
-                      <option value="cd-desistiu">CD — Desistiu</option>
-                      <option value="cd-formatura-sim">Formatura CD — Sim</option>
-                      <option value="cd-formatura-nao">Formatura CD — Não</option>
-                    </optgroup>
-                    <optgroup label="Frequência &amp; Culto">
-                      <option value="assidua">Assíduas na Célula</option>
-                      <option value="nao-assidua">Não Assíduas na Célula</option>
-                      <option value="culto-sim">Frequentam Culto Regularmente (Sim)</option>
-                      <option value="culto-nao">Não Frequentam Culto Regularmente (Não)</option>
-                    </optgroup>
-                  </select>
-                </div>
+              <div class="form-field">
+                <label>Filtrar por Bairro / Município</label>
+                <select id="filtro-bairro" onchange="aplicarFiltrosRelatorio()"><option value="">Todos os Bairros / Municípios</option></select>
               </div>
-
-              <div class="form-row" style="margin-bottom:0;">
-                <div class="form-field">
-                  <label>📅 Período — Data Inicial (Opcional)</label>
-                  <input type="date" id="filtro-data-inicio" onchange="aplicarFiltrosRelatorio()" />
-                </div>
-                <div class="form-field">
-                  <label>📅 Período — Data Final (Opcional)</label>
-                  <input type="date" id="filtro-data-fim" onchange="aplicarFiltrosRelatorio()" />
-                </div>
-                <div class="form-field">
-                  <label>📄 Exibição da Lista Nominal no Relatório / PDF</label>
-                  <select id="filtro-modo-lista" onchange="aplicarFiltrosRelatorio()">
-                    <option value="resumo-apenas" selected>Ocultar Lista de Discípulas (Apenas Totais e Gráficos)</option>
-                    <option value="completa">Mostrar Lista Completa Filtrada</option>
-                    <option value="por-celula">Mostrar Agrupado por Célula</option>
-                    <option value="por-bairro">Mostrar Agrupado por Bairro / Município</option>
-                    <option value="so-lideres">Mostrar Apenas Líderes</option>
-                    <option value="so-discipulas">Mostrar Apenas Discípulas (Sem Líderes)</option>
-                  </select>
-                </div>
+              <div class="form-field">
+                <label>Filtrar por Hierarquia</label>
+                <select id="filtro-hierarquia" onchange="aplicarFiltrosRelatorio()">
+                  <option value="">Todas as Hierarquias</option>
+                  <option value="apenas-lideres">Apenas Líderes (G12, 144, 1728, 20736)</option>
+                  <option value="Liderança G12">Liderança G12</option>
+                  <option value="Liderança 144">Liderança 144</option>
+                  <option value="Liderança 1728">Liderança 1728</option>
+                  <option value="Liderança 20736">Liderança 20736</option>
+                  <option value="Discípula">Apenas Discípulas (Não Líderes)</option>
+                </select>
               </div>
+              <div class="form-field">
+                <label>Filtro de Jornada &amp; Geografia</label>
+                <select id="filtro-pendencia" onchange="aplicarFiltrosRelatorio()">
+                  <option value="">Visão Geral da Macrocélula</option>
+                  <optgroup label="Bairros &amp; Municípios">
+                    <option value="celulas-por-bairro">Células por Bairros &amp; Municípios</option>
+                    <option value="qtd-discipulas-bairro">Quantidade de Discípulas por Bairros</option>
+                    <option value="lista-discipulas-bairro">Lista de Discípulas por Bairros</option>
+                  </optgroup>
+                  <optgroup label="Status de Células">
+                    <option value="celulas-abertas">Células Abertas (Ativas)</option>
+                    <option value="celulas-fechadas">Células Fechadas (Baixas)</option>
+                  </optgroup>
+                  <optgroup label="Batismo &amp; UV">
+                    <option value="batizada">Batizadas</option>
+                    <option value="com-uv">Concluintes UV</option>
+                    <option value="sem-uv">Sem UV</option>
+                    <option value="com-reencontro">Fizeram Reencontro</option>
+                  </optgroup>
+                  <optgroup label="Capacitação Destino (CD)">
+                    <option value="cd-ainda-nao">CD — Ainda não fez</option>
+                    <option value="cd-1">CD — Nível 1</option>
+                    <option value="cd-2">CD — Nível 2</option>
+                    <option value="cd-3">CD — Nível 3</option>
+                    <option value="cd-concluido">CD — Concluído</option>
+                    <option value="cd-desistiu">CD — Desistiu</option>
+                    <option value="cd-formatura-sim">Formatura CD — Sim</option>
+                    <option value="cd-formatura-nao">Formatura CD — Não</option>
+                  </optgroup>
+                  <optgroup label="Frequência &amp; Culto">
+                    <option value="assidua">Assíduas na Célula</option>
+                    <option value="nao-assidua">Não Assíduas na Célula</option>
+                    <option value="culto-sim">Frequentam Culto Regularmente (Sim)</option>
+                    <option value="culto-nao">Não Frequentam Culto Regularmente (Não)</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
 
-              <div class="gerador-acoes-footer">
-                <button class="btn btn-outline" onclick="abrirModalListaNaoBatizadas()">💧 Ver Não Batizadas</button>
-                <button class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Relatório (Texto)</button>
-                <button class="btn btn-rosa" onclick="abrirModalRelatorioOficial()">📄 Gerar Relatório Oficial (Gráficos &amp; PDF)</button>
+            <div class="form-row">
+              <div class="form-field">
+                <label>📅 Período — Data Inicial (Opcional)</label>
+                <input type="date" id="filtro-data-inicio" onchange="aplicarFiltrosRelatorio()" />
+              </div>
+              <div class="form-field">
+                <label>📅 Período — Data Final (Opcional)</label>
+                <input type="date" id="filtro-data-fim" onchange="aplicarFiltrosRelatorio()" />
+              </div>
+              <div class="form-field">
+                <label>📄 Exibição da Lista Nominal no Relatório / PDF</label>
+                <select id="filtro-modo-lista" onchange="aplicarFiltrosRelatorio()">
+                  <option value="resumo-apenas" selected>Ocultar Lista de Discípulas (Apenas Totais e Gráficos)</option>
+                  <option value="completa">Mostrar Lista Completa Filtrada</option>
+                  <option value="por-celula">Mostrar Agrupado por Célula</option>
+                  <option value="por-bairro">Mostrar Agrupado por Bairro / Município</option>
+                  <option value="so-lideres">Mostrar Apenas Líderes</option>
+                  <option value="so-discipulas">Mostrar Apenas Discípulas (Sem Líderes)</option>
+                </select>
               </div>
             </div>
 
@@ -874,7 +821,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONEXÃO REAL COM O SUPABASE
+    // 1. CONEXÃO REAL COM O SUPABASE (RESILIENTE POR TABELA)
     // =========================================================================
     const SUPABASE_URL = 'https://erubgcvrxphvnjydkuga.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_o1FNdEXD8B35qqom5h_wiA_y8dIQWbu';
@@ -942,10 +889,6 @@
       const num = Number(str);
       if (Number.isFinite(num) && String(num) === str && str.length < 16) return num;
       return str;
-    }
-
-    function isDiscipulaBatizada(d) {
-      return d.batizada === true || d.batizada === 'Sim';
     }
 
     function extrairBairroEMunicipio(textoLocal) {
@@ -1057,8 +1000,14 @@
       return ids;
     }
 
-    function getIdsCelulaERede(celulaId) {
-      return getIdsEquivalentesCelula(celulaId);
+    async function buscarTabelaComTimeout(tabela, ms = 7000) {
+      const queryPromise = supabaseClient.from(tabela).select('*');
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout (${ms}ms) em ${tabela}`)), ms)
+      );
+      const res = await Promise.race([queryPromise, timeoutPromise]);
+      if (res.error) throw new Error(`${tabela}: ${res.error.message}`);
+      return res.data || [];
     }
 
     async function carregarDadosDoSupabase() {
@@ -1067,56 +1016,65 @@
         pillLogin.textContent = '🔄 Conectando ao Supabase...';
         pillLogin.className = 'db-status-pill';
       }
-      try {
-        setSyncStatus('⏳ Sincronizando...', 'loading');
+      setSyncStatus('⏳ Sincronizando...', 'loading');
 
-        const consultaBanco = Promise.all([
-          supabaseClient.from('perfis_lideranca').select('*'),
-          supabaseClient.from('usuarios').select('*'),
-          supabaseClient.from('lideres').select('*'),
-          supabaseClient.from('discipulas').select('*'),
-          supabaseClient.from('desistencias').select('*')
-        ]);
+      const resultados = await Promise.allSettled([
+        buscarTabelaComTimeout('perfis_lideranca'),
+        buscarTabelaComTimeout('usuarios'),
+        buscarTabelaComTimeout('lideres'),
+        buscarTabelaComTimeout('discipulas'),
+        buscarTabelaComTimeout('desistencias')
+      ]);
 
-        const timeoutBanco = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Tempo esgotado (8s) ao conectar ao Supabase')), 8000)
-        );
+      const [rPerfis, rUsuarios, rLideres, rDiscipulas, rDesistencias] = resultados;
+      const erros = resultados.filter(r => r.status === 'rejected').map(r => r.reason?.message || 'Erro');
 
-        const [resPerfis, resUsuarios, resLideres, resDiscipulas, resDesistencias] = await Promise.race([
-          consultaBanco,
-          timeoutBanco
-        ]);
+      if (rPerfis.status === 'fulfilled') {
+        db.perfisLideranca = rPerfis.value.sort((a, b) => (a.nivel || 0) - (b.nivel || 0));
+      }
+      if (rUsuarios.status === 'fulfilled') {
+        db.usuarios = rUsuarios.value.sort((a, b) => (a.id || 0) - (b.id || 0));
+      }
+      if (rLideres.status === 'fulfilled') {
+        db.lideres = rLideres.value.sort((a, b) => (a.id || 0) - (b.id || 0));
+      }
+      if (rDiscipulas.status === 'fulfilled') {
+        db.discipulas = rDiscipulas.value.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+      }
+      if (rDesistencias.status === 'fulfilled') {
+        db.desistencias = rDesistencias.value.sort((a, b) => (b.id || 0) - (a.id || 0));
+      }
 
-        if (resPerfis.error) throw new Error('perfis_lideranca: ' + resPerfis.error.message);
-        if (resUsuarios.error) throw new Error('usuarios: ' + resUsuarios.error.message);
-        if (resLideres.error) throw new Error('lideres: ' + resLideres.error.message);
-        if (resDiscipulas.error) throw new Error('discipulas: ' + resDiscipulas.error.message);
-        if (resDesistencias.error) throw new Error('desistencias: ' + resDesistencias.error.message);
+      const usuariosOk = rUsuarios.status === 'fulfilled';
+      const celulasReais = db.lideres.filter(l => l.ativa && !isRegistroMacroOrganizacao(l));
 
-        db.perfisLideranca = (resPerfis.data || []).sort((a, b) => (a.nivel || 0) - (b.nivel || 0));
-        db.usuarios = (resUsuarios.data || []).sort((a, b) => (a.id || 0) - (b.id || 0));
-        db.lideres = (resLideres.data || []).sort((a, b) => (a.id || 0) - (b.id || 0));
-        db.discipulas = (resDiscipulas.data || []).sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-        db.desistencias = (resDesistencias.data || []).sort((a, b) => (b.id || 0) - (a.id || 0));
-
-        const celulasReais = db.lideres.filter(l => l.ativa && !isRegistroMacroOrganizacao(l));
-
+      if (usuariosOk && erros.length === 0) {
         if (pillLogin) {
           pillLogin.textContent = `🟢 Banco Supabase Conectado (${celulasReais.length} células ativas)`;
           pillLogin.className = 'db-status-pill online';
         }
         setSyncStatus('🟢 Supabase Conectado', 'online');
         return true;
-      } catch (err) {
-        console.error('Erro detalhado ao conectar com Supabase:', err);
-        const msgErro = err?.message || 'Falha na conexão';
-        if (pillLogin) {
-          pillLogin.textContent = `🔴 Erro Supabase: ${msgErro}`;
-          pillLogin.className = 'db-status-pill error';
-        }
-        setSyncStatus('🔴 Falha na Conexão', 'error');
-        return false;
       }
+
+      if (usuariosOk && erros.length > 0) {
+        console.warn('Avisos parciais ao carregar tabelas:', erros);
+        if (pillLogin) {
+          pillLogin.textContent = `🟢 Conectado (${db.usuarios.length} logins • aviso em 1+ tabela)`;
+          pillLogin.className = 'db-status-pill online';
+        }
+        setSyncStatus('🟡 Conectado (Parcial)', 'loading');
+        return true;
+      }
+
+      const msgErro = erros.join(' | ') || 'Falha ao consultar tabela usuarios';
+      console.error('Erro ao conectar com Supabase:', msgErro);
+      if (pillLogin) {
+        pillLogin.textContent = `🔴 Erro Supabase: ${msgErro}`;
+        pillLogin.className = 'db-status-pill error';
+      }
+      setSyncStatus('🔴 Falha na Conexão', 'error');
+      return false;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1260,23 +1218,22 @@
       btn.textContent = 'Verificando no Banco...';
 
       if (db.usuarios.length === 0) {
-        const ok = await carregarDadosDoSupabase();
-        if (!ok || db.usuarios.length === 0) {
-          btn.disabled = false;
-          btn.textContent = 'Entrar no Sistema';
-          alert('Não foi possível carregar os usuários do Supabase. Verifique o status na tela de login.');
-          return;
-        }
+        await carregarDadosDoSupabase();
       }
 
       const conta = db.usuarios.find(
         u => String(u.login || '').trim().toLowerCase() === userInp && String(u.senha || '').trim() === passInp
       );
+
       btn.disabled = false;
       btn.textContent = 'Entrar no Sistema';
 
       if (!conta) {
-        alert('Usuário ou senha inválidos!');
+        if (db.usuarios.length === 0) {
+          alert('Não foi possível ler a lista de usuários no Supabase. Verifique a mensagem vermelha abaixo do botão Entrar.');
+        } else {
+          alert('Usuário ou senha inválidos!');
+        }
         return;
       }
 
@@ -1427,8 +1384,7 @@
       const discipulas = m.discipulasUnicas;
 
       const uvConcluidas = discipulas.filter(d => d.uv === 'Sim').length;
-      const batizadas = discipulas.filter(d => isDiscipulaBatizada(d)).length;
-      const naoBatizadas = discipulas.filter(d => !isDiscipulaBatizada(d)).length;
+      const batizadas = discipulas.filter(d => d.batizada === true || d.batizada === 'Sim').length;
       const cultoRegularSim = discipulas.filter(d => d.culto_regular === 'Sim').length;
 
       document.getElementById('stats-grid').innerHTML = `
@@ -1462,15 +1418,6 @@
           <div class="sub-desc">Batismo nas águas</div>
           <div class="icon">💧</div>
         </div>
-        <div class="stat-card alert-highlight">
-          <div class="label">Não Batizadas</div>
-          <div class="value" style="color:#C0392B;">${naoBatizadas}</div>
-          <div class="sub-desc">Acompanhamento para batismo</div>
-          <div class="icon">🕊️</div>
-          <div class="stat-card-action">
-            <button class="btn btn-danger btn-sm" onclick="abrirModalListaNaoBatizadas()">Ver Mais</button>
-          </div>
-        </div>
         <div class="stat-card">
           <div class="label">UV Concluídas</div>
           <div class="value">${uvConcluidas}</div>
@@ -1499,36 +1446,6 @@
         <div class="cd-item-box"><div class="cd-item-header"><h4>Concluídos</h4><span class="val">${cdConcluidas}</span></div><button class="btn btn-rosa btn-sm" onclick="abrirModalListaCD('Concluído')">Ver Mais</button></div>
         <div class="cd-item-box desistiu-box"><div class="cd-item-header"><h4>Desistiu</h4><span class="val">${cdDesistiu}</span></div><button class="btn btn-danger btn-sm" onclick="abrirModalListaCD('Desistiu')">Ver Mais</button></div>
       `;
-    }
-
-    function abrirModalListaNaoBatizadas() {
-      const m = calcularMetricasCobertura();
-      const naoBatizadasLista = m.discipulasUnicas.filter(d => !isDiscipulaBatizada(d));
-
-      const htmlLista = naoBatizadasLista.length ? `
-        <div style="background:#FFF8F7;border:1px solid #FADBD8;padding:12px 14px;border-radius:12px;margin-bottom:14px;font-size:0.82rem;color:#991B1B;">
-          <strong>🕊️ Discípulas Não Batizadas (${naoBatizadasLista.length}):</strong> Ideal para direcionar discipulado e orientação sobre a importância do batismo nas águas.
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Célula / Líder</th><th>Jornada</th></tr></thead>
-            <tbody>
-              ${naoBatizadasLista.map(disc => {
-                const lider = db.lideres.find(l => mesmoId(l.id, disc.lider_id));
-                return `
-                  <tr>
-                    <td>${renderAvatarDisc(disc.foto_url, disc.nome)}</td>
-                    <td><strong>${disc.nome}</strong><br><small style="color:#888;">${disc.nivel_lideranca || 'Discípula'}</small></td>
-                    <td>${disc.telefone || '—'}</td>
-                    <td>${lider ? `${lider.celular_que_lidera} (${lider.nome})` : '—'}</td>
-                    <td><small style="color:#666;">UV: <strong>${disc.uv || 'Ainda não fez'}</strong> • CD: <strong>${disc.cd || 'Ainda não fez'}</strong></small></td>
-                  </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>` : '<div class="empty-state"><p>Todas as discípulas cadastradas já são batizadas.</p></div>';
-
-      abrirModal('🕊️ Discípulas Ainda Não Batizadas', htmlLista, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
 
     function abrirModalListaCD(nivel) {
@@ -2368,7 +2285,7 @@
           ? `<br><span style="display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;color:#8A6D14;background:#FFFDF5;border:1px solid #F5E6B8;padding:1px 7px;border-radius:10px;margin-top:3px;">🎨 Cor: <strong>${d.cor_favorita}</strong></span>`
           : '';
 
-        const isBatizada = isDiscipulaBatizada(d);
+        const isBatizada = d.batizada === true || d.batizada === 'Sim';
         const cultoStr = d.culto_regular === 'Sim'
           ? `<span class="badge badge-success" style="font-size:0.68rem;">Culto: Sim</span>${d.culto_dia_horario ? `<br><small style="color:#555;font-size:0.7rem;">⛪ ${d.culto_dia_horario}</small>` : ''}`
           : `<span class="badge badge-cinza" style="font-size:0.68rem;">Culto: ${d.culto_regular || 'Não inf.'}</span>`;
@@ -2438,4 +2355,1337 @@
       if (!selectNivel || !boxCor) return;
 
       const isG12 = selectNivel.value.toUpperCase().includes('G12');
-      boxCor.style.display = is
+      boxCor.style.display = isG12 ? 'block' : 'none';
+
+      if (isG12 && selectCelula) {
+        const celulaAleluia = getCelulaAleluiaReal();
+        if (celulaAleluia) {
+          selectCelula.value = celulaAleluia.id;
+        }
+      }
+    }
+
+    function verificarExibicaoHorarioCulto() {
+      const selectCulto = document.getElementById('f-culto-regular');
+      const labelDiaHora = document.getElementById('label-culto-dia-horario');
+      if (!selectCulto || !labelDiaHora) return;
+
+      if (selectCulto.value === 'Sim') {
+        labelDiaHora.innerHTML = 'Qual dia e horário do culto que você frequenta? *';
+      } else {
+        labelDiaHora.innerHTML = 'Qual dia e horário do culto que você frequenta? (Opcional)';
+      }
+    }
+
+    function sincronizarSeletorCor(hexColor) {
+      const mapaCores = {
+        '#d0397c': 'Rosa',
+        '#ff0000': 'Vermelho',
+        '#0000ff': 'Azul',
+        '#008000': 'Verde',
+        '#ffff00': 'Amarelo',
+        '#800080': 'Roxo',
+        '#ffa500': 'Laranja',
+        '#ffffff': 'Branco',
+        '#000000': 'Preto'
+      };
+      const inpTexto = document.getElementById('f-cor-favorita');
+      if (inpTexto) {
+        inpTexto.value = mapaCores[hexColor.toLowerCase()] || hexColor.toUpperCase();
+      }
+    }
+
+    function abrirModalDiscipula(id = null, celulaFixaId = null) {
+      const d = id ? db.discipulas.find(x => mesmoId(x.id, id)) : null;
+
+      if (d && d.lider_id && !podeGerenciarCelula(d.lider_id)) {
+        alert('🔒 Acesso Negado: Você só pode editar discípulas vinculadas às suas próprias células.');
+        return;
+      }
+
+      const celulasPermitidas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
+      if (celulasPermitidas.length === 0) {
+        alert('⚠️ Você precisa primeiro abrir uma célula em "Células & Liderança" antes de cadastrar discípulas.');
+        return;
+      }
+
+      tempFotoDiscipulaBase64 = d?.foto_url || "";
+
+      const optionsCelulas = celulasPermitidas.map(l => 
+        `<option value="${l.id}" ${(d && mesmoId(d.lider_id, l.id)) || (celulaFixaId && mesmoId(celulaFixaId, l.id)) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
+      ).join('');
+
+      const perfisNomes = db.perfisLideranca
+        .filter(p => p.id !== 'MACRO')
+        .map(p => p.nome);
+
+      const listaNiveis = [...new Set([
+        'Discípula',
+        ...perfisNomes
+      ])].filter(nv => !nv.toLowerCase().includes('sem célula'));
+
+      const nivelAtualLimpo = (d?.nivel_lideranca || 'Discípula').replace('(Sem Célula)', '').trim();
+      const opcoesNivel = listaNiveis.map(nv => `<option value="${nv}" ${nivelAtualLimpo===nv?'selected':''}>${nv}</option>`).join('');
+
+      const mostrarCorInicial = nivelAtualLimpo.toUpperCase().includes('G12');
+
+      const valBat = d ? (d.batizada === true || d.batizada === 'Sim' ? 'Sim' : 'Não') : '';
+      const valUV = d?.uv || '';
+      const valEncontro = d?.encontro || '';
+      const valReencontro = d?.reencontro || '';
+      const valCD = d?.cd || '';
+      const valFormaturaCD = d?.formatura_cd || '';
+      const valAssiduidade = d?.assiduidade || '';
+      const valCultoRegular = d?.culto_regular || '';
+
+      abrirModal(d ? 'Editar Perfil da Discípula' : 'Cadastrar Nova Discípula (Campos Obrigatórios *)', `
+        <div class="form-row">
+          <div class="form-field"><label>Nome Completo *</label><input id="f-nome" value="${d?.nome||''}" placeholder="Digite o nome completo" required /></div>
+          <div class="form-field">
+            <label>Nível Hierárquico *</label>
+            <select id="f-nivel-lideranca" onchange="verificarExibicaoCorG12()">${opcoesNivel}</select>
+          </div>
+        </div>
+
+        <div id="box-cor-favorita" class="g12-color-box" style="display:${mostrarCorInicial ? 'block' : 'none'};">
+          <label for="f-cor-favorita">🎨 Qual é a cor que ela gosta? (Obrigatório para Liderança G12)</label>
+          <div class="g12-color-inputs">
+            <input type="text" id="f-cor-favorita" value="${d?.cor_favorita || ''}" placeholder="Ex: Rosa, Azul Royal, Dourado, Lilás..." />
+            <input type="color" id="f-cor-picker" value="#D0397C" title="Escolher tonalidade visual" onchange="sincronizarSeletorCor(this.value)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Célula Pertencente *</label>
+            <select id="f-lider-id" required>
+              <option value="">Selecione a Célula...</option>
+              ${optionsCelulas}
+            </select>
+          </div>
+          <div class="form-field"><label>Data de Aniversário</label><input type="date" id="f-nasc" value="${d?.data_nascimento||''}" /></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field"><label>Bairro / Município / Endereço</label><input id="f-endereco" value="${d?.endereco||''}" placeholder="Ex: Pituba, Salvador - BA" /></div>
+          <div class="form-field">
+            <label>Estado Civil *</label>
+            <select id="f-estado-civil">
+              <option value="Solteira" ${d?.estado_civil==='Solteira'?'selected':''}>Solteira</option>
+              <option value="Casada" ${d?.estado_civil==='Casada'?'selected':''}>Casada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field"><label>E-mail</label><input type="email" id="f-email" value="${d?.email||''}" placeholder="exemplo@email.com" /></div>
+          <div class="form-field">
+            <label>Telefone / WhatsApp</label>
+            <input type="text" id="f-tel" value="${d?.telefone||''}" placeholder="(71) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Foto de Perfil da Discípula (Abrir Arquivo)</label>
+            <div class="file-upload-box">
+              <img id="preview-foto-discipula" class="file-preview-thumb" src="${tempFotoDiscipulaBase64}" style="display:${tempFotoDiscipulaBase64 ? 'block' : 'none'};" />
+              <input type="file" id="f-foto-arquivo" accept="image/*" onchange="processarArquivoFotoDiscipula(this)" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label>É Batizada? *</label>
+            <select id="f-bat" required>
+              <option value="" ${valBat===''?'selected':''}>Selecione...</option>
+              <option value="Sim" ${valBat==='Sim'?'selected':''}>Sim</option>
+              <option value="Não" ${valBat==='Não'?'selected':''}>Não</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>É Assídua na Célula? *</label>
+            <select id="f-ass" required>
+              <option value="" ${valAssiduidade===''?'selected':''}>Selecione...</option>
+              <option value="Sim" ${valAssiduidade==='Sim'?'selected':''}>Sim</option>
+              <option value="Não" ${valAssiduidade==='Não'?'selected':''}>Não</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="culto-box">
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-field">
+              <label>⛪ Você está frequentando o culto regularmente? *</label>
+              <select id="f-culto-regular" onchange="verificarExibicaoHorarioCulto()" required>
+                <option value="" ${valCultoRegular===''?'selected':''}>Selecione...</option>
+                <option value="Sim" ${valCultoRegular==='Sim'?'selected':''}>Sim</option>
+                <option value="Não" ${valCultoRegular==='Não'?'selected':''}>Não</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label id="label-culto-dia-horario">Qual dia e horário do culto que você frequenta? ${valCultoRegular==='Sim' ? '*' : ''}</label>
+              <input type="text" id="f-culto-dia-horario" value="${d?.culto_dia_horario || ''}" placeholder="Ex: Domingo às 18h / Quarta às 19h30" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Fez Universidade da Vida (UV)? *</label>
+            <select id="f-uv" required>
+              <option value="" ${valUV===''?'selected':''}>Selecione...</option>
+              <option value="Ainda não fez" ${valUV==='Ainda não fez'?'selected':''}>Ainda não fez</option>
+              <option value="Sim" ${valUV==='Sim'?'selected':''}>Sim</option>
+              <option value="Não" ${valUV==='Não'?'selected':''}>Não</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Fez Encontro com Deus? *</label>
+            <select id="f-encontro" required>
+              <option value="" ${valEncontro===''?'selected':''}>Selecione...</option>
+              <option value="Sim" ${valEncontro==='Sim'?'selected':''}>Sim</option>
+              <option value="Não" ${valEncontro==='Não'?'selected':''}>Não</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Fez Reencontro? *</label>
+            <select id="f-reencontro" required>
+              <option value="" ${valReencontro===''?'selected':''}>Selecione...</option>
+              <option value="Sim" ${valReencontro==='Sim'?'selected':''}>Sim</option>
+              <option value="Não" ${valReencontro==='Não'?'selected':''}>Não</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Capacitação Destino (CD) *</label>
+            <select id="f-cd" required>
+              <option value="" ${valCD===''?'selected':''}>Selecione...</option>
+              <option value="Ainda não fez" ${valCD==='Ainda não fez'?'selected':''}>Ainda não fez</option>
+              <option value="Nível 1" ${valCD==='Nível 1'?'selected':''}>Nível 1</option>
+              <option value="Nível 2" ${valCD==='Nível 2'?'selected':''}>Nível 2</option>
+              <option value="Nível 3" ${valCD==='Nível 3'?'selected':''}>Nível 3</option>
+              <option value="Concluído" ${valCD==='Concluído'?'selected':''}>Concluído</option>
+              <option value="Desistiu" ${valCD==='Desistiu'?'selected':''}>Desistiu</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Fez a Formatura da CD? *</label>
+            <select id="f-formatura-cd" required>
+              <option value="" ${valFormaturaCD===''?'selected':''}>Selecione...</option>
+              <option value="Sim" ${valFormaturaCD==='Sim'?'selected':''}>Sim</option>
+              <option value="Não" ${valFormaturaCD==='Não'?'selected':''}>Não</option>
+            </select>
+          </div>
+        </div>
+      `, `<button class="btn btn-outline" onclick="${celulaFixaId ? `abrirCelulaseMembros('${celulaFixaId}')` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-discipula" onclick="salvarDiscipula(${id ? `'${id}'` : 'null'}, ${celulaFixaId ? `'${celulaFixaId}'` : 'null'})">Salvar Cadastro</button>`);
+
+      if (mostrarCorInicial && !id) {
+        verificarExibicaoCorG12();
+      }
+    }
+
+    async function salvarDiscipula(id, retornoCelulaId) {
+      const nome = document.getElementById('f-nome').value.trim();
+      const liderIdRaw = document.getElementById('f-lider-id').value;
+      const batVal = document.getElementById('f-bat').value;
+      const assVal = document.getElementById('f-ass').value;
+      const cultoRegVal = document.getElementById('f-culto-regular').value;
+      const cultoDiaHoraVal = document.getElementById('f-culto-dia-horario').value.trim();
+      const uvVal = document.getElementById('f-uv').value;
+      const encontroVal = document.getElementById('f-encontro').value;
+      const reencontroVal = document.getElementById('f-reencontro').value;
+      const cdVal = document.getElementById('f-cd').value;
+      const formaturaCdVal = document.getElementById('f-formatura-cd').value;
+
+      if (!nome) return alert('⚠️ O Nome Completo é obrigatório!');
+      if (!liderIdRaw) return alert('⚠️ É obrigatório selecionar a Célula Pertencente!');
+
+      const jaExiste = db.discipulas.find(x => normalizarNome(x.nome) === normalizarNome(nome) && !mesmoId(x.id, id));
+      if (jaExiste) {
+        alert(`⚠️ "${jaExiste.nome}" já está cadastrada no sistema! Para evitar duplicidade, edite o cadastro existente dela em vez de criar um novo.`);
+        return;
+      }
+
+      if (!batVal) return alert('⚠️ É obrigatório selecionar se ela é Batizada (Sim ou Não)!');
+      if (!assVal) return alert('⚠️ É obrigatório selecionar se ela é Assídua na Célula (Sim ou Não)!');
+      if (!cultoRegVal) return alert('⚠️ É obrigatório responder se ela está frequentando o culto regularmente (Sim ou Não)!');
+      if (cultoRegVal === 'Sim' && !cultoDiaHoraVal) {
+        alert('⚠️ Como ela frequenta o culto regularmente, informe o dia e horário do culto!');
+        document.getElementById('f-culto-dia-horario')?.focus();
+        return;
+      }
+      if (!uvVal) return alert('⚠️ É obrigatório selecionar o status da Universidade da Vida (UV)!');
+      if (!encontroVal) return alert('⚠️ É obrigatório selecionar se fez Encontro com Deus!');
+      if (!reencontroVal) return alert('⚠️ É obrigatório selecionar se fez Reencontro!');
+      if (!cdVal) return alert('⚠️ É obrigatório selecionar o status da Capacitação Destino (CD)!');
+      if (!formaturaCdVal) return alert('⚠️ É obrigatório selecionar se fez a Formatura da CD!');
+
+      const nivelSel = document.getElementById('f-nivel-lideranca').value;
+      const isG12 = nivelSel.toUpperCase().includes('G12');
+      const celulaAleluia = getCelulaAleluiaReal();
+      const existente = id ? db.discipulas.find(x => mesmoId(x.id, id)) : null;
+
+      const liderIdFinal = (isG12 && celulaAleluia)
+        ? resolverValorIdSupabase(celulaAleluia.id, existente)
+        : resolverValorIdSupabase(liderIdRaw, existente);
+
+      if (!isMacroAdmin() && !podeGerenciarCelula(liderIdFinal)) {
+        alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
+        return;
+      }
+
+      const corFavoritaVal = isG12 ? (document.getElementById('f-cor-favorita')?.value.trim() || '') : '';
+
+      if (isG12 && !corFavoritaVal) {
+        alert('Por favor, informe qual é a cor que ela gosta!');
+        document.getElementById('f-cor-favorita')?.focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-salvar-discipula');
+      if (btn) { btn.disabled = true; btn.textContent = 'Enviando ao Supabase...'; }
+      setSyncStatus('⏳ Enviando ao banco...', 'loading');
+
+      const obj = {
+        id: existente ? existente.id : gerarNovoId(),
+        nome: nome,
+        nivel_lideranca: nivelSel,
+        cor_favorita: corFavoritaVal,
+        lider_id: liderIdFinal,
+        data_nascimento: document.getElementById('f-nasc').value || null,
+        endereco: document.getElementById('f-endereco').value.trim(),
+        estado_civil: document.getElementById('f-estado-civil').value,
+        email: document.getElementById('f-email').value.trim(),
+        telefone: document.getElementById('f-tel').value.trim(),
+        foto_url: tempFotoDiscipulaBase64,
+        cd: cdVal,
+        formatura_cd: formaturaCdVal,
+        uv: uvVal,
+        encontro: encontroVal,
+        reencontro: reencontroVal,
+        batizada: batVal === 'Sim',
+        assiduidade: assVal,
+        culto_regular: cultoRegVal,
+        culto_dia_horario: cultoDiaHoraVal
+      };
+
+      try {
+        const { data, error } = await supabaseClient.from('discipulas').upsert(obj).select();
+        if (error) {
+          console.error('Erro ao salvar discípula no Supabase:', error);
+          setSyncStatus('🔴 Erro ao enviar', 'error');
+          alert(`❌ O banco NÃO recebeu o envio!\n\nMotivo: ${error.message}\nCódigo: ${error.code || '—'}`);
+          if (btn) { btn.disabled = false; btn.textContent = 'Salvar Cadastro'; }
+          return;
+        }
+
+        console.log('Discípula salva no Supabase:', data);
+        setSyncStatus('🟢 Supabase Conectado', 'online');
+        await carregarDadosDoSupabase();
+        if (retornoCelulaId) {
+          abrirCelulaseMembros(retornoCelulaId);
+        } else {
+          fecharModal();
+        }
+        atualizarInterfaceCompleta();
+      } catch (err) {
+        console.error('Exceção ao salvar discípula:', err);
+        setSyncStatus('🔴 Erro ao enviar', 'error');
+        alert(`❌ Falha inesperada ao salvar cadastro: ${err?.message || err}`);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Cadastro'; }
+      }
+    }
+
+    // =========================================================================
+    // 10. PAINEL DE LOGIN & DELEGAÇÃO DE DOMÍNIO
+    // =========================================================================
+    function getUsuariosVisiveisNoPainel() {
+      if (isMacroAdmin()) return db.usuarios;
+
+      const nomesMinhasDiscipulas = new Set(getDiscipulasUnicasVisiveis().map(d => normalizarNome(d.nome)));
+      return db.usuarios.filter(u => 
+        u.perfil_id !== 'MACRO' && 
+        normalizarNome(u.nome) !== normalizarNome(usuarioLogado.nome) &&
+        nomesMinhasDiscipulas.has(normalizarNome(u.nome))
+      );
+    }
+
+    function renderTabelaAcessos() {
+      if (isMacroAdmin()) {
+        document.getElementById('lista-perfis-lideranca').innerHTML = db.perfisLideranca.map(p => `
+          <div style="background:var(--rosa-claro);border:1px solid var(--rosa-medio);padding:8px 14px;border-radius:12px;font-size:0.8rem;display:flex;align-items:center;gap:8px;">
+            <strong>${p.nome}</strong>
+            <span style="color:var(--cinza);font-size:0.72rem;">(${p.pode_criar_celula ? 'Cria Célula' : 'Sem Célula'} • ${p.pode_editar_discipulas ? 'Edita Discípulas' : 'Leitura'})</span>
+          </div>
+        `).join('');
+      }
+
+      const listaUsuarios = getUsuariosVisiveisNoPainel();
+
+      document.getElementById('tabela-acessos').innerHTML = listaUsuarios.map(u => {
+        const badgesPerm = [];
+        if (u.pode_criar_celula) badgesPerm.push('<span class="badge badge-success">Criar Célula</span>');
+        if (u.pode_editar_discipulas) badgesPerm.push('<span class="badge badge-info">Gerir Discípulas</span>');
+        if (u.pode_dar_baixa) badgesPerm.push('<span class="badge badge-danger">Dar Baixa (X)</span>');
+        if (u.pode_gerenciar_acessos) badgesPerm.push('<span class="badge badge-dourado">Admin Acessos</span>');
+
+        return `
+          <tr>
+            <td><strong>${u.nome}</strong></td>
+            <td><code>${u.login}</code></td>
+            <td><code>${u.senha}</code></td>
+            <td><span class="badge ${u.perfil_id === 'MACRO' ? 'badge-dourado' : 'badge-rosa'}">${u.perfil_nome}</span></td>
+            <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badgesPerm.join('') || '<span class="badge badge-cinza">Somente Leitura</span>'}</div></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-outline btn-sm" onclick="abrirModalAcesso('${u.id}')">✏️ Editar Login/Domínio</button>
+                ${u.perfil_id !== 'MACRO' ? `<button class="btn btn-danger btn-sm" onclick="excluirAcesso('${u.id}')">Revogar</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('') || `<tr><td colspan="6" style="text-align:center;color:#999;padding:32px;">Nenhuma discípula da sua rede recebeu login de domínio ainda.</td></tr>`;
+    }
+
+    function abrirModalNovoPerfilLideranca() {
+      if (!isMacroAdmin()) return;
+      abrirModal('✨ Criar Nova Liderança & Designar Permissões do Perfil', `
+        <div class="form-row">
+          <div class="form-field"><label>Nome da Liderança / Cargo *</label><input type="text" id="np-nome" placeholder="Ex: Liderança 20736 ou Supervisora" required /></div>
+          <div class="form-field"><label>Nível Hierárquico (Ordem)</label><input type="number" id="np-nivel" value="5" min="1" max="15" /></div>
+        </div>
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Permissões Designadas a este Perfil:</label>
+        <div class="permissoes-grid">
+          <label class="perm-item"><input type="checkbox" id="np-criar-celula" checked /> Pode Criar / Editar Células</label>
+          <label class="perm-item"><input type="checkbox" id="np-editar-disc" checked /> Pode Cadastrar / Editar Discípulas</label>
+          <label class="perm-item"><input type="checkbox" id="np-dar-baixa" /> Pode Dar Baixa (X) em Células</label>
+          <label class="perm-item"><input type="checkbox" id="np-gerenciar-acessos" /> Pode Gerenciar Logins &amp; Lideranças</label>
+        </div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-perfil" onclick="salvarNovoPerfilLideranca()">Salvar Liderança</button>`);
+    }
+
+    async function salvarNovoPerfilLideranca() {
+      const nome = document.getElementById('np-nome').value.trim();
+      if (!nome) return alert('Informe o nome da liderança!');
+
+      const btn = document.getElementById('btn-salvar-perfil');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+      const novoPerfil = {
+        id: 'PERFIL_' + gerarNovoId(),
+        nome: nome,
+        nivel: parseInt(document.getElementById('np-nivel').value, 10) || 5,
+        pode_criar_celula: document.getElementById('np-criar-celula').checked,
+        pode_editar_discipulas: document.getElementById('np-editar-disc').checked,
+        pode_dar_baixa: document.getElementById('np-dar-baixa').checked,
+        pode_gerenciar_acessos: document.getElementById('np-gerenciar-acessos').checked
+      };
+
+      const { error } = await supabaseClient.from('perfis_lideranca').insert(novoPerfil);
+      if (error) {
+        alert('Erro ao salvar perfil: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Liderança'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      fecharModal();
+      renderTabelaAcessos();
+      alert(`Liderança "${nome}" salva no banco de dados!`);
+    }
+
+    function abrirModalAcesso(userId = null) {
+      const u = userId ? db.usuarios.find(x => mesmoId(x.id, userId)) : null;
+      const unicasDiscipulas = getDiscipulasUnicasVisiveis();
+
+      if (!u && !isMacroAdmin() && unicasDiscipulas.length === 0) {
+        alert('⚠️ Você ainda não possui discípulas cadastradas na sua célula.');
+        return;
+      }
+
+      const opcoesDiscipulas = unicasDiscipulas.map(d => `<option value="${d.nome}" ${u && u.nome === d.nome ? 'selected' : ''}>${d.nome} (${d.nivel_lideranca || 'Discípula'})</option>`).join('');
+      
+      const proximoPerfil = getProximoPerfilHierarquico();
+      const opcoesPerfis = isMacroAdmin()
+        ? db.perfisLideranca.map(p => `<option value="${p.id}" ${u && u.perfil_id === p.id ? 'selected' : ''}>${p.nome}</option>`).join('')
+        : `<option value="${proximoPerfil.id}" selected>${proximoPerfil.nome} (Hierarquia Seguinte)</option>`;
+
+      abrirModal(u ? 'Editar Login, Senha & Domínio' : 'Criar Login & Dar Domínio à Discípula', `
+        <div class="form-row">
+          <div class="form-field">
+            <label>Selecionar Discípula *</label>
+            ${u ? `<input id="ac-nome" value="${u.nome}" readonly style="background:#eee;" />` : `<select id="ac-nome" required><option value="">Selecione a discípula...</option>${opcoesDiscipulas}</select>`}
+          </div>
+          <div class="form-field">
+            <label>Hierarquia Designada *</label>
+            <select id="ac-perfil-id" onchange="aoMudarPerfilSelect(this.value)" ${!isMacroAdmin() ? 'disabled' : ''}>
+              ${opcoesPerfis}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Login de Acesso *</label><input type="text" id="ac-login" value="${u?.login || ''}" placeholder="Ex: larissa" required /></div>
+          <div class="form-field"><label>Senha *</label><input type="text" id="ac-senha" value="${u?.senha || ''}" placeholder="Ex: 123" required /></div>
+        </div>
+
+        <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--cinza);margin-bottom:6px;">Domínios &amp; Permissões Liberadas:</label>
+        <div class="permissoes-grid">
+          <label class="perm-item"><input type="checkbox" id="ac-perm-celula" ${!u || u.pode_criar_celula ? 'checked' : ''} /> Criar &amp; Gerir Própria Célula</label>
+          <label class="perm-item"><input type="checkbox" id="ac-perm-disc" ${!u || u.pode_editar_discipulas ? 'checked' : ''} /> Cadastrar &amp; Editar Suas Discípulas</label>
+          ${isMacroAdmin() ? `
+            <label class="perm-item"><input type="checkbox" id="ac-perm-baixa" ${u?.pode_dar_baixa ? 'checked' : ''} /> Dar Baixa (X) em Células Próprias</label>
+            <label class="perm-item"><input type="checkbox" id="ac-perm-acessos" ${u?.pode_gerenciar_acessos ? 'checked' : ''} /> Admin Global de Acessos</label>
+          ` : `
+            <input type="checkbox" id="ac-perm-baixa" style="display:none;" ${u?.pode_dar_baixa ? 'checked' : ''} />
+            <input type="checkbox" id="ac-perm-acessos" style="display:none;" />
+          `}
+        </div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-acesso" onclick="salvarAcesso(${userId ? `'${userId}'` : 'null'})">Salvar &amp; Liberar Domínio</button>`);
+    }
+
+    function aoMudarPerfilSelect(perfilId) {
+      const p = db.perfisLideranca.find(x => x.id === perfilId);
+      if (!p) return;
+      document.getElementById('ac-perm-celula').checked = p.pode_criar_celula;
+      document.getElementById('ac-perm-disc').checked = p.pode_editar_discipulas;
+      const chkBaixa = document.getElementById('ac-perm-baixa');
+      const chkAcessos = document.getElementById('ac-perm-acessos');
+      if (chkBaixa) chkBaixa.checked = p.pode_dar_baixa;
+      if (chkAcessos) chkAcessos.checked = p.pode_gerenciar_acessos;
+    }
+
+    async function salvarAcesso(userId) {
+      const nome = document.getElementById('ac-nome').value.trim();
+      const login = document.getElementById('ac-login').value.trim().toLowerCase();
+      const senha = document.getElementById('ac-senha').value.trim();
+      
+      let perfilId = document.getElementById('ac-perfil-id').value;
+      let perfilObj = db.perfisLideranca.find(p => p.id === perfilId);
+      if (!perfilObj) {
+        perfilObj = isMacroAdmin() ? { id: perfilId, nome: 'Liderança' } : getProximoPerfilHierarquico();
+      }
+
+      const podeCriarCelula = document.getElementById('ac-perm-celula').checked;
+      const podeEditarDisc = document.getElementById('ac-perm-disc').checked;
+      const podeDarBaixa = isMacroAdmin() ? (document.getElementById('ac-perm-baixa')?.checked || false) : false;
+      const podeGerenciarAcessos = isMacroAdmin() ? (document.getElementById('ac-perm-acessos')?.checked || false) : false;
+
+      if (!nome || !login || !senha) return alert('Preencha nome, login e senha!');
+
+      const loginDuplicado = db.usuarios.find(u => u.login.toLowerCase() === login && !mesmoId(u.id, userId));
+      if (loginDuplicado) {
+        alert(`O login "${login}" já está em uso por ${loginDuplicado.nome}. Escolha outro login!`);
+        return;
+      }
+
+      const btn = document.getElementById('btn-salvar-acesso');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+      const disc = db.discipulas.find(d => normalizarNome(d.nome) === normalizarNome(nome));
+      if (disc && perfilObj.id !== 'MACRO') {
+        const celulaAleluia = getCelulaAleluiaReal();
+        const updateData = { nivel_lideranca: perfilObj.nome };
+        if (perfilObj.nome.toUpperCase().includes('G12') && celulaAleluia) {
+          updateData.lider_id = resolverValorIdSupabase(celulaAleluia.id, disc);
+        }
+        await supabaseClient.from('discipulas').update(updateData).eq('id', disc.id);
+      }
+
+      const celulaPropria = db.lideres.find(l => l.ativa && normalizarNome(l.nome) === normalizarNome(nome));
+
+      const dadosUsuario = {
+        id: userId || gerarNovoId(),
+        nome, login, senha,
+        perfil_id: perfilObj.id,
+        perfil_nome: perfilObj.nome,
+        pode_criar_celula: podeCriarCelula,
+        pode_editar_discipulas: podeEditarDisc,
+        pode_dar_baixa: podeDarBaixa,
+        pode_gerenciar_acessos: podeGerenciarAcessos,
+        lider_id: celulaPropria ? celulaPropria.id : null
+      };
+
+      const { error } = await supabaseClient.from('usuarios').upsert(dadosUsuario);
+      if (error) {
+        alert('Erro ao salvar credenciais: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar & Liberar Domínio'; }
+        return;
+      }
+
+      await carregarDadosDoSupabase();
+      if (usuarioLogado && mesmoId(usuarioLogado.id, userId)) {
+        usuarioLogado = db.usuarios.find(u => mesmoId(u.id, userId)) || usuarioLogado;
+        aplicarPermissoesUsuario();
+      }
+
+      fecharModal();
+      atualizarInterfaceCompleta();
+      alert(`✅ Domínio liberado para ${nome} (${perfilObj.nome})! Login: ${login}`);
+    }
+
+    async function excluirAcesso(userId) {
+      if (!confirm('Deseja revogar o login e domínio desta discípula?')) return;
+      const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
+      if (error) return alert('Erro ao revogar acesso: ' + error.message);
+      await carregarDadosDoSupabase();
+      renderTabelaAcessos();
+    }
+
+    // =========================================================================
+    // 11. MOVIMENTAÇÃO (TRANSFERÊNCIA VS DESISTÊNCIA + AUDITORIA)
+    // =========================================================================
+    function renderDesistencias() {
+      document.getElementById('tabela-desistencias').innerHTML = db.desistencias.map(d => `
+        <tr>
+          <td><strong>${d.nome}</strong></td>
+          <td>${d.celular_origem}</td>
+          <td><span class="badge ${(d.celular_nova || '').toLowerCase().includes('desist') || (d.celular_nova || '').toLowerCase().includes('encerrada') ? 'badge-danger' : 'badge-info'}">${d.celular_nova || '—'}</span></td>
+          <td>${formatDate(d.data)}</td>
+          <td>${d.motivo}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;padding:36px;">Nenhum registro de transferência ou baixa.</td></tr>';
+    }
+
+    function aoMudarDiscipulaMovimentacao() {
+      const nomeVal = document.getElementById('fd-nome')?.value.trim();
+      const inpOrigem = document.getElementById('fd-ant');
+      if (!nomeVal || !inpOrigem) return;
+
+      const disc = getDiscipulasUnicasVisiveis().find(d => normalizarNome(d.nome) === normalizarNome(nomeVal));
+      if (disc && disc.lider_id) {
+        const cel = db.lideres.find(l => mesmoId(l.id, disc.lider_id));
+        if (cel) inpOrigem.value = cel.celular_que_lidera;
+      }
+    }
+
+    function aoMudarTipoMovimentacao() {
+      const tipo = document.getElementById('fd-tipo-movimentacao')?.value;
+      const boxNovaCelula = document.getElementById('box-nova-celula-mov');
+      if (!boxNovaCelula) return;
+
+      if (tipo === 'Célula Nova') {
+        boxNovaCelula.style.display = 'flex';
+      } else {
+        boxNovaCelula.style.display = 'none';
+      }
+    }
+
+    function abrirModalDesistencia() {
+      const discipulasVis = getDiscipulasUnicasVisiveis();
+      const opcoesNomes = discipulasVis.map(d => `<option value="${d.nome}">${d.nome}</option>`).join('');
+      const celulasAtivas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
+      const opcoesCelulas = celulasAtivas.map(l => `<option value="${l.celular_que_lidera}">${l.celular_que_lidera} (Líder: ${l.nome})</option>`).join('');
+      const autorAtual = usuarioLogado ? `${usuarioLogado.nome} (${usuarioLogado.login})` : 'Usuário Logado';
+
+      abrirModal('Registrar Transferência ou Desistência', `
+        <div style="background:#FDF7FA;border:1px solid #F2D5E4;padding:10px 14px;border-radius:10px;font-size:0.78rem;color:var(--rosa-escuro);margin-bottom:14px;">
+          🔐 <strong>Auditoria de Login Ativa:</strong> Esta movimentação será registrada automaticamente em nome de <strong>${autorAtual}</strong>.
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nome da Discípula *</label>
+            <select id="fd-nome" onchange="aoMudarDiscipulaMovimentacao()" required>
+              <option value="">Selecione a discípula...</option>
+              ${opcoesNomes}
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Célula Anterior *</label>
+            <input id="fd-ant" placeholder="Célula de origem..." required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Tipo de Movimentação (Destino) *</label>
+            <select id="fd-tipo-movimentacao" onchange="aoMudarTipoMovimentacao()" required>
+              <option value="">Selecione: Célula Nova ou Desistência...</option>
+              <option value="Célula Nova">Célula Nova (Transferência)</option>
+              <option value="Desistência">Desistência</option>
+            </select>
+          </div>
+
+          <div class="form-field" id="box-nova-celula-mov" style="display:none;">
+            <label>Nome da Nova Célula *</label>
+            <input id="fd-nova-celula" list="datalist-celulas-destino" placeholder="Selecione ou digite o nome da nova célula..." />
+            <datalist id="datalist-celulas-destino">${opcoesCelulas}</datalist>
+          </div>
+        </div>
+
+        <div class="form-field" style="margin-top:8px;">
+          <label>Motivo Pastoral *</label>
+          <textarea id="fd-motivo" placeholder="Descreva obrigatoriamente o motivo pastoral..." required></textarea>
+        </div>
+      `, `<button class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-desistencia" onclick="salvarDesistencia()">Salvar Registro</button>`);
+    }
+
+    async function salvarDesistencia() {
+      const nome = document.getElementById('fd-nome').value.trim();
+      const ant = document.getElementById('fd-ant').value.trim();
+      const tipoMov = document.getElementById('fd-tipo-movimentacao').value;
+      const novaCelulaNome = document.getElementById('fd-nova-celula')?.value.trim() || '';
+      const motivo = document.getElementById('fd-motivo').value.trim();
+
+      if (!nome) return alert('⚠️ Selecione o nome da discípula!');
+      if (!tipoMov) return alert('⚠️ Selecione o Tipo de Movimentação: Célula Nova ou Desistência!');
+      if (tipoMov === 'Célula Nova' && !novaCelulaNome) {
+        alert('⚠️ Como você selecionou "Célula Nova", informe o nome da nova célula!');
+        document.getElementById('fd-nova-celula')?.focus();
+        return;
+      }
+      if (!motivo) {
+        alert('⚠️ O campo Motivo Pastoral é obrigatório!');
+        document.getElementById('fd-motivo')?.focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-salvar-desistencia');
+      if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+      const autorRegistro = usuarioLogado ? `${usuarioLogado.nome} (login: ${usuarioLogado.login})` : 'Sistema';
+      const destinoFinal = tipoMov === 'Célula Nova' ? `Transferida para: ${novaCelulaNome}` : 'Desistência';
+
+      const { error } = await supabaseClient.from('desistencias').insert({
+        id: gerarNovoId(),
+        nome,
+        celular_origem: ant || '—',
+        celular_nova: destinoFinal,
+        data: new Date().toISOString().slice(0,10),
+        motivo: `${motivo} • [Registrado por: ${autorRegistro}]`
+      });
+
+      if (error) {
+        alert('Erro ao salvar registro: ' + error.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Registro'; }
+        return;
+      }
+
+      if (tipoMov === 'Célula Nova') {
+        const discObj = db.discipulas.find(d => normalizarNome(d.nome) === normalizarNome(nome));
+        const celDestinoObj = db.lideres.find(c => c.ativa && normalizarNome(c.celular_que_lidera) === normalizarNome(novaCelulaNome));
+        if (discObj && celDestinoObj) {
+          await supabaseClient.from('discipulas').update({ lider_id: resolverValorIdSupabase(celDestinoObj.id, discObj) }).eq('id', discObj.id);
+        }
+      }
+
+      await carregarDadosDoSupabase();
+      fecharModal();
+      atualizarInterfaceCompleta();
+      alert(`✅ Registro salvo com sucesso em nome de ${usuarioLogado ? usuarioLogado.nome : 'usuário logado'}!`);
+    }
+
+    // =========================================================================
+    // 12. ANIVERSARIANTES & RELATÓRIOS PASTORAIS
+    // =========================================================================
+    function calcularIdade(dataNasc) {
+      if (!dataNasc) return '';
+      const hoje = new Date(), nasc = new Date(dataNasc);
+      let idade = hoje.getFullYear() - nasc.getFullYear();
+      const m = hoje.getMonth() - nasc.getMonth();
+      if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+      return idade;
+    }
+
+    function renderAniversariantes() {
+      const mes = parseInt(document.getElementById('mes-aniversario').value, 10);
+      const lista = getDiscipulasUnicasVisiveis().filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T12:00:00').getMonth() === mes);
+      const c = document.getElementById('lista-aniversariantes');
+      if (!lista.length) { c.innerHTML = '<div class="empty-state"><p>Nenhum aniversariante neste mês.</p></div>'; return; }
+      
+      c.innerHTML = lista.map(p => {
+        const d = new Date(p.data_nascimento + 'T12:00:00');
+        const idade = calcularIdade(p.data_nascimento);
+        const telLimpo = p.telefone ? p.telefone.replace(/\D/g, '') : '';
+        const msg = encodeURIComponent(`Olá ${p.nome}, a Célula Aleluia te deseja um feliz aniversário! Muitas bênçãos de Deus sobre sua vida! 🎂🎉`);
+        const linkWap = telLimpo ? `https://wa.me/55${telLimpo}?text=${msg}` : '#';
+
+        return `
+          <div class="bday-card">
+            <div style="display:flex;align-items:center;gap:14px;">
+              ${renderAvatarDisc(p.foto_url, p.nome)}
+              <div>
+                <strong>${p.nome}</strong><br>
+                <span style="color:#999;font-size:0.85rem;">🎂 ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${idade !== '' ? idade + ' anos' : ''}</span>
+              </div>
+            </div>
+            ${telLimpo ? `<a href="${linkWap}" target="_blank" class="btn btn-whatsapp btn-sm">💬 Parabéns</a>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    function prepararFiltrosRelatorio() {
+      const celulasReais = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
+      document.getElementById('filtro-lider').innerHTML = '<option value="">Todas as Células</option>' + celulasReais.map(l => `<option value="${l.id}">${l.celular_que_lidera} (Líder: ${l.nome})</option>`).join('');
+
+      const mapaBairros = new Map();
+      celulasReais.forEach(c => {
+        const b = extrairBairroEMunicipio(c.local);
+        if (b && b !== 'Não informado') mapaBairros.set(normalizarNome(b), b);
+      });
+      getDiscipulasUnicasVisiveis().forEach(d => {
+        const b = obterLocalidadeDiscipula(d);
+        if (b && b !== 'Não informado') mapaBairros.set(normalizarNome(b), b);
+      });
+
+      const listaBairrosOrdenada = Array.from(mapaBairros.values()).sort((a, b) => a.localeCompare(b));
+      const selectBairro = document.getElementById('filtro-bairro');
+      if (selectBairro) {
+        const valorAtual = selectBairro.value;
+        selectBairro.innerHTML = '<option value="">Todos os Bairros / Municípios</option>' +
+          listaBairrosOrdenada.map(b => `<option value="${b}">${b}</option>`).join('');
+        if (valorAtual) selectBairro.value = valorAtual;
+      }
+
+      renderResumoRelatorioPastoral();
+    }
+
+    function obterDadosRelatorioAtual() {
+      const mGlobal = calcularMetricasCobertura();
+      const selectLider = document.getElementById('filtro-lider');
+      const selectBairro = document.getElementById('filtro-bairro');
+      const selectHier = document.getElementById('filtro-hierarquia');
+      const selectPend = document.getElementById('filtro-pendencia');
+      const selectModoLista = document.getElementById('filtro-modo-lista');
+      const dataInicio = document.getElementById('filtro-data-inicio')?.value || '';
+      const dataFim = document.getElementById('filtro-data-fim')?.value || '';
+
+      const liderId = selectLider.value;
+      const bairroFiltro = selectBairro ? selectBairro.value : '';
+      const hierarquia = selectHier.value;
+      const pend = selectPend.value;
+      const modoLista = selectModoLista ? selectModoLista.value : 'resumo-apenas';
+
+      const labelLider = selectLider.options[selectLider.selectedIndex]?.text || 'Todas as Células';
+      const labelBairro = bairroFiltro || 'Todos os Bairros';
+      const labelHier = selectHier.options[selectHier.selectedIndex]?.text || 'Todas as Hierarquias';
+      const labelPend = selectPend.options[selectPend.selectedIndex]?.text || 'Visão Geral';
+
+      const temPeriodo = Boolean(dataInicio || dataFim);
+      const labelPeriodo = temPeriodo 
+        ? `Período: ${dataInicio ? formatDate(dataInicio) : 'Início'} até ${dataFim ? formatDate(dataFim) : 'Hoje'}` 
+        : 'Todo o Período';
+
+      const cardsBaseCobertura = [
+        { label: 'Nº de Células', valor: mGlobal.numCelulas, gold: true },
+        { label: 'Total de Discípulas Cadastradas', valor: mGlobal.totalDiscipulasCadastradas, gold: true },
+        { label: 'Total de Líderes', valor: mGlobal.totalLideres, gold: true },
+        { label: 'Discípulas (Não Líderes)', valor: mGlobal.totalDiscipulasNaoLideres, gold: true }
+      ];
+
+      const celulasAbertasNoPeriodo = mGlobal.celulasReaisAtivas.filter(c => estaNoPeriodo(c.data_abertura, dataInicio, dataFim));
+      const novasDiscipulasNoPeriodo = mGlobal.discipulasUnicas.filter(d => estaNoPeriodo(obterDataCadastroDiscipula(d), dataInicio, dataFim));
+      
+      const movimentacoesNoPeriodo = db.desistencias.filter(d => estaNoPeriodo(d.data, dataInicio, dataFim));
+      const desistentesNoPeriodo = movimentacoesNoPeriodo.filter(d => 
+        (d.celular_nova || '').toLowerCase().includes('desist') && !(d.nome || '').toUpperCase().startsWith('CÉLULA:')
+      );
+      const transferidasNoPeriodo = movimentacoesNoPeriodo.filter(d => 
+        (d.celular_nova || '').toLowerCase().includes('transferida')
+      );
+      const celulasFechadasNoPeriodo = movimentacoesNoPeriodo.filter(d => 
+        (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:')
+      );
+
+      let lista = [...mGlobal.discipulasUnicas];
+      if (liderId) lista = lista.filter(d => mesmoId(d.lider_id, liderId));
+      if (bairroFiltro) {
+        lista = lista.filter(d => normalizarNome(obterLocalidadeDiscipula(d)).includes(normalizarNome(bairroFiltro)));
+      }
+      if (hierarquia === 'apenas-lideres') {
+        lista = lista.filter(d => isCargoLider(d.nivel_lideranca));
+      } else if (hierarquia === 'Discípula') {
+        lista = lista.filter(d => !isCargoLider(d.nivel_lideranca));
+      } else if (hierarquia) {
+        lista = lista.filter(d => (d.nivel_lideranca || '').includes(hierarquia));
+      }
+
+      if (temPeriodo) {
+        lista = lista.filter(d => estaNoPeriodo(obterDataCadastroDiscipula(d), dataInicio, dataFim));
+      }
+
+      const dadosGraficoJornada = {
+        labels: ['Batizadas', 'UV Concluída', 'Reencontro', 'Formatura CD', 'Assíduas Célula', 'Culto Regular'],
+        valores: [
+          lista.filter(d => d.batizada === true || d.batizada === 'Sim').length,
+          lista.filter(d => d.uv === 'Sim').length,
+          lista.filter(d => d.reencontro === 'Sim').length,
+          lista.filter(d => d.formatura_cd === 'Sim').length,
+          lista.filter(d => d.assiduidade === 'Sim').length,
+          lista.filter(d => d.culto_regular === 'Sim').length
+        ]
+      };
+
+      const dadosGraficoSecundario = temPeriodo ? {
+        titulo: `📈 Movimentações (${labelPeriodo})`,
+        labels: ['Células Abertas', 'Novas Discípulas', 'Formadas (CD)', 'Transferidas', 'Desistentes', 'Células Fechadas'],
+        valores: [
+          celulasAbertasNoPeriodo.length,
+          novasDiscipulasNoPeriodo.length,
+          lista.filter(d => d.formatura_cd === 'Sim').length,
+          transferidasNoPeriodo.length,
+          desistentesNoPeriodo.length,
+          celulasFechadasNoPeriodo.length
+        ]
+      } : {
+        titulo: '👑 Composição da Macrocélula (Líderes vs Discípulas)',
+        labels: ['Líderes (G12/144/1728)', 'Discípulas (Não Líderes)', 'Células Ativas'],
+        valores: [mGlobal.totalLideres, mGlobal.totalDiscipulasNaoLideres, mGlobal.numCelulas]
+      };
+
+      const cardsMovimentacao = [
+        { label: temPeriodo ? 'Células Abertas (Período)' : 'Células Abertas', valor: celulasAbertasNoPeriodo.length, green: true },
+        { label: temPeriodo ? 'Novas Discípulas (Período)' : 'Discípulas Cadastradas', valor: novasDiscipulasNoPeriodo.length, green: true },
+        { label: 'Formadas (Formatura CD)', valor: lista.filter(d => d.formatura_cd === 'Sim').length, green: true },
+        { label: temPeriodo ? 'Desistentes (Período)' : 'Total Desistentes', valor: desistentesNoPeriodo.length, red: true },
+        { label: temPeriodo ? 'Células Fechadas (Período)' : 'Células Fechadas', valor: celulasFechadasNoPeriodo.length, red: true }
+      ];
+
+      if (pend === 'celulas-por-bairro' || pend === 'celulas-abertas') {
+        let abertas = mGlobal.celulasReaisAtivas;
+        if (liderId) abertas = abertas.filter(c => mesmoId(c.id, liderId));
+        if (bairroFiltro) {
+          abertas = abertas.filter(c => normalizarNome(extrairBairroEMunicipio(c.local)).includes(normalizarNome(bairroFiltro)));
+        }
+        if (temPeriodo) {
+          abertas = abertas.filter(c => estaNoPeriodo(c.data_abertura, dataInicio, dataFim));
+        }
+
+        const contagemBairros = new Map();
+        abertas.forEach(c => {
+          const b = extrairBairroEMunicipio(c.local);
+          contagemBairros.set(b, (contagemBairros.get(b) || 0) + 1);
+        });
+
+        const cardsBairros = Array.from(contagemBairros.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([bairro, qtd]) => ({ label: `📍 ${bairro}`, valor: `${qtd} célula(s)` }));
+
+        return {
+          tipo: 'celulas-por-bairro',
+          modoLista: modoLista,
+          tituloFiltro: `${labelPend} • ${labelBairro} • ${labelPeriodo}`,
+          cards: [...cardsBaseCobertura, ...cardsMovimentacao, ...cardsBairros],
+          graficoJornada: dadosGraficoJornada,
+          graficoSecundario: dadosGraficoSecundario,
+          itens: abertas.map(c => {
+            const bairroCel = extrairBairroEMunicipio(c.local);
+            return {
+              grupo: bairroCel,
+              celulaNome: c.celular_que_lidera,
+              isLider: true,
+              titulo: `${c.celular_que_lidera} • Bairro/Município: ${bairroCel}`,
+              detalhes: `Líder: ${c.nome} (${c.geracao}) • Abertura: ${formatDate(c.data_abertura)} • Dia/Hora: ${c.dias || '—'} às ${c.horarios || '—'}`
+            };
+          })
+        };
+      }
+
+      if (pend === 'qtd-discipulas-bairro') {
+        const mapaContagem = new Map();
+        lista.forEach(d => {
+          const b = obterLocalidadeDiscipula(d);
+          mapaContagem.set(b, (mapaContagem.get(b) || 0) + 1);
+        });
+
+        const rankingBairros = Array.from(mapaContagem.entries()).sort((a, b) => b[1] - a[1]);
+
+        return {
+          tipo: 'qtd-discipulas-bairro',
+          modoLista: modoLista === 'resumo-apenas' ? 'completa' : modoLista,
+          tituloFiltro: `${labelPend} • ${labelLider} • ${labelPeriodo}`,
+          cards: [...cardsBaseCobertura, ...cardsMovimentacao],
+          graficoJornada: dadosGraficoJornada,
+          graficoSecundario: dadosGraficoSecundario,
+          itens: rankingBairros.map(([bairro, qtd]) => ({
+            grupo: bairro,
+            celulaNome: '',
+            isLider: false,
+            titulo: `📍 ${bairro} — ${qtd} discípula(s)`,
+            detalhes: `Representa ${lista.length ? ((qtd / lista.length) * 100).toFixed(1) : 0}% do recorte selecionado.`
+          }))
+        };
+      }
+
+      if (pend === 'celulas-fechadas') {
+        return {
+          tipo: 'celulas-fechadas',
+          modoLista: modoLista,
+          tituloFiltro: `${labelPend} • ${labelPeriodo}`,
+          cards: [...cardsBaseCobertura, ...cardsMovimentacao],
+          graficoJornada: dadosGraficoJornada,
+          graficoSecundario: dadosGraficoSecundario,
+          itens: celulasFechadasNoPeriodo.map(f => ({
+            grupo: 'Células Encerradas',
+            celulaNome: f.nome,
+            isLider: false,
+            titulo: f.nome,
+            detalhes: `Participantes na Baixa: ${f.celular_origem} • Data: ${formatDate(f.data)} • Motivo: ${f.motivo}`
+          }))
+        };
+      }
+
+      if (pend === 'batizada') lista = lista.filter(d => d.batizada === true || d.batizada === 'Sim');
+      if (pend === 'com-uv') lista = lista.filter(d => d.uv === 'Sim');
+      if (pend === 'sem-uv') lista = lista.filter(d => d.uv !== 'Sim');
+      if (pend === 'com-reencontro') lista = lista.filter(d => d.reencontro === 'Sim');
+      if (pend === 'cd-ainda-nao') lista = lista.filter(d => d.cd === 'Ainda não fez' || !d.cd);
+      if (pend === 'cd-1') lista = lista.filter(d => d.cd === 'Nível 1');
+      if (pend === 'cd-2') lista = lista.filter(d => d.cd === 'Nível 2');
+      if (pend === 'cd-3') lista = lista.filter(d => d.cd === 'Nível 3');
+      if (pend === 'cd-concluido') lista = lista.filter(d => d.cd === 'Concluído');
+      if (pend === 'cd-desistiu') lista = lista.filter(d => d.cd === 'Desistiu');
+      if (pend === 'cd-formatura-sim') lista = lista.filter(d => d.formatura_cd === 'Sim');
+      if (pend === 'cd-formatura-nao') lista = lista.filter(d => d.formatura_cd !== 'Sim');
+      if (pend === 'assidua') lista = lista.filter(d => d.assiduidade === 'Sim');
+      if (pend === 'nao-assidua') lista = lista.filter(d => d.assiduidade !== 'Sim');
+      if (pend === 'culto-sim') lista = lista.filter(d => d.culto_regular === 'Sim');
+      if (pend === 'culto-nao') lista = lista.filter(d => d.culto_regular === 'Não');
+
+      let listaParaExibir = [...lista];
+      if (modoLista === 'so-lideres') {
+        listaParaExibir = listaParaExibir.filter(d => isCargoLider(d.nivel_lideranca));
+      } else if (modoLista === 'so-discipulas') {
+        listaParaExibir = listaParaExibir.filter(d => !isCargoLider(d.nivel_lideranca));
+      }
+
+      if (pend === 'lista-discipulas-bairro' || modoLista === 'por-bairro') {
+        listaParaExibir.sort((a, b) => obterLocalidadeDiscipula(a).localeCompare(obterLocalidadeDiscipula(b)));
+      } else if (modoLista === 'por-celula') {
+        listaParaExibir.sort((a, b) => normalizarId(a.lider_id).localeCompare(normalizarId(b.lider_id)));
+      }
+
+      const efetivoModoAgrupamento = (pend === 'lista-discipulas-bairro' && modoLista === 'resumo-apenas') ? 'por-bairro' : modoLista;
+
+      const cardsJornada = [
+        { label: 'Batizadas', valor: lista.filter(d => d.batizada === true || d.batizada === 'Sim').length },
+        { label: 'Concluintes UV', valor: lista.filter(d => d.uv === 'Sim').length },
+        { label: 'Reencontro', valor: lista.filter(d => d.reencontro === 'Sim').length },
+        { label: 'Assíduas Célula', valor: lista.filter(d => d.assiduidade === 'Sim').length },
+        { label: 'Culto Regular (Sim)', valor: lista.filter(d => d.culto_regular === 'Sim').length }
+      ];
+
+      return {
+        tipo: 'discipulas',
+        modoLista: efetivoModoAgrupamento,
+        tituloFiltro: `${labelPend} • ${labelLider} • ${labelBairro} • ${labelHier} • ${labelPeriodo}`,
+        cards: [...cardsBaseCobertura, ...cardsMovimentacao, ...cardsJornada],
+        graficoJornada: dadosGraficoJornada,
+        graficoSecundario: dadosGraficoSecundario,
+        itens: listaParaExibir.map(d => {
+          const cel = db.lideres.find(l => mesmoId(l.id, d.lider_id));
+          const bairroDisc = obterLocalidadeDiscipula(d);
+          const corStr = (d.nivel_lideranca && d.nivel_lideranca.includes('G12') && d.cor_favorita) ? ` • Cor G12: ${d.cor_favorita}` : '';
+          const cultoInfo = d.culto_regular === 'Sim' 
+            ? `Culto: Sim (${d.culto_dia_horario || 'Horário não inf.'})` 
+            : `Culto: ${d.culto_regular || 'Não inf.'}`;
+          return {
+            grupo: efetivoModoAgrupamento === 'por-celula' ? (cel ? cel.celular_que_lidera : '—') : bairroDisc,
+            celulaNome: cel ? cel.celular_que_lidera : '—',
+            isLider: isCargoLider(d.nivel_lideranca),
+            titulo: `${d.nome} (${d.nivel_lideranca || 'Discípula'})`,
+            detalhes: `📍 Bairro/Município: ${bairroDisc} • 🏠 Célula: ${cel ? cel.celular_que_lidera : '—'} • Tel: ${d.telefone || '—'} • Assídua: ${d.assiduidade || '—'} • ${cultoInfo} • Batizada: ${(d.batizada === true || d.batizada === 'Sim') ? 'Sim' : 'Não'} • UV: ${d.uv || 'Ainda não fez'} • CD: ${d.cd || 'Ainda não fez'}${corStr}`
+          };
+        })
+      };
+    }
+
+    function renderizarGraficosRelatorio(dados, prefixoCanvas = 'tela') {
+      if (typeof Chart === 'undefined') return;
+
+      const idJornada = prefixoCanvas === 'tela' ? 'grafico-jornada-tela' : 'grafico-jornada-modal';
+      const idSecundario = prefixoCanvas === 'tela' ? 'grafico-secundario-tela' : 'grafico-secundario-modal';
+      const tituloSec = document.getElementById(prefixoCanvas === 'tela' ? 'titulo-grafico-secundario-tela' : 'titulo-grafico-secundario-modal');
+      if (tituloSec) tituloSec.textContent = dados.graficoSecundario.titulo;
+
+      const ctxJornada = document.getElementById(idJornada);
+      const ctxSecundario = document.getElementById(idSecundario);
+
+      if (ctxJornada) {
+        if (prefixoCanvas === 'tela' && chartJornadaTela) chartJornadaTela.destroy();
+        if (prefixoCanvas === 'modal' && chartJornadaModal) chartJornadaModal.destroy();
+
+        const novoChartJ = new Chart(ctxJornada, {
+          type: 'bar',
+          data: {
+            labels: dados.graficoJornada.labels,
+            datasets: [{
+              label: 'Quantidade',
+              data: dados.graficoJornada.valores,
+              backgroundColor: ['#D0397C', '#D4AF37', '#A3235C', '#25D366', '#1E63B5', '#8A6D14'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: prefixoCanvas === 'modal' ? false : true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+          }
+        });
+
+        if (prefixoCanvas === 'tela') chartJornadaTela = novoChartJ;
+        else chartJornadaModal = novoChartJ;
+      }
+
+      if (ctxSecundario) {
+        if (prefixoCanvas === 'tela' && chartSecundarioTela) chartSecundarioTela.destroy();
+        if (prefixoCanvas === 'modal' && chartSecundarioModal) chartSecundarioModal.destroy();
+
+        const isPeriodo = dados.graficoSecundario.labels.length > 3;
+        const novoChartS = new Chart(ctxSecundario, {
+          type: isPeriodo ? 'bar' : 'doughnut',
+          data: {
+            labels: dados.graficoSecundario.labels,
+            datasets: [{
+              label: 'Quantidade',
+              data: dados.graficoSecundario.valores,
+              backgroundColor: ['#D4AF37', '#D0397C', '#25D366', '#1E63B5', '#DC2626', '#785A0A'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: prefixoCanvas === 'modal' ? false : true,
+            plugins: {
+              legend: { display: !isPeriodo, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+            },
+            scales: isPeriodo ? { y: { beginAtZero: true, ticks: { precision: 0 } } } : {}
+          }
+        });
+
+        if (prefixoCanvas === 'tela') chartSecundarioTela = novoChartS;
+        else chartSecundarioModal = novoChartS;
+      }
+    }
+
+    function renderHTMLItensRelatorio(dados) {
+      if (dados.modoLista === 'resumo-apenas') {
+        return `<div style="background:var(--dourado-claro);border:1px solid #F3E3B2;padding:12px 16px;border-radius:12px;color:#785A0A;font-size:0.83rem;">
+          ℹ️ <strong>Lista Nominal Oculta:</strong> Exibindo exclusivamente os indicadores globais da Macrocélula, movimentações e gráficos acima.
+        </div>`;
+      }
+
+      if (!dados.itens.length) {
+        return '<div class="empty-state"><p>Nenhum registro encontrado para este filtro.</p></div>';
+      }
+
+      if (dados.modoLista === 'por-bairro' || dados.modoLista === 'por-celula') {
+        const grupos = new Map();
+        dados.itens.forEach(item => {
+          const chaveGrupo = item.grupo || 'Outros';
+          if (!grupos.has(chaveGrupo)) grupos.set(chaveGrupo, []);
+          grupos.get(chaveGrupo).push(item);
+        });
+
+        let html = '';
+        grupos.forEach((listaGrupo, nomeGrupo) => {
+          const icone = dados.modoLista === 'por-celula' ? '🏠' : '📍';
+          html += `
+            <div class="grupo-bairro-header">
+              <span>${icone} ${nomeGrupo}</span>
+              <span>${listaGrupo.length} registro(s)</span>
+            </div>
+            <div class="doc-texto-lista">
+              ${listaGrupo.map((item, idx) => `
+                <div class="doc-texto-item">
+                  <strong>${idx + 1}. ${item.titulo}</strong><br>
+                  <span style="color:var(--cinza);">${item.detalhes}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        });
+        return html;
+      }
+
+      return `
+        <div class="doc-texto-lista">
+          ${dados.itens.map((item, idx) => `
+            <div class="doc-texto-item">
+              <strong>${idx + 1}. ${item.titulo}</strong><br>
+              <span style="color:var(--cinza);">${item.detalhes}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderResumoRelatorioPastoral() {
+      const m = calcularMetricasCobertura();
+      const celulasFechadas = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('encerrada') || (d.nome || '').toUpperCase().startsWith('CÉLULA:'));
+      const desistentes = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('desist') && !(d.nome || '').toUpperCase().startsWith('CÉLULA:'));
+      const discipulas = m.discipulasUnicas;
+
+      const batizadas = discipulas.filter(d => d.batizada === true || d.batizada === 'Sim').length;
+      const concluintesUV = discipulas.filter(d => d.uv === 'Sim').length;
+      const fizeramReencontro = discipulas.filter(d => d.reencontro === 'Sim').length;
+      const cdFormadas = discipulas.filter(d => d.formatura_cd === 'Sim').length;
+      const assiduas = discipulas.filter(d => d.assiduidade === 'Sim').length;
+      const cultoSim = discipulas.filter(d => d.culto_regular === 'Sim').length;
+
+      document.getElementById('relatorio-resumo-indicadores').innerHTML = `
+        <div class="rel-mini-card dourado"><div class="r-label">Nº de Células</div><div class="r-val">${m.numCelulas}</div></div>
+        <div class="rel-mini-card destaque"><div class="r-label">Total de Discípulas Cadastradas</div><div class="r-val">${m.totalDiscipulasCadastradas}</div></div>
+        <div class="rel-mini-card dourado"><div class="r-label">Total de Líderes</div><div class="r-val">${m.totalLideres}</div></div>
+        <div class="rel-mini-card"><div class="r-label">Discípulas (Não Líderes)</div><div class="r-val">${m.totalDiscipulasNaoLideres}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Batizadas</div><div class="r-val">${batizadas}</div></div>
+        <div class="rel-mini-card"><div class="r-label">Concluintes UV</div><div class="r-val">${concluintesUV}</div></div>
+        <div class="rel-mini-card"><div class="r-label">Reencontro</div><div class="r-val">${fizeramReencontro}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Formatura CD (Sim)</div><div class="r-val">${cdFormadas}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Assíduas Célula</div><div class="r-val">${assiduas}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Culto Regular</div><div class="r-val">${cultoSim}</div></div>
+        <div class="rel-mini-card vermelho"><div class="r-label">Desistentes / Fechadas</div><div class="r-val">${desistentes.length} / ${celulasFechadas.length}</div></div>
+      `;
+    }
+
+    function aplicarFiltrosRelatorio() {
+      renderResumoRelatorioPastoral();
+      const dados = obterDadosRelatorioAtual();
+      renderizarGraficosRelatorio(dados, 'tela');
+
+      const container = document.getElementById('resultado-relatorio');
+      container.innerHTML = renderHTMLItensRelatorio(dados);
+    }
+
+    function abrirModalRelatorioOficial() {
+      const dados = obterDadosRelatorioAtual();
+      const dataAgora = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      const htmlDocumento = `
+        <div id="documento-relatorio-export" class="doc-oficial-container">
+          <div class="doc-oficial-header">
+            <div class="doc-oficial-header-left">
+              <img src="logo-macrocelula.png" alt="Logo Célula Aleluia" class="doc-oficial-logo" onerror="this.style.display='none'" />
+              <div class="doc-oficial-title">
+                <h2>Relatório Pastoral Oficial</h2>
+                <p>Macrocélula Aleluia • PIBB Ministério Mulheres de Fé</p>
+              </div>
+            </div>
+            <div class="doc-oficial-meta">
+              <strong>Emissão:</strong> ${dataAgora}<br>
+              <strong>Emitido por:</strong> ${usuarioLogado?.nome || 'Rosane Aleluia'}<br>
+              <strong>Recorte:</strong> ${dados.tituloFiltro}
+            </div>
+          </div>
+
+          <h4 style="font-size:0.82rem;text-transform:uppercase;color:var(--rosa-escuro);margin-bottom:10px;letter-spacing:0.4px;">📊 Indicadores da Macrocélula &amp; Movimentações</h4>
+          <div class="doc-cards-grid">
+            ${dados.cards.map(c => `
+              <div class="doc-stat-card ${c.gold ? 'gold' : (c.green ? 'green' : (c.red ? 'red' : ''))}">
+                <div class="d-lbl">${c.label}</div>
+                <div class="d-num">${c.valor}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="charts-relatorio-grid">
+            <div class="chart-box-card">
+              <h5>📊 Jornada Espiritual &amp; Formação</h5>
+              <div class="chart-canvas-wrap">
+                <canvas id="grafico-jornada-modal"></canvas>
+              </div>
+            </div>
+            <div class="chart-box-card">
+              <h5 id="titulo-grafico-secundario-modal">📈 Composição da Macrocélula</h5>
+              <div class="chart-canvas-wrap">
+                <canvas id="grafico-secundario-modal"></canvas>
+              </div>
+            </div>
+          </div>
+
+          ${dados.modoLista !== 'resumo-apenas' ? `
+            <h4 style="font-size:0.82rem;text-transform:uppercase;color:var(--rosa-escuro);margin:18px 0 10px;letter-spacing:0.4px;">📝 Relação Detalhada (${dados.itens.length})</h4>
+            ${renderHTMLItensRelatorio(dados)}
+          ` : ''}
+        </div>
+      `;
+
+      abrirModal('📄 Documento de Relatório Pastoral (Gráficos, Texto & PDF)', htmlDocumento, `
+        <button class="btn btn-outline" onclick="fecharModal()">Fechar</button>
+        <button class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Texto Completo</button>
+        <button class="btn btn-rosa" id="btn-baixar-pdf-direto" onclick="baixarPDFDireto()">📥 Baixar Arquivo PDF</button>
+      `);
+
+      setTimeout(() => {
+        renderizarGraficosRelatorio(dados, 'modal');
+      }, 60);
+    }
+
+    function baixarPDFDireto() {
+      const elemento = document.getElementById('documento-relatorio-export');
+      if (!elemento) return;
+
+      const btn = document.getElementById('btn-baixar-pdf-direto');
+      if (btn) { btn.disabled = true; btn.textContent = 'Gerando PDF...'; }
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `Relatorio_Macrocelula_Aleluia_${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(elemento).save().then(() => {
+        if (btn) { btn.disabled = false; btn.textContent = '📥 Baixar Arquivo PDF'; }
+      }).catch(err => {
+        console.error(err);
+        alert('Erro ao gerar o PDF: ' + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = '📥 Baixar Arquivo PDF'; }
+      });
+    }
+
+    function copiarRelatorioTexto() {
+      const dados = obterDadosRelatorioAtual();
+      const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+      let texto = `*RELATÓRIO PASTORAL - MACROCÉLULA ALELUIA*\n`;
+      texto += `📅 Data: ${dataHoje}\n`;
+      texto += `🔎 Filtro: ${dados.tituloFiltro}\n\n`;
+      texto += `*📊 INDICADORES DA MACROCÉLULA & MOVIMENTAÇÃO:*\n`;
+      dados.cards.forEach(c => {
+        texto += `• ${c.label}: *${c.valor}*\n`;
+      });
+
+      if (dados.modoLista !== 'resumo-apenas') {
+        texto += `\n*📝 RELAÇÃO DETALHADA (${dados.itens.length}):*\n`;
+        dados.itens.forEach((item, i) => {
+          texto += `\n*${i + 1}. ${item.titulo}*\n${item.detalhes}\n`;
+        });
+      }
+
+      navigator.clipboard.writeText(texto).then(() => {
+        alert('✅ Relatório em texto copiado! Agora é só colar no WhatsApp.');
+      }).catch(() => {
+        alert('Não foi possível copiar automaticamente.');
+      });
+    }
+
+    function abrirModal(title, bodyHTML, footerHTML) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHTML;
+      document.getElementById('modal-footer').innerHTML = footerHTML;
+      document.getElementById('modal').classList.add('active');
+    }
+    function fecharModal() { document.getElementById('modal').classList.remove('active'); }
+
+    function renderAvatarDisc(url, nome) {
+      if (url && url.trim() !== '') return `<div class="foto-disc"><img src="${url}" alt="${nome}" /></div>`;
+      return `<div class="foto-disc">${iniciais(nome)}</div>`;
+    }
+    function iniciais(nome) { return nome ? nome.split(' ').filter(Boolean).slice(0,2).map(p => p[0]).join('').toUpperCase() : '—'; }
+    function formatDate(iso) { if (!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.onclick = () => {
+        const page = item.getAttribute('data-page');
+        if (page) window.navegar(page);
+      };
+    });
+  </script>
+</body>
+</html>
