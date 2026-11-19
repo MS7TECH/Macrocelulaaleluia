@@ -1503,8 +1503,36 @@
         <div class="tree-branch-grid">
           ${g12CelulasAbertas.map(lider => {
             const nomeLiderNorm = normalizarNome(lider.nome);
-            const discipulasDiretas = m.discipulasUnicas.filter(d => mesmoId(d.lider_id, lider.id) && normalizarNome(d.nome) !== nomeLiderNorm);
-            const subCelulas144 = lideresAtivas.filter(l => mesmoId(l.parent_id, lider.id) && !mesmoId(l.id, lider.id) && normalizarNome(l.nome) !== nomeRootNorm);
+            const ehCardAleluia = isRegistroAleluia(lider) || (celAleluia && mesmoId(lider.id, celAleluia.id));
+
+            let discipulasDiretas = [];
+            if (ehCardAleluia) {
+              const idsAleluia = getIdsEquivalentesCelula(lider.id);
+              lideresAtivas.forEach(c => {
+                if (isRegistroAleluia(c)) idsAleluia.add(normalizarId(c.id));
+              });
+              const vistos = new Set();
+              m.discipulasUnicas.forEach(d => {
+                const chave = normalizarNome(d.nome);
+                if (!chave || vistos.has(chave)) return;
+                const pertencePorId = d.lider_id != null && idsAleluia.has(normalizarId(d.lider_id));
+                if (pertencePorId) {
+                  vistos.add(chave);
+                  discipulasDiretas.push(d);
+                }
+              });
+            } else {
+              discipulasDiretas = m.discipulasUnicas.filter(d =>
+                mesmoId(d.lider_id, lider.id) && normalizarNome(d.nome) !== nomeLiderNorm
+              );
+            }
+
+            const subCelulas144 = lideresAtivas.filter(l =>
+              mesmoId(l.parent_id, lider.id) &&
+              !mesmoId(l.id, lider.id) &&
+              !isRegistroAleluia(l) &&
+              normalizarNome(l.nome) !== nomeRootNorm
+            );
             const totalItens = discipulasDiretas.length + subCelulas144.length;
 
             return `
@@ -1516,7 +1544,7 @@
                     <span>${lider.celular_que_lidera} • <strong>${lider.geracao}</strong></span>
                   </div>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:8px;flex-wrap:wrap;">
                   <span style="font-size:0.78rem;color:var(--cinza);">👥 ${discipulasDiretas.length} discípula(s) • 🏠 ${subCelulas144.length} sub-célula(s)</span>
                   ${totalItens > 0 ? `<button class="btn btn-rosa btn-sm" id="btn-ver-mais-${lider.id}" onclick="toggleSubCelulas('${lider.id}')">▼ Ver Integrantes / Ramificações</button>` : ''}
                 </div>
@@ -1558,10 +1586,10 @@
                   ` : ''}
 
                   ${discipulasDiretas.length > 0 ? `
-                    <span style="font-size:0.74rem;color:var(--rosa);font-weight:700;display:block;margin:8px 0 6px;">Discípulas diretas desta célula:</span>
+                    <span style="font-size:0.74rem;color:var(--rosa);font-weight:700;display:block;margin:8px 0 6px;">Discípulas desta célula (${discipulasDiretas.length}):</span>
                     ${discipulasDiretas.map(d => `
                       <div class="sub-celula-item" style="flex-direction:row;justify-content:space-between;align-items:center;">
-                        <div><strong>${d.nome}</strong><br><small style="color:#888;">${d.nivel_lideranca}</small></div>
+                        <div><strong>${d.nome}</strong><br><small style="color:#888;">${d.nivel_lideranca || 'Discípula'}</small></div>
                         <span class="badge badge-rosa">${d.cd || 'Ainda não fez'}</span>
                       </div>
                     `).join('')}
