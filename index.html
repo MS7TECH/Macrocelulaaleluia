@@ -1636,11 +1636,25 @@
       const l = id ? db.lideres.find(x => mesmoId(x.id, id)) : null;
       tempFotoCelulaBase64 = l?.foto_celula_url || "";
       const discUnicas = getDiscipulasUnicasVisiveis();
+      const nomeUsuarioAtual = usuarioLogado?.nome || '';
 
       let campoLiderHTML = '';
       if (l) {
         if (isMacroAdmin()) {
-          const opcoesLideres = discUnicas.map(d => `<option value="${d.nome}" ${l.nome === d.nome ? 'selected' : ''}>${d.nome} (${d.nivel_lideranca})</option>`).join('');
+          const opcoesSet = new Map();
+          if (nomeUsuarioAtual) {
+            opcoesSet.set(normalizarNome(nomeUsuarioAtual), `<option value="${nomeUsuarioAtual}" ${normalizarNome(l.nome)===normalizarNome(nomeUsuarioAtual)?'selected':''}>${nomeUsuarioAtual} (Eu / Liderança)</option>`);
+          }
+          discUnicas.forEach(d => {
+            const chave = normalizarNome(d.nome);
+            if (!opcoesSet.has(chave)) {
+              opcoesSet.set(chave, `<option value="${d.nome}" ${normalizarNome(l.nome)===chave?'selected':''}>${d.nome} (${d.nivel_lideranca})</option>`);
+            }
+          });
+          if (!opcoesSet.has(normalizarNome(l.nome)) && l.nome) {
+            opcoesSet.set(normalizarNome(l.nome), `<option value="${l.nome}" selected>${l.nome}</option>`);
+          }
+          const opcoesLideres = Array.from(opcoesSet.values()).join('');
           campoLiderHTML = `
             <div class="form-field">
               <label>Líder Responsável *</label>
@@ -1657,7 +1671,17 @@
         }
       } else {
         if (isMacroAdmin()) {
-          const opcoesLideres = discUnicas.map(d => `<option value="${d.nome}">${d.nome} (${d.nivel_lideranca})</option>`).join('');
+          const opcoesSet = new Map();
+          if (nomeUsuarioAtual) {
+            opcoesSet.set(normalizarNome(nomeUsuarioAtual), `<option value="${nomeUsuarioAtual}" selected>${nomeUsuarioAtual} (Eu / Liderança)</option>`);
+          }
+          discUnicas.forEach(d => {
+            const chave = normalizarNome(d.nome);
+            if (!opcoesSet.has(chave)) {
+              opcoesSet.set(chave, `<option value="${d.nome}">${d.nome} (${d.nivel_lideranca})</option>`);
+            }
+          });
+          const opcoesLideres = Array.from(opcoesSet.values()).join('');
           campoLiderHTML = `
             <div class="form-field">
               <label>Líder Responsável *</label>
