@@ -864,6 +864,19 @@
       return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
     }
 
+    function normalizarId(val) {
+      if (val === null || val === undefined || val === '') return '';
+      const str = String(val).trim();
+      const num = Number(str);
+      return Number.isFinite(num) && String(num) === str ? String(num) : str;
+    }
+
+    function mesmoId(a, b) {
+      const na = normalizarId(a);
+      const nb = normalizarId(b);
+      return na !== '' && nb !== '' && na === nb;
+    }
+
     function extrairBairroEMunicipio(textoLocal) {
       if (!textoLocal || textoLocal.trim() === '') return 'Não informado';
       const limpo = textoLocal.trim();
@@ -881,7 +894,7 @@
       if (d.endereco && d.endereco.trim() !== '') {
         return extrairBairroEMunicipio(d.endereco);
       }
-      const cel = db.lideres.find(l => String(l.id) === String(d.lider_id));
+      const cel = db.lideres.find(l => mesmoId(l.id, d.lider_id));
       if (cel && cel.local && cel.local.trim() !== '') {
         return extrairBairroEMunicipio(cel.local);
       }
@@ -910,11 +923,17 @@
 
     function isRegistroMacroOrganizacao(l) {
       if (!l) return false;
-      return l.parent_id === null ||
-        normalizarNome(l.geracao) === 'lider da macro' ||
-        normalizarNome(l.geracao).includes('macro') ||
-        normalizarNome(l.celular_que_lidera) === 'celula aleluia' ||
-        normalizarNome(l.celular_que_lidera).includes('macrocelula');
+      const nomeCel = normalizarNome(l.celular_que_lidera);
+      const ger = normalizarNome(l.geracao);
+      const nomeLider = normalizarNome(l.nome);
+      if (l.parent_id === null || ger === 'lider da macro' || ger.includes('macro') || nomeCel.includes('macrocelula')) {
+        return true;
+      }
+      // Evita tratar a célula "Aleluia" da líder Rosane Aleluia como nó macro raiz
+      if (nomeCel === 'celula aleluia' && !nomeLider.includes('rosane')) {
+        return true;
+      }
+      return false;
     }
 
     function getCelulaMacroRoot() {
@@ -927,22 +946,21 @@
       return (
         ativas.find(l =>
           !isRegistroMacroOrganizacao(l) &&
-          (normalizarNome(l.celular_que_lidera).includes('celula aleluia') ||
-           normalizarNome(l.nome).includes('celula aleluia'))
+          (normalizarNome(l.celular_que_lidera) === 'aleluia' ||
+           normalizarNome(l.celular_que_lidera).includes('celula aleluia') ||
+           normalizarNome(l.nome).includes('rosane aleluia'))
         ) || null
       );
     }
 
-    // Retorna os IDs de uma célula e de eventuais sub-células filhas ativas (para contagem de rede)
     function getIdsCelulaERede(celulaId) {
-      const targetStr = String(celulaId);
-      const ids = new Set([targetStr]);
+      const ids = new Set([normalizarId(celulaId)]);
       let adicionou = true;
       while (adicionou) {
         adicionou = false;
         db.lideres.forEach(l => {
-          if (l.ativa && l.parent_id != null && ids.has(String(l.parent_id)) && !ids.has(String(l.id))) {
-            ids.add(String(l.id));
+          if (l.ativa && l.parent_id != null && ids.has(normalizarId(l.parent_id)) && !ids.has(normalizarId(l.id))) {
+            ids.add(normalizarId(l.id));
             adicionou = true;
           }
         });
@@ -1222,32 +1240,32 @@
 
       const nomeLogada = normalizarNome(usuarioLogado.nome);
       const minhasPropriasCelulas = ativas.filter(l => normalizarNome(l.nome) === nomeLogada);
-      const resultadoIds = new Set(minhasPropriasCelulas.map(c => String(c.id)));
+      const resultadoIds = new Set(minhasPropriasCelulas.map(c => normalizarId(c.id)));
 
       let adicionou = true;
       while (adicionou) {
         adicionou = false;
         ativas.forEach(c => {
-          if (c.parent_id != null && resultadoIds.has(String(c.parent_id)) && !resultadoIds.has(String(c.id))) {
-            resultadoIds.add(String(c.id));
+          if (c.parent_id != null && resultadoIds.has(normalizarId(c.parent_id)) && !resultadoIds.has(normalizarId(c.id))) {
+            resultadoIds.add(normalizarId(c.id));
             adicionou = true;
           }
         });
       }
-      return ativas.filter(c => resultadoIds.has(String(c.id)));
+      return ativas.filter(c => resultadoIds.has(normalizarId(c.id)));
     }
 
     function podeGerenciarCelula(celulaId) {
       if (isMacroAdmin()) return true;
       if (celulaId == null || celulaId === '') return false;
       const permitidas = getCelulasVisiveis();
-      return permitidas.some(c => String(c.id) === String(celulaId));
+      return permitidas.some(c => mesmoId(c.id, celulaId));
     }
 
     function getDiscipulasVisiveis() {
       if (isMacroAdmin()) return db.discipulas;
-      const minhasCelulasIds = getCelulasVisiveis().map(c => String(c.id));
-      return db.discipulas.filter(d => d.lider_id != null && minhasCelulasIds.includes(String(d.lider_id)));
+      const minhasCelulasIds = getCelulasVisiveis().map(c => normalizarId(c.id));
+      return db.discipulas.filter(d => d.lider_id != null && minhasCelulasIds.includes(normalizarId(d.lider_id)));
     }
 
     function getProximoPerfilHierarquico() {
@@ -1389,7 +1407,7 @@
       const htmlLista = filtradas.length ? `
         <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Célula</th></tr></thead><tbody>
           ${filtradas.map(disc => {
-            const lider = db.lideres.find(l => String(l.id) === String(disc.lider_id));
+            const lider = db.lideres.find(l => mesmoId(l.id, disc.lider_id));
             return `<tr><td>${renderAvatarDisc(disc.foto_url, disc.nome)}</td><td><strong>${disc.nome}</strong></td><td>${disc.telefone || '—'}</td><td>${lider ? lider.celular_que_lidera : '—'}</td></tr>`;
           }).join('')}
         </tbody></table></div>` : '<div class="empty-state"><p>Nenhuma discípula neste status.</p></div>';
@@ -1421,7 +1439,7 @@
       const g12CelulasAbertas = lideresAtivas.filter(l => 
         !isRegistroMacroOrganizacao(l) &&
         normalizarNome(l.nome) !== nomeRootNorm &&
-        (String(l.parent_id) === String(root.id) || (l.geracao || '').toUpperCase().includes('G12'))
+        (mesmoId(l.parent_id, root.id) || (l.geracao || '').toUpperCase().includes('G12'))
       );
 
       return `
@@ -1446,8 +1464,8 @@
         <div class="tree-branch-grid">
           ${g12CelulasAbertas.map(lider => {
             const nomeLiderNorm = normalizarNome(lider.nome);
-            const discipulasDiretas = m.discipulasUnicas.filter(d => String(d.lider_id) === String(lider.id) && normalizarNome(d.nome) !== nomeLiderNorm);
-            const subCelulas144 = lideresAtivas.filter(l => String(l.parent_id) === String(lider.id) && String(l.id) !== String(lider.id) && normalizarNome(l.nome) !== nomeRootNorm);
+            const discipulasDiretas = m.discipulasUnicas.filter(d => mesmoId(d.lider_id, lider.id) && normalizarNome(d.nome) !== nomeLiderNorm);
+            const subCelulas144 = lideresAtivas.filter(l => mesmoId(l.parent_id, lider.id) && !mesmoId(l.id, lider.id) && normalizarNome(l.nome) !== nomeRootNorm);
             const totalItens = discipulasDiretas.length + subCelulas144.length;
 
             return `
@@ -1467,8 +1485,8 @@
                   ${subCelulas144.length > 0 ? `
                     <span style="font-size:0.74rem;color:var(--dourado);font-weight:700;display:block;margin-bottom:6px;">Células 144, 1728 &amp; 20736:</span>
                     ${subCelulas144.map(sub144 => {
-                      const disc144 = m.discipulasUnicas.filter(d => String(d.lider_id) === String(sub144.id) && normalizarNome(d.nome) !== normalizarNome(sub144.nome));
-                      const subCelulas1728 = lideresAtivas.filter(l => String(l.parent_id) === String(sub144.id) && String(l.id) !== String(sub144.id));
+                      const disc144 = m.discipulasUnicas.filter(d => mesmoId(d.lider_id, sub144.id) && normalizarNome(d.nome) !== normalizarNome(sub144.nome));
+                      const subCelulas1728 = lideresAtivas.filter(l => mesmoId(l.parent_id, sub144.id) && !mesmoId(l.id, sub144.id));
                       return `
                         <div class="sub-celula-item">
                           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1478,8 +1496,8 @@
                           ${disc144.length > 0 || subCelulas1728.length > 0 ? `
                             <div class="sub-1728-box">
                               ${subCelulas1728.map(s17 => {
-                                const subCelulas20736 = lideresAtivas.filter(l => String(l.parent_id) === String(s17.id) && String(l.id) !== String(s17.id));
-                                const disc1728 = m.discipulasUnicas.filter(d => String(d.lider_id) === String(s17.id) && normalizarNome(d.nome) !== normalizarNome(s17.nome));
+                                const subCelulas20736 = lideresAtivas.filter(l => mesmoId(l.parent_id, s17.id) && !mesmoId(l.id, s17.id));
+                                const disc1728 = m.discipulasUnicas.filter(d => mesmoId(d.lider_id, s17.id) && normalizarNome(d.nome) !== normalizarNome(s17.nome));
                                 return `
                                   <div style="margin-bottom:4px;">
                                     ↳ <strong>${s17.geracao}:</strong> ${s17.celular_que_lidera} (${s17.nome})
@@ -1520,20 +1538,27 @@
     // =========================================================================
     // 7. GESTÃO DE CÉLULAS
     // =========================================================================
-    function contarDiscipulasDaCelula(celula, discipulasUnicas) {
+    function obterDiscipulasDaCelula(celula, discipulasLista = null) {
+      const fonte = discipulasLista || getDiscipulasUnicasVisiveis();
       const idsRede = getIdsCelulaERede(celula.id);
       const nomeLiderNorm = normalizarNome(celula.nome);
-      const nomes = new Set();
+      const vistos = new Set();
+      const resultado = [];
 
-      discipulasUnicas.forEach(d => {
+      fonte.forEach(d => {
         if (d.lider_id == null) return;
-        if (!idsRede.has(String(d.lider_id))) return;
+        if (!idsRede.has(normalizarId(d.lider_id))) return;
         const chave = normalizarNome(d.nome);
-        if (!chave || chave === nomeLiderNorm) return;
-        nomes.add(chave);
+        if (!chave || chave === nomeLiderNorm || vistos.has(chave)) return;
+        vistos.add(chave);
+        resultado.push(d);
       });
 
-      return nomes.size;
+      return resultado;
+    }
+
+    function contarDiscipulasDaCelula(celula, discipulasUnicas) {
+      return obterDiscipulasDaCelula(celula, discipulasUnicas).length;
     }
 
     function renderPastasCelulas() {
@@ -1595,7 +1620,7 @@
         return;
       }
 
-      const l = id ? db.lideres.find(x => String(x.id) === String(id)) : null;
+      const l = id ? db.lideres.find(x => mesmoId(x.id, id)) : null;
       tempFotoCelulaBase64 = l?.foto_celula_url || "";
       const discUnicas = getDiscipulasUnicasVisiveis();
 
@@ -1710,7 +1735,7 @@
       const nomeLiderEscolhida = selectNome ? selectNome.value.trim() : '';
 
       const ativasSemAutoLideranca = db.lideres.filter(x => 
-        x.ativa && (!celulaAtualId || String(x.id) !== String(celulaAtualId))
+        x.ativa && (!celulaAtualId || !mesmoId(x.id, celulaAtualId))
       );
 
       const macroRoot = getCelulaMacroRoot() || db.lideres[0];
@@ -1737,7 +1762,7 @@
       if (geracaoSelecionada.includes('144')) {
         const celulasG12 = ativasSemAutoLideranca.filter(x => x.geracao.includes('G12'));
         let idG12Real = parentSalvoId || (celulaExistenteDaLider ? celulaExistenteDaLider.parent_id : null) || (discEncontrada ? discEncontrada.lider_id : null);
-        const celulaG12Alvo = celulasG12.find(c => String(c.id) === String(idG12Real));
+        const celulaG12Alvo = celulasG12.find(c => mesmoId(c.id, idG12Real));
 
         if (celulaG12Alvo) {
           selectParent.innerHTML = `<option value="${celulaG12Alvo.id}" selected>🔒 ${celulaG12Alvo.nome} (${celulaG12Alvo.celular_que_lidera})</option>`;
@@ -1757,7 +1782,7 @@
       if (geracaoSelecionada.includes('1728')) {
         const celulas144 = ativasSemAutoLideranca.filter(x => x.geracao.includes('144'));
         let id144Real = parentSalvoId || (celulaExistenteDaLider ? celulaExistenteDaLider.parent_id : null) || (discEncontrada ? discEncontrada.lider_id : null);
-        const celula144Alvo = celulas144.find(c => String(c.id) === String(id144Real));
+        const celula144Alvo = celulas144.find(c => mesmoId(c.id, id144Real));
 
         if (celula144Alvo) {
           selectParent.innerHTML = `<option value="${celula144Alvo.id}" selected>🔒 ${celula144Alvo.nome} (${celula144Alvo.celular_que_lidera})</option>`;
@@ -1780,7 +1805,7 @@
           || (celulaExistenteDaLider && celulaExistenteDaLider.geracao.includes('1728') ? celulaExistenteDaLider.id : null)
           || (discEncontrada ? discEncontrada.lider_id : null);
 
-        const celula1728Alvo = celulas1728.find(c => String(c.id) === String(id1728Real));
+        const celula1728Alvo = celulas1728.find(c => mesmoId(c.id, id1728Real));
 
         if (celula1728Alvo) {
           selectParent.innerHTML = `<option value="${celula1728Alvo.id}" selected>🔒 ${celula1728Alvo.nome} (${celula1728Alvo.celular_que_lidera})</option>`;
@@ -1798,7 +1823,7 @@
       }
 
       selectParent.innerHTML = ativasSemAutoLideranca.map(c => 
-        `<option value="${c.id}" ${String(parentSalvoId) === String(c.id) ? 'selected' : ''}>${c.nome} (${c.celular_que_lidera})</option>`
+        `<option value="${c.id}" ${mesmoId(parentSalvoId, c.id) ? 'selected' : ''}>${c.nome} (${c.celular_que_lidera})</option>`
       ).join('');
       selectParent.disabled = !isMacroAdmin();
       labelCobertura.textContent = 'Cobertura Espiritual (Líder Superior)';
@@ -1860,10 +1885,10 @@
         return;
       }
 
-      const celula = db.lideres.find(l => String(l.id) === String(liderId));
+      const celula = db.lideres.find(l => mesmoId(l.id, liderId));
       if (!celula) return;
 
-      const qtdParticipantes = db.discipulas.filter(d => String(d.lider_id) === String(liderId)).length;
+      const qtdParticipantes = db.discipulas.filter(d => mesmoId(d.lider_id, liderId)).length;
 
       abrirModal(`⚠️ Fechamento & Baixa de Célula`, `
         <div style="background:#FEF2F2;border:1px solid #FECACA;padding:14px;border-radius:12px;margin-bottom:18px;color:#991B1B;font-size:0.86rem;">
@@ -1895,13 +1920,13 @@
         return;
       }
 
-      const celula = db.lideres.find(l => String(l.id) === String(liderId));
+      const celula = db.lideres.find(l => mesmoId(l.id, liderId));
       if (!celula) return;
 
       const btn = document.getElementById('btn-confirmar-baixa');
       if (btn) { btn.disabled = true; btn.textContent = 'Processando Baixa...'; }
 
-      const participantesExcluidos = db.discipulas.filter(d => String(d.lider_id) === String(liderId));
+      const participantesExcluidos = db.discipulas.filter(d => mesmoId(d.lider_id, liderId));
       const autorBaixa = usuarioLogado ? usuarioLogado.nome : 'Sistema';
 
       await supabaseClient.from('desistencias').insert({
@@ -1913,8 +1938,8 @@
         motivo: `${motivo} [Registrado por: ${autorBaixa}]`
       });
 
-      await supabaseClient.from('discipulas').delete().eq('lider_id', liderId);
-      const { error } = await supabaseClient.from('lideres').delete().eq('id', liderId);
+      await supabaseClient.from('discipulas').delete().eq('lider_id', celula.id);
+      const { error } = await supabaseClient.from('lideres').delete().eq('id', celula.id);
 
       if (error) {
         alert('Erro ao excluir célula: ' + error.message);
@@ -1937,29 +1962,23 @@
         return;
       }
 
-      const lider = db.lideres.find(l => String(l.id) === String(liderId));
+      const lider = db.lideres.find(l => mesmoId(l.id, liderId));
       if (!lider) return;
 
       const nomeMacroNorm = normalizarNome((getCelulaMacroRoot() || {}).nome || '');
       const nomeLiderNorm = normalizarNome(lider.nome);
       const registrosVisiveis = getDiscipulasVisiveis();
 
-      const nomesNaCelula = new Set();
-      const membros = [];
-      registrosVisiveis.forEach(d => {
-        const chave = normalizarNome(d.nome);
-        if (!chave || String(d.lider_id) !== String(lider.id) || chave === nomeLiderNorm) return;
-        if (nomesNaCelula.has(chave)) return;
-        nomesNaCelula.add(chave);
-        membros.push(d);
-      });
+      // Mostra todas as discípulas pertencentes à célula (e sub-células filhas ativas), sem perder quem foi transferido
+      const membros = obterDiscipulasDaCelula(lider, registrosVisiveis);
+      const nomesNaCelula = new Set(membros.map(d => normalizarNome(d.nome)));
 
       const nomesOutras = new Set();
       const outrasDiscipulas = [];
       registrosVisiveis.forEach(d => {
         const chave = normalizarNome(d.nome);
         if (!chave || chave === nomeMacroNorm || chave === nomeLiderNorm) return;
-        if (String(d.lider_id) === String(lider.id) || nomesNaCelula.has(chave)) return;
+        if (mesmoId(d.lider_id, lider.id) || nomesNaCelula.has(chave)) return;
         if (nomesOutras.has(chave)) return;
         nomesOutras.add(chave);
         outrasDiscipulas.push(d);
@@ -1970,19 +1989,27 @@
           <table>
             <thead><tr><th>Foto</th><th>Nome</th><th>Contato</th><th>Hierarquia</th><th>Ações</th></tr></thead>
             <tbody>
-              ${membros.map(disc => `
-                <tr>
-                  <td>${renderAvatarDisc(disc.foto_url, disc.nome)}</td>
-                  <td><strong>${disc.nome}</strong></td>
-                  <td>${disc.telefone || '—'}</td>
-                  <td><span class="badge ${(disc.nivel_lideranca || '').includes('G12') ? 'badge-dourado' : 'badge-rosa'}">${disc.nivel_lideranca || 'Discípula'}</span></td>
-                  <td>
-                    <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="fecharModal(); abrirModalDiscipula('${disc.id}', '${lider.id}')">✏️ Editar</button>
-                  </td>
-                </tr>`).join('')}
+              ${membros.map(disc => {
+                const subCel = !mesmoId(disc.lider_id, lider.id)
+                  ? db.lideres.find(c => mesmoId(c.id, disc.lider_id))
+                  : null;
+                return `
+                  <tr>
+                    <td>${renderAvatarDisc(disc.foto_url, disc.nome)}</td>
+                    <td>
+                      <strong>${disc.nome}</strong>
+                      ${subCel ? `<br><small style="color:var(--dourado);">Sub-célula: ${subCel.celular_que_lidera}</small>` : ''}
+                    </td>
+                    <td>${disc.telefone || '—'}</td>
+                    <td><span class="badge ${(disc.nivel_lideranca || '').includes('G12') ? 'badge-dourado' : 'badge-rosa'}">${disc.nivel_lideranca || 'Discípula'}</span></td>
+                    <td>
+                      <button class="btn btn-outline btn-sm" title="Editar Perfil" onclick="fecharModal(); abrirModalDiscipula('${disc.id}', '${lider.id}')">✏️ Editar</button>
+                    </td>
+                  </tr>`;
+              }).join('')}
             </tbody>
           </table>
-        </div>` : '<div class="empty-state"><p>Nenhuma discípula vinculada diretamente a esta célula ainda.</p></div>';
+        </div>` : '<div class="empty-state"><p>Nenhuma discípula vinculada a esta célula ainda.</p></div>';
 
       abrirModal(`🏠 ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
         <div class="celula-add-panel">
@@ -2006,7 +2033,7 @@
             ${outrasDiscipulas.length ? `
               <div id="lista-checkbox-transferencia" style="max-height:190px;overflow-y:auto;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
                 ${outrasDiscipulas.map(d => {
-                  const celAtual = db.lideres.find(c => String(c.id) === String(d.lider_id));
+                  const celAtual = db.lideres.find(c => mesmoId(c.id, d.lider_id));
                   return `
                     <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;padding:3px 0;border-bottom:1px dashed #F3E8EE;">
                       <input type="checkbox" class="chk-transferir-discipula" data-id="${d.id}" data-nome="${String(d.nome).replace(/"/g,'&quot;')}" value="${d.id}" style="width:16px;height:16px;accent-color:var(--rosa);cursor:pointer;" />
@@ -2026,7 +2053,7 @@
           </div>
         </div>
 
-        <h4 style="font-size:0.9rem;color:var(--preto);margin-bottom:10px;">👥 Discípulas Diretas desta Célula (${membros.length})</h4>
+        <h4 style="font-size:0.9rem;color:var(--preto);margin-bottom:10px;">👥 Discípulas Atuais desta Célula (${membros.length})</h4>
         ${htmlMembros}
       `, `<button class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
     }
@@ -2057,8 +2084,8 @@
       const nomesMarcados = new Set(checkboxes.map(chk => normalizarNome(chk.getAttribute('data-nome') || '')));
       const idsSelecionados = checkboxes.map(chk => chk.getAttribute('data-id') || chk.value);
       const registros = db.discipulas.filter(d =>
-        String(d.lider_id) !== String(liderId) &&
-        (nomesMarcados.has(normalizarNome(d.nome)) || idsSelecionados.some(id => String(id) === String(d.id)))
+        !mesmoId(d.lider_id, liderId) &&
+        (nomesMarcados.has(normalizarNome(d.nome)) || idsSelecionados.some(id => mesmoId(id, d.id)))
       );
       const idsParaAtualizar = [...new Set(registros.map(d => d.id))];
 
@@ -2067,7 +2094,7 @@
         return;
       }
 
-      const liderDestino = db.lideres.find(c => String(c.id) === String(liderId));
+      const liderDestino = db.lideres.find(c => mesmoId(c.id, liderId));
       const novoLiderId = liderDestino ? liderDestino.id : liderId;
 
       const btn = document.getElementById('btn-vincular-existente');
@@ -2081,8 +2108,8 @@
           .in('id', idsParaAtualizar)
           .select('id, nome, lider_id');
 
-        const idsOk = new Set((atualizadas || []).map(r => String(r.id)));
-        const faltantes = idsParaAtualizar.filter(id => !idsOk.has(String(id)));
+        const idsOk = new Set((atualizadas || []).map(r => normalizarId(r.id)));
+        const faltantes = idsParaAtualizar.filter(id => !idsOk.has(normalizarId(id)));
 
         await carregarDadosDoSupabase();
         atualizarInterfaceCompleta();
@@ -2108,7 +2135,7 @@
         }
 
         setSyncStatus('🟢 Supabase Conectado', 'online');
-        alert(`✅ ${checkboxes.length} discípula(s) transferida(s) com sucesso!`);
+        alert(`✅ ${checkboxes.length} discípula(s) transferida(s) para ${liderDestino ? liderDestino.celular_que_lidera : 'a célula'} com sucesso!`);
       } catch (err) {
         console.error('Exceção inesperada na transferência:', err);
         setSyncStatus('🔴 Erro na transferência', 'error');
@@ -2144,7 +2171,7 @@
       if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro.toLowerCase()));
       
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
-        const lider = db.lideres.find(l => String(l.id) === String(d.lider_id));
+        const lider = db.lideres.find(l => mesmoId(l.id, d.lider_id));
         const nomeCelula = lider ? lider.celular_que_lidera : '—';
         const nomeLiderCel = lider ? lider.nome : '—';
 
@@ -2208,11 +2235,11 @@
     }
 
     async function excluirDiscipulaCadastro(id) {
-      const d = db.discipulas.find(x => String(x.id) === String(id));
+      const d = db.discipulas.find(x => mesmoId(x.id, id));
       if (!d) return;
       if (!confirm(`Deseja excluir o cadastro de "${d.nome}"?`)) return;
 
-      const { error } = await supabaseClient.from('discipulas').delete().eq('id', id);
+      const { error } = await supabaseClient.from('discipulas').delete().eq('id', d.id);
       if (error) return alert('Erro ao excluir: ' + error.message);
 
       await carregarDadosDoSupabase();
@@ -2267,7 +2294,7 @@
     }
 
     function abrirModalDiscipula(id = null, celulaFixaId = null) {
-      const d = id ? db.discipulas.find(x => String(x.id) === String(id)) : null;
+      const d = id ? db.discipulas.find(x => mesmoId(x.id, id)) : null;
 
       if (d && d.lider_id && !podeGerenciarCelula(d.lider_id)) {
         alert('🔒 Acesso Negado: Você só pode editar discípulas vinculadas às suas próprias células.');
@@ -2283,7 +2310,7 @@
       tempFotoDiscipulaBase64 = d?.foto_url || "";
 
       const optionsCelulas = celulasPermitidas.map(l => 
-        `<option value="${l.id}" ${(d && String(d.lider_id) === String(l.id)) || (celulaFixaId && String(celulaFixaId) === String(l.id)) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
+        `<option value="${l.id}" ${(d && mesmoId(d.lider_id, l.id)) || (celulaFixaId && mesmoId(celulaFixaId, l.id)) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
       ).join('');
 
       const perfisNomes = db.perfisLideranca
@@ -2472,7 +2499,7 @@
       if (!nome) return alert('⚠️ O Nome Completo é obrigatório!');
       if (!liderIdRaw) return alert('⚠️ É obrigatório selecionar a Célula Pertencente!');
 
-      const jaExiste = db.discipulas.find(x => normalizarNome(x.nome) === normalizarNome(nome) && String(x.id) !== String(id));
+      const jaExiste = db.discipulas.find(x => normalizarNome(x.nome) === normalizarNome(nome) && !mesmoId(x.id, id));
       if (jaExiste) {
         alert(`⚠️ "${jaExiste.nome}" já está cadastrada no sistema! Para evitar duplicidade, edite o cadastro existente dela em vez de criar um novo.`);
         return;
@@ -2666,7 +2693,7 @@
     }
 
     function abrirModalAcesso(userId = null) {
-      const u = userId ? db.usuarios.find(x => String(x.id) === String(userId)) : null;
+      const u = userId ? db.usuarios.find(x => mesmoId(x.id, userId)) : null;
       const unicasDiscipulas = getDiscipulasUnicasVisiveis();
 
       if (!u && !isMacroAdmin() && unicasDiscipulas.length === 0) {
@@ -2743,7 +2770,7 @@
 
       if (!nome || !login || !senha) return alert('Preencha nome, login e senha!');
 
-      const loginDuplicado = db.usuarios.find(u => u.login.toLowerCase() === login && String(u.id) !== String(userId));
+      const loginDuplicado = db.usuarios.find(u => u.login.toLowerCase() === login && !mesmoId(u.id, userId));
       if (loginDuplicado) {
         alert(`O login "${login}" já está em uso por ${loginDuplicado.nome}. Escolha outro login!`);
         return;
@@ -2784,8 +2811,8 @@
       }
 
       await carregarDadosDoSupabase();
-      if (usuarioLogado && String(usuarioLogado.id) === String(userId)) {
-        usuarioLogado = db.usuarios.find(u => String(u.id) === String(userId)) || usuarioLogado;
+      if (usuarioLogado && mesmoId(usuarioLogado.id, userId)) {
+        usuarioLogado = db.usuarios.find(u => mesmoId(u.id, userId)) || usuarioLogado;
         aplicarPermissoesUsuario();
       }
 
@@ -2824,7 +2851,7 @@
 
       const disc = getDiscipulasUnicasVisiveis().find(d => normalizarNome(d.nome) === normalizarNome(nomeVal));
       if (disc && disc.lider_id) {
-        const cel = db.lideres.find(l => String(l.id) === String(disc.lider_id));
+        const cel = db.lideres.find(l => mesmoId(l.id, disc.lider_id));
         if (cel) inpOrigem.value = cel.celular_que_lidera;
       }
     }
@@ -3059,7 +3086,7 @@
       );
 
       let lista = [...mGlobal.discipulasUnicas];
-      if (liderId) lista = lista.filter(d => String(d.lider_id) === String(liderId));
+      if (liderId) lista = lista.filter(d => mesmoId(d.lider_id, liderId));
       if (bairroFiltro) {
         lista = lista.filter(d => normalizarNome(obterLocalidadeDiscipula(d)).includes(normalizarNome(bairroFiltro)));
       }
@@ -3114,7 +3141,7 @@
 
       if (pend === 'celulas-por-bairro' || pend === 'celulas-abertas') {
         let abertas = mGlobal.celulasReaisAtivas;
-        if (liderId) abertas = abertas.filter(c => String(c.id) === String(liderId));
+        if (liderId) abertas = abertas.filter(c => mesmoId(c.id, liderId));
         if (bairroFiltro) {
           abertas = abertas.filter(c => normalizarNome(extrairBairroEMunicipio(c.local)).includes(normalizarNome(bairroFiltro)));
         }
@@ -3223,7 +3250,7 @@
       if (pend === 'lista-discipulas-bairro' || modoLista === 'por-bairro') {
         listaParaExibir.sort((a, b) => obterLocalidadeDiscipula(a).localeCompare(obterLocalidadeDiscipula(b)));
       } else if (modoLista === 'por-celula') {
-        listaParaExibir.sort((a, b) => String(a.lider_id || '').localeCompare(String(b.lider_id || '')));
+        listaParaExibir.sort((a, b) => normalizarId(a.lider_id).localeCompare(normalizarId(b.lider_id)));
       }
 
       const efetivoModoAgrupamento = (pend === 'lista-discipulas-bairro' && modoLista === 'resumo-apenas') ? 'por-bairro' : modoLista;
@@ -3244,7 +3271,7 @@
         graficoJornada: dadosGraficoJornada,
         graficoSecundario: dadosGraficoSecundario,
         itens: listaParaExibir.map(d => {
-          const cel = db.lideres.find(l => String(l.id) === String(d.lider_id));
+          const cel = db.lideres.find(l => mesmoId(l.id, d.lider_id));
           const bairroDisc = obterLocalidadeDiscipula(d);
           const corStr = (d.nivel_lideranca && d.nivel_lideranca.includes('G12') && d.cor_favorita) ? ` • Cor G12: ${d.cor_favorita}` : '';
           const cultoInfo = d.culto_regular === 'Sim' 
