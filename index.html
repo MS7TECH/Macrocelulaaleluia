@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Biblioteca html2pdf para baixar PDF diretamente -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- Biblioteca Chart.js para gráficos no Relatório Pastoral (Atualizado) -->
+  <!-- Biblioteca Chart.js para gráficos no Relatório Pastoral -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -148,7 +148,8 @@
     }
     .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--rosa); }
     .stat-card.gold-highlight::after { background: var(--dourado); }
-    .stat-card .label { font-size: 0.78rem; color: var(--cinza); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .stat-card.alert-highlight::after { background: #C0392B; }
+    .stat-card .label { font-size: 0.78rem; color: var(--cinza); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; padding-right: 46px; }
     .stat-card .value { font-size: 1.9rem; font-weight: 700; color: var(--preto); margin: 6px 0 4px; }
     .stat-card .sub-desc { font-size: 0.74rem; color: var(--cinza-medio); }
     .stat-card .icon {
@@ -157,6 +158,7 @@
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
     .stat-card.gold-highlight .icon { background: var(--dourado-claro); color: var(--dourado); }
+    .stat-card.alert-highlight .icon { background: #FDECEA; color: #C0392B; }
 
     /* ================= PAINEL CAPACITAÇÃO DESTINO ================= */
     .cd-panel {
@@ -223,10 +225,16 @@
     }
     .tree-node-header { display: flex; align-items: center; gap: 12px; }
     .tree-node-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
+      width: 46px; height: 46px; border-radius: 12px;
       background: linear-gradient(135deg, var(--rosa), var(--dourado));
       color: var(--branco); font-weight: 700; font-size: 0.9rem;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      overflow: hidden; border: 1px solid var(--borda);
+    }
+    .tree-node-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .tree-mini-logo {
+      width: 28px; height: 28px; border-radius: 8px; object-fit: cover;
+      border: 1px solid var(--borda); background: var(--rosa-claro); flex-shrink: 0;
     }
     .tree-node-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--preto); }
     .tree-node-info span { font-size: 0.78rem; color: var(--cinza); display: block; }
@@ -254,9 +262,10 @@
       margin-left: 14px; padding-left: 10px; border-left: 2px dashed var(--dourado);
       margin-top: 4px; font-size: 0.76rem; color: var(--cinza);
     }
-    .sub-20736-box {
-      margin-left: 14px; padding-left: 10px; border-left: 2px dotted var(--rosa);
-      margin-top: 4px; font-size: 0.74rem; color: var(--cinza-medio);
+    .sub-celula-discipula-celula {
+      margin-top: 6px; padding: 7px 10px; border-radius: 8px;
+      background: var(--branco); border: 1px solid var(--borda);
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
 
     /* ================= PAINEL ADICIONAR MEMBROS NA CÉLULA ================= */
@@ -701,6 +710,7 @@
                   </optgroup>
                   <optgroup label="Batismo &amp; UV">
                     <option value="batizada">Batizadas</option>
+                    <option value="nao-batizada">Não Batizadas</option>
                     <option value="com-uv">Concluintes UV</option>
                     <option value="sem-uv">Sem UV</option>
                     <option value="com-reencontro">Fizeram Reencontro</option>
@@ -875,6 +885,10 @@
       const na = normalizarId(a);
       const nb = normalizarId(b);
       return na !== '' && nb !== '' && na === nb;
+    }
+
+    function isBatizadaRegistro(d) {
+      return d && (d.batizada === true || d.batizada === 'Sim');
     }
 
     function resolverValorIdSupabase(celulaId, registroExistente = null) {
@@ -1131,12 +1145,17 @@
       discipulasUnicas.forEach(d => setCoberturaGeral.add(normalizarNome(d.nome)));
       const totalCobertura = setCoberturaGeral.size;
 
+      const batizadas = discipulasUnicas.filter(d => isBatizadaRegistro(d)).length;
+      const naoBatizadas = discipulasUnicas.filter(d => !isBatizadaRegistro(d)).length;
+
       return {
         numCelulas,
         totalLideres,
         totalDiscipulasCadastradas,
         totalDiscipulasNaoLideres,
         totalCobertura,
+        batizadas,
+        naoBatizadas,
         celulasReaisAtivas,
         discipulasUnicas
       };
@@ -1377,14 +1396,13 @@
     };
 
     // =========================================================================
-    // 6. DASHBOARD
+    // 6. DASHBOARD & ÁRVORE GERACIONAL (COM LOGOS E CÉLULAS DAS DISCÍPULAS)
     // =========================================================================
     function renderDashboard() {
       const m = calcularMetricasCobertura();
       const discipulas = m.discipulasUnicas;
 
       const uvConcluidas = discipulas.filter(d => d.uv === 'Sim').length;
-      const batizadas = discipulas.filter(d => d.batizada === true || d.batizada === 'Sim').length;
       const cultoRegularSim = discipulas.filter(d => d.culto_regular === 'Sim').length;
 
       document.getElementById('stats-grid').innerHTML = `
@@ -1414,9 +1432,15 @@
         </div>
         <div class="stat-card">
           <div class="label">Batizadas</div>
-          <div class="value">${batizadas}</div>
+          <div class="value">${m.batizadas}</div>
           <div class="sub-desc">Batismo nas águas</div>
           <div class="icon">💧</div>
+        </div>
+        <div class="stat-card alert-highlight">
+          <div class="label">Não Batizadas</div>
+          <div class="value">${m.naoBatizadas}</div>
+          <div class="sub-desc">Aguardando batismo nas águas</div>
+          <div class="icon">🕊️</div>
         </div>
         <div class="stat-card">
           <div class="label">UV Concluídas</div>
@@ -1478,6 +1502,23 @@
       }
     }
 
+    function renderAvatarArvore(fotoUrl, nome, isRoot = false) {
+      if (fotoUrl && fotoUrl.trim() !== '') {
+        return `<div class="tree-node-avatar"><img src="${fotoUrl}" alt="${nome}" /></div>`;
+      }
+      if (isRoot) {
+        return `<div class="tree-node-avatar"><img src="logo-macrocelula.png" alt="${nome}" onerror="this.outerHTML='${iniciais(nome)}'" /></div>`;
+      }
+      return `<div class="tree-node-avatar">${iniciais(nome)}</div>`;
+    }
+
+    function renderMiniLogoCelula(celula) {
+      if (celula && celula.foto_celula_url && celula.foto_celula_url.trim() !== '') {
+        return `<img src="${celula.foto_celula_url}" alt="${celula.celular_que_lidera}" class="tree-mini-logo" />`;
+      }
+      return `<span class="tree-mini-logo" style="display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;">🏠</span>`;
+    }
+
     function renderArvoreHTML() {
       const lideresAtivas = db.lideres.filter(l => l.ativa);
       const root = getCelulaMacroRoot();
@@ -1495,11 +1536,67 @@
         return mesmoId(l.parent_id, root.id) || (l.geracao || '').toUpperCase().includes('G12');
       });
 
+      const buscarCelulasDaPessoa = (pessoaNome, excluirCelulaId = null) => {
+        const chavePessoa = normalizarNome(pessoaNome);
+        if (!chavePessoa) return [];
+        return lideresAtivas.filter(c =>
+          !isRegistroMacroOrganizacao(c) &&
+          (!excluirCelulaId || !mesmoId(c.id, excluirCelulaId)) &&
+          normalizarNome(c.nome) === chavePessoa
+        );
+      };
+
+      const renderCelulaRamificada = (cel, idsJaRenderizados = new Set()) => {
+        const celIdNorm = normalizarId(cel.id);
+        if (idsJaRenderizados.has(celIdNorm)) return '';
+        idsJaRenderizados.add(celIdNorm);
+
+        const discDaCelula = m.discipulasUnicas.filter(d =>
+          mesmoId(d.lider_id, cel.id) && normalizarNome(d.nome) !== normalizarNome(cel.nome)
+        );
+        const subCelulasFilhas = lideresAtivas.filter(l =>
+          !isRegistroMacroOrganizacao(l) &&
+          mesmoId(l.parent_id, cel.id) &&
+          !mesmoId(l.id, cel.id) &&
+          !idsJaRenderizados.has(normalizarId(l.id))
+        );
+
+        const filhosHtml = [
+          ...subCelulasFilhas.map(s => renderCelulaRamificada(s, idsJaRenderizados)),
+          ...discDaCelula.map(d => {
+            const celulasDaDisc = buscarCelulasDaPessoa(d.nome, cel.id);
+            const celulasDiscHtml = celulasDaDisc.map(cDisc => renderCelulaRamificada(cDisc, idsJaRenderizados)).join('');
+            return `
+              <div style="margin-top:4px;">
+                <div>• <strong>${d.nome}</strong> <span class="badge badge-rosa" style="font-size:0.65rem;">${d.nivel_lideranca || 'Discípula'}</span></div>
+                ${celulasDiscHtml}
+              </div>
+            `;
+          })
+        ].join('');
+
+        return `
+          <div class="sub-celula-item">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                ${renderMiniLogoCelula(cel)}
+                <div>
+                  <strong>${cel.celular_que_lidera}</strong>
+                  <span style="color:var(--cinza);">• Líder: ${cel.nome}</span>
+                </div>
+              </div>
+              <span class="badge badge-dourado">${cel.geracao || 'Célula'}</span>
+            </div>
+            ${filhosHtml ? `<div class="sub-1728-box">${filhosHtml}</div>` : ''}
+          </div>
+        `;
+      };
+
       return `
         <div class="tree-root-level">
           <div class="tree-card-node root-card">
             <div class="tree-node-header">
-              <div class="tree-node-avatar">${iniciais(root.nome)}</div>
+              ${renderAvatarArvore(root.foto_celula_url, root.nome, true)}
               <div class="tree-node-info">
                 <h4>Macrocélula Aleluia • ${root.nome}</h4>
                 <span style="color:var(--dourado);font-weight:700;">Organização Geral • Líder da Macro</span>
@@ -1518,6 +1615,7 @@
           ${g12CelulasAbertas.map(lider => {
             const nomeLiderNorm = normalizarNome(lider.nome);
             const ehCardAleluia = isRegistroAleluia(lider) || (celAleluia && mesmoId(lider.id, celAleluia.id));
+            const idsVisitados = new Set([normalizarId(lider.id)]);
 
             let discipulasDiretas = [];
             if (ehCardAleluia) {
@@ -1541,72 +1639,78 @@
               );
             }
 
-            const subCelulas144 = lideresAtivas.filter(l =>
+            const subCelulasDiretas = lideresAtivas.filter(l =>
+              !isRegistroMacroOrganizacao(l) &&
               mesmoId(l.parent_id, lider.id) &&
               !mesmoId(l.id, lider.id) &&
               !isRegistroAleluia(l) &&
               normalizarNome(l.nome) !== nomeRootNorm
             );
-            const totalItens = discipulasDiretas.length + subCelulas144.length;
+
+            const celulasDasDiscipulasG12 = [];
+            discipulasDiretas.forEach(d => {
+              const proprias = buscarCelulasDaPessoa(d.nome, lider.id);
+              proprias.forEach(c => celulasDasDiscipulasG12.push({ discipula: d, celula: c }));
+            });
+
+            const totalItens = discipulasDiretas.length + subCelulasDiretas.length + celulasDasDiscipulasG12.length;
 
             return `
               <div class="tree-card-node">
                 <div class="tree-node-header">
-                  <div class="tree-node-avatar">${iniciais(lider.nome)}</div>
+                  ${renderAvatarArvore(lider.foto_celula_url, lider.nome, ehCardAleluia)}
                   <div class="tree-node-info">
-                    <h4>${lider.nome}</h4>
-                    <span>${lider.celular_que_lidera} • <strong>${lider.geracao}</strong></span>
+                    <h4>${lider.celular_que_lidera || lider.nome}</h4>
+                    <span>Líder: <strong>${lider.nome}</strong> • <strong>${lider.geracao}</strong></span>
                   </div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:8px;flex-wrap:wrap;">
-                  <span style="font-size:0.78rem;color:var(--cinza);">👥 ${discipulasDiretas.length} discípula(s) • 🏠 ${subCelulas144.length} sub-célula(s)</span>
+                  <span style="font-size:0.78rem;color:var(--cinza);">👥 ${discipulasDiretas.length} discípula(s) • 🏠 ${subCelulasDiretas.length + celulasDasDiscipulasG12.length} célula(s)</span>
                   ${totalItens > 0 ? `<button class="btn btn-rosa btn-sm" id="btn-ver-mais-${lider.id}" onclick="toggleSubCelulas('${lider.id}')">▼ Ver Integrantes / Ramificações</button>` : ''}
                 </div>
                 <div class="sub-celulas-container" id="sub-celulas-${lider.id}">
-                  ${subCelulas144.length > 0 ? `
-                    <span style="font-size:0.74rem;color:var(--dourado);font-weight:700;display:block;margin-bottom:6px;">Células 144, 1728 &amp; 20736:</span>
-                    ${subCelulas144.map(sub144 => {
-                      const disc144 = m.discipulasUnicas.filter(d => mesmoId(d.lider_id, sub144.id) && normalizarNome(d.nome) !== normalizarNome(sub144.nome));
-                      const subCelulas1728 = lideresAtivas.filter(l => mesmoId(l.parent_id, sub144.id) && !mesmoId(l.id, sub144.id));
-                      return `
-                        <div class="sub-celula-item">
-                          <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div><strong>🏠 ${sub144.celular_que_lidera}</strong> (Líder: ${sub144.nome})</div>
-                            <span class="badge badge-dourado">${sub144.geracao}</span>
-                          </div>
-                          ${disc144.length > 0 || subCelulas1728.length > 0 ? `
-                            <div class="sub-1728-box">
-                              ${subCelulas1728.map(s17 => {
-                                const subCelulas20736 = lideresAtivas.filter(l => mesmoId(l.parent_id, s17.id) && !mesmoId(l.id, s17.id));
-                                const disc1728 = m.discipulasUnicas.filter(d => mesmoId(d.lider_id, s17.id) && normalizarNome(d.nome) !== normalizarNome(s17.nome));
-                                return `
-                                  <div style="margin-bottom:4px;">
-                                    ↳ <strong>${s17.geracao}:</strong> ${s17.celular_que_lidera} (${s17.nome})
-                                    ${subCelulas20736.length > 0 || disc1728.length > 0 ? `
-                                      <div class="sub-20736-box">
-                                        ${subCelulas20736.map(s20 => `<div>↳ <strong>${s20.geracao}:</strong> ${s20.celular_que_lidera} (${s20.nome})</div>`).join('')}
-                                        ${disc1728.map(d17 => `<div>• ${d17.nome}</div>`).join('')}
-                                      </div>
-                                    ` : ''}
-                                  </div>
-                                `;
-                              }).join('')}
-                              ${disc144.map(d14 => `<div>• ${d14.nome} <span class="badge badge-rosa" style="font-size:0.65rem;">${d14.nivel_lideranca}</span></div>`).join('')}
-                            </div>
-                          ` : ''}
-                        </div>
-                      `;
-                    }).join('')}
+                  ${subCelulasDiretas.length > 0 ? `
+                    <span style="font-size:0.74rem;color:var(--dourado);font-weight:700;display:block;margin-bottom:4px;">Células Ramificadas (144, 1728 &amp; 20736):</span>
+                    ${subCelulasDiretas.map(sub => renderCelulaRamificada(sub, idsVisitados)).join('')}
                   ` : ''}
 
                   ${discipulasDiretas.length > 0 ? `
-                    <span style="font-size:0.74rem;color:var(--rosa);font-weight:700;display:block;margin:8px 0 6px;">Discípulas desta célula (${discipulasDiretas.length}):</span>
-                    ${discipulasDiretas.map(d => `
-                      <div class="sub-celula-item" style="flex-direction:row;justify-content:space-between;align-items:center;">
-                        <div><strong>${d.nome}</strong><br><small style="color:#888;">${d.nivel_lideranca || 'Discípula'}</small></div>
-                        <span class="badge badge-rosa">${d.cd || 'Ainda não fez'}</span>
-                      </div>
-                    `).join('')}
+                    <span style="font-size:0.74rem;color:var(--rosa);font-weight:700;display:block;margin:6px 0 4px;">Discípulas &amp; Suas Células (${discipulasDiretas.length}):</span>
+                    ${discipulasDiretas.map(d => {
+                      const celulasDaDisc = buscarCelulasDaPessoa(d.nome, lider.id);
+                      return `
+                        <div class="sub-celula-item">
+                          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                            <div><strong>${d.nome}</strong><br><small style="color:#888;">${d.nivel_lideranca || 'Discípula'}</small></div>
+                            <span class="badge badge-rosa">${d.cd || 'Ainda não fez'}</span>
+                          </div>
+                          ${celulasDaDisc.map(cDisc => {
+                            idsVisitados.add(normalizarId(cDisc.id));
+                            const subDaDisc = lideresAtivas.filter(x =>
+                              !isRegistroMacroOrganizacao(x) &&
+                              mesmoId(x.parent_id, cDisc.id) &&
+                              !mesmoId(x.id, cDisc.id)
+                            );
+                            const discDaDisc = m.discipulasUnicas.filter(x =>
+                              mesmoId(x.lider_id, cDisc.id) &&
+                              normalizarNome(x.nome) !== normalizarNome(cDisc.nome)
+                            );
+                            return `
+                              <div class="sub-celula-discipula-celula">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                  ${renderMiniLogoCelula(cDisc)}
+                                  <div>
+                                    <div style="font-size:0.78rem;font-weight:700;color:var(--preto);">Célula: ${cDisc.celular_que_lidera}</div>
+                                    <div style="font-size:0.7rem;color:var(--cinza);">${cDisc.geracao || 'Célula'} • ${subDaDisc.length} sub-célula(s) • ${discDaDisc.length} discípula(s)</div>
+                                  </div>
+                                </div>
+                                <span class="badge badge-dourado" style="font-size:0.66rem;">${cDisc.geracao || 'Líder'}</span>
+                              </div>
+                            `;
+                          }).join('')}
+                        </div>
+                      `;
+                    }).join('')}
                   ` : ''}
                 </div>
               </div>
@@ -2285,7 +2389,7 @@
           ? `<br><span style="display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;color:#8A6D14;background:#FFFDF5;border:1px solid #F5E6B8;padding:1px 7px;border-radius:10px;margin-top:3px;">🎨 Cor: <strong>${d.cor_favorita}</strong></span>`
           : '';
 
-        const isBatizada = d.batizada === true || d.batizada === 'Sim';
+        const batizadaOk = isBatizadaRegistro(d);
         const cultoStr = d.culto_regular === 'Sim'
           ? `<span class="badge badge-success" style="font-size:0.68rem;">Culto: Sim</span>${d.culto_dia_horario ? `<br><small style="color:#555;font-size:0.7rem;">⛪ ${d.culto_dia_horario}</small>` : ''}`
           : `<span class="badge badge-cinza" style="font-size:0.68rem;">Culto: ${d.culto_regular || 'Não inf.'}</span>`;
@@ -2300,7 +2404,7 @@
               <span class="badge ${assBadge}">Célula: ${d.assiduidade || '—'}</span><br>
               <div style="margin-top:4px;">${cultoStr}</div>
             </td>
-            <td>${isBatizada ? '<span class="badge badge-success">Sim</span>' : '<span class="badge badge-danger">Não</span>'}</td>
+            <td>${batizadaOk ? '<span class="badge badge-success">Sim</span>' : '<span class="badge badge-danger">Não</span>'}</td>
             <td>
               <span class="badge badge-info">UV: ${d.uv||'Ainda não fez'}</span><br>
               <small style="color:#666;font-size:0.72rem;">Reencontro: <strong>${d.reencontro||'Não'}</strong></small>
@@ -2429,7 +2533,7 @@
 
       const mostrarCorInicial = nivelAtualLimpo.toUpperCase().includes('G12');
 
-      const valBat = d ? (d.batizada === true || d.batizada === 'Sim' ? 'Sim' : 'Não') : '';
+      const valBat = d ? (isBatizadaRegistro(d) ? 'Sim' : 'Não') : '';
       const valUV = d?.uv || '';
       const valEncontro = d?.encontro || '';
       const valReencontro = d?.reencontro || '';
@@ -3205,10 +3309,14 @@
         lista = lista.filter(d => estaNoPeriodo(obterDataCadastroDiscipula(d), dataInicio, dataFim));
       }
 
+      const qtdBatizadasRecorte = lista.filter(d => isBatizadaRegistro(d)).length;
+      const qtdNaoBatizadasRecorte = lista.filter(d => !isBatizadaRegistro(d)).length;
+
       const dadosGraficoJornada = {
-        labels: ['Batizadas', 'UV Concluída', 'Reencontro', 'Formatura CD', 'Assíduas Célula', 'Culto Regular'],
+        labels: ['Batizadas', 'Não Batizadas', 'UV Concluída', 'Reencontro', 'Formatura CD', 'Assíduas Célula', 'Culto Regular'],
         valores: [
-          lista.filter(d => d.batizada === true || d.batizada === 'Sim').length,
+          qtdBatizadasRecorte,
+          qtdNaoBatizadasRecorte,
           lista.filter(d => d.uv === 'Sim').length,
           lista.filter(d => d.reencontro === 'Sim').length,
           lista.filter(d => d.formatura_cd === 'Sim').length,
@@ -3326,7 +3434,8 @@
         };
       }
 
-      if (pend === 'batizada') lista = lista.filter(d => d.batizada === true || d.batizada === 'Sim');
+      if (pend === 'batizada') lista = lista.filter(d => isBatizadaRegistro(d));
+      if (pend === 'nao-batizada') lista = lista.filter(d => !isBatizadaRegistro(d));
       if (pend === 'com-uv') lista = lista.filter(d => d.uv === 'Sim');
       if (pend === 'sem-uv') lista = lista.filter(d => d.uv !== 'Sim');
       if (pend === 'com-reencontro') lista = lista.filter(d => d.reencontro === 'Sim');
@@ -3359,7 +3468,8 @@
       const efetivoModoAgrupamento = (pend === 'lista-discipulas-bairro' && modoLista === 'resumo-apenas') ? 'por-bairro' : modoLista;
 
       const cardsJornada = [
-        { label: 'Batizadas', valor: lista.filter(d => d.batizada === true || d.batizada === 'Sim').length },
+        { label: 'Batizadas', valor: qtdBatizadasRecorte },
+        { label: 'Não Batizadas', valor: qtdNaoBatizadasRecorte, red: true },
         { label: 'Concluintes UV', valor: lista.filter(d => d.uv === 'Sim').length },
         { label: 'Reencontro', valor: lista.filter(d => d.reencontro === 'Sim').length },
         { label: 'Assíduas Célula', valor: lista.filter(d => d.assiduidade === 'Sim').length },
@@ -3385,7 +3495,7 @@
             celulaNome: cel ? cel.celular_que_lidera : '—',
             isLider: isCargoLider(d.nivel_lideranca),
             titulo: `${d.nome} (${d.nivel_lideranca || 'Discípula'})`,
-            detalhes: `📍 Bairro/Município: ${bairroDisc} • 🏠 Célula: ${cel ? cel.celular_que_lidera : '—'} • Tel: ${d.telefone || '—'} • Assídua: ${d.assiduidade || '—'} • ${cultoInfo} • Batizada: ${(d.batizada === true || d.batizada === 'Sim') ? 'Sim' : 'Não'} • UV: ${d.uv || 'Ainda não fez'} • CD: ${d.cd || 'Ainda não fez'}${corStr}`
+            detalhes: `📍 Bairro/Município: ${bairroDisc} • 🏠 Célula: ${cel ? cel.celular_que_lidera : '—'} • Tel: ${d.telefone || '—'} • Assídua: ${d.assiduidade || '—'} • ${cultoInfo} • Batizada: ${isBatizadaRegistro(d) ? 'Sim' : 'Não'} • UV: ${d.uv || 'Ainda não fez'} • CD: ${d.cd || 'Ainda não fez'}${corStr}`
           };
         })
       };
@@ -3413,7 +3523,7 @@
             datasets: [{
               label: 'Quantidade',
               data: dados.graficoJornada.valores,
-              backgroundColor: ['#D0397C', '#D4AF37', '#A3235C', '#25D366', '#1E63B5', '#8A6D14'],
+              backgroundColor: ['#D0397C', '#DC2626', '#D4AF37', '#A3235C', '#25D366', '#1E63B5', '#8A6D14'],
               borderRadius: 6
             }]
           },
@@ -3520,7 +3630,6 @@
       const desistentes = db.desistencias.filter(d => (d.celular_nova || '').toLowerCase().includes('desist') && !(d.nome || '').toUpperCase().startsWith('CÉLULA:'));
       const discipulas = m.discipulasUnicas;
 
-      const batizadas = discipulas.filter(d => d.batizada === true || d.batizada === 'Sim').length;
       const concluintesUV = discipulas.filter(d => d.uv === 'Sim').length;
       const fizeramReencontro = discipulas.filter(d => d.reencontro === 'Sim').length;
       const cdFormadas = discipulas.filter(d => d.formatura_cd === 'Sim').length;
@@ -3532,7 +3641,8 @@
         <div class="rel-mini-card destaque"><div class="r-label">Total de Discípulas Cadastradas</div><div class="r-val">${m.totalDiscipulasCadastradas}</div></div>
         <div class="rel-mini-card dourado"><div class="r-label">Total de Líderes</div><div class="r-val">${m.totalLideres}</div></div>
         <div class="rel-mini-card"><div class="r-label">Discípulas (Não Líderes)</div><div class="r-val">${m.totalDiscipulasNaoLideres}</div></div>
-        <div class="rel-mini-card verde"><div class="r-label">Batizadas</div><div class="r-val">${batizadas}</div></div>
+        <div class="rel-mini-card verde"><div class="r-label">Batizadas</div><div class="r-val">${m.batizadas}</div></div>
+        <div class="rel-mini-card vermelho"><div class="r-label">Não Batizadas</div><div class="r-val">${m.naoBatizadas}</div></div>
         <div class="rel-mini-card"><div class="r-label">Concluintes UV</div><div class="r-val">${concluintesUV}</div></div>
         <div class="rel-mini-card"><div class="r-label">Reencontro</div><div class="r-val">${fizeramReencontro}</div></div>
         <div class="rel-mini-card verde"><div class="r-label">Formatura CD (Sim)</div><div class="r-val">${cdFormadas}</div></div>
