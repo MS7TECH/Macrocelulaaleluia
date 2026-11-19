@@ -989,7 +989,6 @@
         db.lideres.forEach(l => {
           if (!l.ativa || l.parent_id == null) return;
           if (ids.has(normalizarId(l.parent_id)) && !ids.has(normalizarId(l.id))) {
-            // Se estivermos na célula Aleluia, não engole outras células G12 independentes cuja cobertura seja a Macro
             if (celAtual && isRegistroAleluia(celAtual) && (l.geracao || '').toUpperCase().includes('G12') && !isRegistroAleluia(l)) {
               return;
             }
@@ -1472,12 +1471,15 @@
 
       const m = calcularMetricasCobertura();
       const nomeRootNorm = normalizarNome(root.nome);
+      const celAleluia = getCelulaAleluiaReal();
 
-      const g12CelulasAbertas = lideresAtivas.filter(l => 
-        !isRegistroMacroOrganizacao(l) &&
-        normalizarNome(l.nome) !== nomeRootNorm &&
-        (mesmoId(l.parent_id, root.id) || (l.geracao || '').toUpperCase().includes('G12'))
-      );
+      const g12CelulasAbertas = lideresAtivas.filter(l => {
+        if (isRegistroMacroOrganizacao(l)) return false;
+        if (celAleluia && mesmoId(l.id, celAleluia.id)) return true;
+        if (isRegistroAleluia(l) && !mesmoId(l.id, root.id)) return true;
+        if (normalizarNome(l.nome) === nomeRootNorm) return false;
+        return mesmoId(l.parent_id, root.id) || (l.geracao || '').toUpperCase().includes('G12');
+      });
 
       return `
         <div class="tree-root-level">
