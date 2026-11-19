@@ -669,10 +669,8 @@
               </div>
             </div>
 
-            <!-- Indicadores Globais Fixos da Macrocélula / Cobertura -->
             <div class="relatorio-resumo-grid" id="relatorio-resumo-indicadores"></div>
 
-            <!-- Linha 1 de Filtros -->
             <div class="form-row">
               <div class="form-field">
                 <label>Filtrar por Célula</label>
@@ -733,7 +731,6 @@
               </div>
             </div>
 
-            <!-- Linha 2 de Filtros: Período e Controle de Lista Nominal -->
             <div class="form-row">
               <div class="form-field">
                 <label>📅 Período — Data Inicial (Opcional)</label>
@@ -756,7 +753,6 @@
               </div>
             </div>
 
-            <!-- Gráficos Visuais na Tela -->
             <div class="charts-relatorio-grid">
               <div class="chart-box-card">
                 <h5>📊 Jornada Espiritual &amp; Formação</h5>
@@ -911,7 +907,7 @@
       return true;
     }
 
-    // Identifica se um registro da tabela 'lideres' é a Macrocélula (título/organização do sistema)
+    // Identifica se um registro da tabela 'lideres' é apenas o título/organização da Macro
     function isRegistroMacroOrganizacao(l) {
       if (!l) return false;
       return l.parent_id === null ||
@@ -926,7 +922,7 @@
       return ativas.find(l => isRegistroMacroOrganizacao(l)) || ativas[0];
     }
 
-    // Busca especificamente a CÉLULA ALELUIA real (nunca o registro da Macro)
+    // Localiza especificamente a CÉLULA ALELUIA real (nunca o registro da Macro)
     function getCelulaAleluiaReal() {
       const ativas = db.lideres.filter(l => l.ativa);
       return (
@@ -2374,7 +2370,8 @@
       }
 
       const btn = document.getElementById('btn-salvar-discipula');
-      if (btn) { btn.disabled = true; btn.textContent = 'Salvando no Banco...'; }
+      if (btn) { btn.disabled = true; btn.textContent = 'Enviando ao Supabase...'; }
+      setSyncStatus('⏳ Enviando ao banco...', 'loading');
 
       const obj = {
         id: id || Date.now(),
@@ -2399,13 +2396,16 @@
         culto_dia_horario: cultoDiaHoraVal
       };
 
-      const { error } = await supabaseClient.from('discipulas').upsert(obj);
+      const { data, error } = await supabaseClient.from('discipulas').upsert(obj).select();
       if (error) {
-        alert('Erro ao salvar discípula no Supabase: ' + error.message);
-        if (btn) { btn.disabled = false; btn.textContent = 'Tentar Novamente'; }
+        console.error('Erro ao salvar discípula no Supabase:', error);
+        setSyncStatus('🔴 Erro ao enviar', 'error');
+        alert(`❌ O banco NÃO recebeu o envio!\n\nMotivo: ${error.message}\nCódigo: ${error.code || '—'}`);
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Cadastro'; }
         return;
       }
 
+      console.log('Discípula salva no Supabase:', data);
       await carregarDadosDoSupabase();
       if (retornoCelulaId) {
         abrirCelulaseMembros(retornoCelulaId);
