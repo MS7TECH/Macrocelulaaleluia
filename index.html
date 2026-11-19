@@ -183,10 +183,6 @@
       display: flex; flex-direction: column; justify-content: space-between; position: relative;
     }
     .celula-folder-card:hover { transform: translateY(-3px); border-color: var(--rosa); }
-    .celula-folder-card.macro-card {
-      border: 2px solid var(--dourado);
-      background: linear-gradient(180deg, #FFFDF5 0%, #FFFFFF 100%);
-    }
 
     .btn-baixa-x {
       position: absolute; top: 14px; right: 14px;
@@ -573,7 +569,7 @@
           </div>
         </section>
 
-        <!-- 2. CÉLULAS & LIDERANÇA (PASTAS DE DEPARTAMENTOS) -->
+        <!-- 2. CÉLULAS & LIDERANÇA -->
         <section id="page-lideres" class="page">
           <div class="section-card">
             <div class="section-header">
@@ -713,7 +709,6 @@
                   </optgroup>
                   <optgroup label="Batismo &amp; UV">
                     <option value="batizada">Batizadas</option>
-                    <option value="nao-batizada">Não Batizadas</option>
                     <option value="com-uv">Concluintes UV</option>
                     <option value="sem-uv">Sem UV</option>
                     <option value="com-reencontro">Fizeram Reencontro</option>
@@ -836,7 +831,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONEXÃO REAL COM O SUPABASE (CHAVES ATUALIZADAS)
+    // 1. CONEXÃO REAL COM O SUPABASE
     // =========================================================================
     const SUPABASE_URL = 'https://erubgcvrxphvnjydkuga.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_o1FNdEXD8B35qqom5h_wiA_y8dIQWbu';
@@ -980,14 +975,13 @@
     });
 
     // =========================================================================
-    // 2. CÁLCULO EXATO DAS MÉTRICAS (MACRO = ORGANIZAÇÃO, 14 DISCÍPULAS, 5 CÉLULAS)
+    // 2. CÁLCULO EXATO DAS MÉTRICAS (MACRO = ORGANIZAÇÃO)
     // =========================================================================
     function isCargoLider(cargoStr) {
       const nv = normalizarNome(cargoStr || '');
       return nv.includes('lider') || nv.includes('g12') || nv.includes('144') || nv.includes('1728') || nv.includes('20736');
     }
 
-    // Retorna lista deduplicada de discípulas cadastradas (elimina duplicidades como Adriana)
     function getDiscipulasUnicasVisiveis() {
       const brutas = getDiscipulasVisiveis();
       const mapa = new Map();
@@ -1005,15 +999,15 @@
       const rootMacro = getCelulaMacroRoot();
       const nomeMacroNorm = rootMacro ? normalizarNome(rootMacro.nome) : '';
 
-      // 1. Células Reais Ativas (Exclui a Macrocélula pois ela é a organização!)
+      // 1. Células Reais Ativas (Exclui a Macrocélula pois ela é a organização)
       const celulasReaisAtivas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
       const numCelulas = celulasReaisAtivas.length;
 
-      // 2. Discípulas Cadastradas (Deduplicadas por nome para não contar duplicidade nem somar células)
+      // 2. Discípulas Cadastradas (Deduplicadas por nome)
       const discipulasUnicas = getDiscipulasUnicasVisiveis().filter(d => normalizarNome(d.nome) !== nomeMacroNorm);
       const totalDiscipulasCadastradas = discipulasUnicas.length;
 
-      // 3. Total de Líderes / Gerentes (Líderes das células ativas + discípulas com cargo de liderança, sem repetir nomes)
+      // 3. Total de Líderes
       const setLideresUnicas = new Set();
       celulasReaisAtivas.forEach(c => {
         if (c.nome && normalizarNome(c.nome) !== nomeMacroNorm) {
@@ -1027,10 +1021,10 @@
       });
       const totalLideres = setLideresUnicas.size;
 
-      // 4. Discípulas (Membros que ainda não são líderes)
+      // 4. Discípulas (Não Líderes)
       const totalDiscipulasNaoLideres = discipulasUnicas.filter(d => !setLideresUnicas.has(normalizarNome(d.nome))).length;
 
-      // 5. Cobertura Total da Macrocélula (Discípulas únicas + Líderes de célula que não estejam na tabela discipulas)
+      // 5. Cobertura Total da Macrocélula
       const setCoberturaGeral = new Set(setLideresUnicas);
       discipulasUnicas.forEach(d => setCoberturaGeral.add(normalizarNome(d.nome)));
       const totalCobertura = setCoberturaGeral.size;
@@ -1269,7 +1263,7 @@
     };
 
     // =========================================================================
-    // 6. DASHBOARD (CÉLULAS REAIS, LÍDERES/GERENTES E DISCÍPULAS ÚNICAS)
+    // 6. DASHBOARD (ORDEM AJUSTADA E SEM NÃO BATIZADAS)
     // =========================================================================
     function renderDashboard() {
       const m = calcularMetricasCobertura();
@@ -1277,7 +1271,6 @@
 
       const uvConcluidas = discipulas.filter(d => d.uv === 'Sim').length;
       const batizadas = discipulas.filter(d => d.batizada === true || d.batizada === 'Sim').length;
-      const naoBatizadas = discipulas.filter(d => d.batizada === false || d.batizada === 'Não').length;
       const cultoRegularSim = discipulas.filter(d => d.culto_regular === 'Sim').length;
 
       document.getElementById('stats-grid').innerHTML = `
@@ -1287,17 +1280,17 @@
           <div class="sub-desc">Organização: Macrocélula Aleluia</div>
           <div class="icon">🏠</div>
         </div>
+        <div class="stat-card">
+          <div class="label">Total de Discípulas Cadastradas</div>
+          <div class="value">${m.totalDiscipulasCadastradas}</div>
+          <div class="sub-desc">Cadastros únicos nas células</div>
+          <div class="icon">🌸</div>
+        </div>
         <div class="stat-card gold-highlight">
           <div class="label">Total de Líderes</div>
           <div class="value">${m.totalLideres}</div>
           <div class="sub-desc">Líderes de célula / G12 / 144</div>
           <div class="icon">👑</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Discípulas Cadastradas</div>
-          <div class="value">${m.totalDiscipulasCadastradas}</div>
-          <div class="sub-desc">Cadastros únicos nas células</div>
-          <div class="icon">🌸</div>
         </div>
         <div class="stat-card">
           <div class="label">Discípulas (Não Líderes)</div>
@@ -1308,7 +1301,7 @@
         <div class="stat-card">
           <div class="label">Batizadas</div>
           <div class="value">${batizadas}</div>
-          <div class="sub-desc">Não batizadas: ${naoBatizadas}</div>
+          <div class="sub-desc">Batismo nas águas</div>
           <div class="icon">💧</div>
         </div>
         <div class="stat-card">
@@ -1397,8 +1390,8 @@
             </div>
             <div class="macro-summary-pills">
               <div class="macro-pill">🏠 Células Ativas: <strong>${m.numCelulas}</strong></div>
-              <div class="macro-pill">👑 Líderes: <strong>${m.totalLideres}</strong></div>
               <div class="macro-pill">🌸 Discípulas Cadastradas: <strong>${m.totalDiscipulasCadastradas}</strong></div>
+              <div class="macro-pill">👑 Líderes: <strong>${m.totalLideres}</strong></div>
               <div class="macro-pill">👥 Cobertura Total: <strong>${m.totalCobertura}</strong></div>
             </div>
           </div>
@@ -1977,7 +1970,7 @@
     }
 
     // =========================================================================
-    // 9. DISCÍPULAS & JORNADA ESPIRITUAL (OBRIGATÓRIO ESTAR EM UMA CÉLULA)
+    // 9. DISCÍPULAS & JORNADA ESPIRITUAL (G12 VINCULA AUTOMATICAMENTE À CÉLULA ALELUIA)
     // =========================================================================
     function renderDiscipulas(filtro = '') {
       const duplicadas = encontrarDiscipulasDuplicadas();
@@ -2004,7 +1997,7 @@
       
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => l.id === d.lider_id);
-        const nomeCelula = lider && !isRegistroMacroOrganizacao(lider) ? lider.celular_que_lidera : (lider ? lider.celular_que_lidera : '—');
+        const nomeCelula = lider ? lider.celular_que_lidera : '—';
         const nomeLiderCel = lider ? lider.nome : '—';
 
         const assBadge = d.assiduidade === 'Sim' ? 'badge-success' : 'badge-warning';
@@ -2081,10 +2074,19 @@
     function verificarExibicaoCorG12() {
       const selectNivel = document.getElementById('f-nivel-lideranca');
       const boxCor = document.getElementById('box-cor-favorita');
+      const selectCelula = document.getElementById('f-lider-id');
       if (!selectNivel || !boxCor) return;
 
       const isG12 = selectNivel.value.toUpperCase().includes('G12');
       boxCor.style.display = isG12 ? 'block' : 'none';
+
+      // Se marcar Liderança G12, vincula automaticamente à Célula Aleluia (Macro)
+      if (isG12 && selectCelula) {
+        const macro = getCelulaMacroRoot();
+        if (macro) {
+          selectCelula.value = macro.id;
+        }
+      }
     }
 
     function verificarExibicaoHorarioCulto() {
@@ -2125,16 +2127,15 @@
         return;
       }
 
-      // Apenas células reais ativas (todas as discípulas pertencem a uma célula)
-      const celulasReaisPermitidas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
-      if (celulasReaisPermitidas.length === 0) {
+      const celulasPermitidas = getCelulasVisiveis();
+      if (celulasPermitidas.length === 0) {
         alert('⚠️ Você precisa primeiro abrir uma célula em "Células & Liderança" antes de cadastrar discípulas.');
         return;
       }
 
       tempFotoDiscipulaBase64 = d?.foto_url || "";
 
-      const optionsCelulas = celulasReaisPermitidas.map(l => 
+      const optionsCelulas = celulasPermitidas.map(l => 
         `<option value="${l.id}" ${(d && d.lider_id == l.id) || (celulaFixaId == l.id) ? 'selected' : ''}>${l.celular_que_lidera} (Líder: ${l.nome})</option>`
       ).join('');
 
@@ -2340,15 +2341,16 @@
       if (!cdVal) return alert('⚠️ É obrigatório selecionar o status da Capacitação Destino (CD)!');
       if (!formaturaCdVal) return alert('⚠️ É obrigatório selecionar se fez a Formatura da CD!');
 
-      const liderIdParsed = parseInt(liderIdRaw);
+      const nivelSel = document.getElementById('f-nivel-lideranca').value;
+      const isG12 = nivelSel.toUpperCase().includes('G12');
+      const macroRoot = getCelulaMacroRoot();
+      const liderIdParsed = (isG12 && macroRoot) ? macroRoot.id : parseInt(liderIdRaw);
 
       if (!isMacroAdmin() && !podeGerenciarCelula(liderIdParsed)) {
         alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
         return;
       }
 
-      const nivelSel = document.getElementById('f-nivel-lideranca').value;
-      const isG12 = nivelSel.toUpperCase().includes('G12');
       const corFavoritaVal = isG12 ? (document.getElementById('f-cor-favorita')?.value.trim() || '') : '';
 
       if (isG12 && !corFavoritaVal) {
@@ -2586,7 +2588,12 @@
 
       const disc = db.discipulas.find(d => normalizarNome(d.nome) === normalizarNome(nome));
       if (disc && perfilObj.id !== 'MACRO') {
-        await supabaseClient.from('discipulas').update({ nivel_lideranca: perfilObj.nome }).eq('id', disc.id);
+        const macroRoot = getCelulaMacroRoot();
+        const updateData = { nivel_lideranca: perfilObj.nome };
+        if (perfilObj.nome.toUpperCase().includes('G12') && macroRoot) {
+          updateData.lider_id = macroRoot.id;
+        }
+        await supabaseClient.from('discipulas').update(updateData).eq('id', disc.id);
       }
 
       const celulaPropria = db.lideres.find(l => l.ativa && normalizarNome(l.nome) === normalizarNome(nome));
@@ -2774,7 +2781,7 @@
     }
 
     // =========================================================================
-    // 12. ANIVERSARIANTES & RELATÓRIOS PASTORAIS (COBERTURA, PERÍODO & GRÁFICOS)
+    // 12. ANIVERSARIANTES & RELATÓRIOS PASTORAIS
     // =========================================================================
     function calcularIdade(dataNasc) {
       if (!dataNasc) return '';
@@ -2864,11 +2871,11 @@
         ? `Período: ${dataInicio ? formatDate(dataInicio) : 'Início'} até ${dataFim ? formatDate(dataFim) : 'Hoje'}` 
         : 'Todo o Período';
 
-      // Indicadores Base da Macrocélula / Cobertura (Sempre presentes!)
+      // Indicadores Base da Macrocélula / Cobertura na mesma ordem lógica
       const cardsBaseCobertura = [
         { label: 'Nº de Células', valor: mGlobal.numCelulas, gold: true },
+        { label: 'Total de Discípulas Cadastradas', valor: mGlobal.totalDiscipulasCadastradas, gold: true },
         { label: 'Total de Líderes', valor: mGlobal.totalLideres, gold: true },
-        { label: 'Discípulas Cadastradas', valor: mGlobal.totalDiscipulasCadastradas, gold: true },
         { label: 'Discípulas (Não Líderes)', valor: mGlobal.totalDiscipulasNaoLideres, gold: true }
       ];
 
@@ -3026,7 +3033,6 @@
       }
 
       if (pend === 'batizada') lista = lista.filter(d => d.batizada === true || d.batizada === 'Sim');
-      if (pend === 'nao-batizada') lista = lista.filter(d => d.batizada === false || d.batizada === 'Não');
       if (pend === 'com-uv') lista = lista.filter(d => d.uv === 'Sim');
       if (pend === 'sem-uv') lista = lista.filter(d => d.uv !== 'Sim');
       if (pend === 'com-reencontro') lista = lista.filter(d => d.reencontro === 'Sim');
@@ -3060,7 +3066,6 @@
 
       const cardsJornada = [
         { label: 'Batizadas', valor: lista.filter(d => d.batizada === true || d.batizada === 'Sim').length },
-        { label: 'Não Batizadas', valor: lista.filter(d => d.batizada === false || d.batizada === 'Não').length },
         { label: 'Concluintes UV', valor: lista.filter(d => d.uv === 'Sim').length },
         { label: 'Reencontro', valor: lista.filter(d => d.reencontro === 'Sim').length },
         { label: 'Assíduas Célula', valor: lista.filter(d => d.assiduidade === 'Sim').length },
@@ -3222,7 +3227,6 @@
       const discipulas = m.discipulasUnicas;
 
       const batizadas = discipulas.filter(d => d.batizada === true || d.batizada === 'Sim').length;
-      const naoBatizadas = discipulas.filter(d => d.batizada === false || d.batizada === 'Não').length;
       const concluintesUV = discipulas.filter(d => d.uv === 'Sim').length;
       const fizeramReencontro = discipulas.filter(d => d.reencontro === 'Sim').length;
       const cdFormadas = discipulas.filter(d => d.formatura_cd === 'Sim').length;
@@ -3231,11 +3235,10 @@
 
       document.getElementById('relatorio-resumo-indicadores').innerHTML = `
         <div class="rel-mini-card dourado"><div class="r-label">Nº de Células</div><div class="r-val">${m.numCelulas}</div></div>
+        <div class="rel-mini-card destaque"><div class="r-label">Total de Discípulas Cadastradas</div><div class="r-val">${m.totalDiscipulasCadastradas}</div></div>
         <div class="rel-mini-card dourado"><div class="r-label">Total de Líderes</div><div class="r-val">${m.totalLideres}</div></div>
-        <div class="rel-mini-card destaque"><div class="r-label">Discípulas Cadastradas</div><div class="r-val">${m.totalDiscipulasCadastradas}</div></div>
         <div class="rel-mini-card"><div class="r-label">Discípulas (Não Líderes)</div><div class="r-val">${m.totalDiscipulasNaoLideres}</div></div>
         <div class="rel-mini-card verde"><div class="r-label">Batizadas</div><div class="r-val">${batizadas}</div></div>
-        <div class="rel-mini-card vermelho"><div class="r-label">Não Batizadas</div><div class="r-val">${naoBatizadas}</div></div>
         <div class="rel-mini-card"><div class="r-label">Concluintes UV</div><div class="r-val">${concluintesUV}</div></div>
         <div class="rel-mini-card"><div class="r-label">Reencontro</div><div class="r-val">${fizeramReencontro}</div></div>
         <div class="rel-mini-card verde"><div class="r-label">Formatura CD (Sim)</div><div class="r-val">${cdFormadas}</div></div>
