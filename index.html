@@ -911,11 +911,12 @@
       return true;
     }
 
-    // Identifica se um registro da tabela 'lideres' é a Macrocélula (Organização Raiz)
+    // Identifica se um registro da tabela 'lideres' é a Macrocélula (título/organização do sistema)
     function isRegistroMacroOrganizacao(l) {
       if (!l) return false;
       return l.parent_id === null ||
         normalizarNome(l.geracao) === 'lider da macro' ||
+        normalizarNome(l.geracao).includes('macro') ||
         normalizarNome(l.celular_que_lidera) === 'celula aleluia' ||
         normalizarNome(l.celular_que_lidera).includes('macrocelula');
     }
@@ -923,6 +924,18 @@
     function getCelulaMacroRoot() {
       const ativas = db.lideres.filter(l => l.ativa);
       return ativas.find(l => isRegistroMacroOrganizacao(l)) || ativas[0];
+    }
+
+    // Busca especificamente a CÉLULA ALELUIA real (nunca o registro da Macro)
+    function getCelulaAleluiaReal() {
+      const ativas = db.lideres.filter(l => l.ativa);
+      return (
+        ativas.find(l =>
+          !isRegistroMacroOrganizacao(l) &&
+          (normalizarNome(l.celular_que_lidera).includes('celula aleluia') ||
+           normalizarNome(l.nome).includes('celula aleluia'))
+        ) || null
+      );
     }
 
     async function carregarDadosDoSupabase() {
@@ -999,15 +1012,12 @@
       const rootMacro = getCelulaMacroRoot();
       const nomeMacroNorm = rootMacro ? normalizarNome(rootMacro.nome) : '';
 
-      // 1. Células Reais Ativas (Exclui a Macrocélula pois ela é a organização)
       const celulasReaisAtivas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
       const numCelulas = celulasReaisAtivas.length;
 
-      // 2. Discípulas Cadastradas (Deduplicadas por nome)
       const discipulasUnicas = getDiscipulasUnicasVisiveis().filter(d => normalizarNome(d.nome) !== nomeMacroNorm);
       const totalDiscipulasCadastradas = discipulasUnicas.length;
 
-      // 3. Total de Líderes
       const setLideresUnicas = new Set();
       celulasReaisAtivas.forEach(c => {
         if (c.nome && normalizarNome(c.nome) !== nomeMacroNorm) {
@@ -1021,10 +1031,8 @@
       });
       const totalLideres = setLideresUnicas.size;
 
-      // 4. Discípulas (Não Líderes)
       const totalDiscipulasNaoLideres = discipulasUnicas.filter(d => !setLideresUnicas.has(normalizarNome(d.nome))).length;
 
-      // 5. Cobertura Total da Macrocélula
       const setCoberturaGeral = new Set(setLideresUnicas);
       discipulasUnicas.forEach(d => setCoberturaGeral.add(normalizarNome(d.nome)));
       const totalCobertura = setCoberturaGeral.size;
@@ -1263,7 +1271,7 @@
     };
 
     // =========================================================================
-    // 6. DASHBOARD (ORDEM AJUSTADA E SEM NÃO BATIZADAS)
+    // 6. DASHBOARD
     // =========================================================================
     function renderDashboard() {
       const m = calcularMetricasCobertura();
@@ -1472,7 +1480,7 @@
     }
 
     // =========================================================================
-    // 7. GESTÃO DE CÉLULAS (EXIBE APENAS AS CÉLULAS REAIS, NÃO A MACROCÉLULA)
+    // 7. GESTÃO DE CÉLULAS
     // =========================================================================
     function renderPastasCelulas() {
       const container = document.getElementById('grid-pastas-celulas');
@@ -1970,7 +1978,7 @@
     }
 
     // =========================================================================
-    // 9. DISCÍPULAS & JORNADA ESPIRITUAL (G12 VINCULA AUTOMATICAMENTE À CÉLULA ALELUIA)
+    // 9. DISCÍPULAS & JORNADA ESPIRITUAL (G12 VAI PARA CÉLULA ALELUIA, NÃO MACRO)
     // =========================================================================
     function renderDiscipulas(filtro = '') {
       const duplicadas = encontrarDiscipulasDuplicadas();
@@ -2080,11 +2088,11 @@
       const isG12 = selectNivel.value.toUpperCase().includes('G12');
       boxCor.style.display = isG12 ? 'block' : 'none';
 
-      // Se marcar Liderança G12, vincula automaticamente à Célula Aleluia (Macro)
+      // Quando o nível é Liderança G12, seleciona automaticamente a Célula Aleluia real (nunca a Macro)
       if (isG12 && selectCelula) {
-        const macro = getCelulaMacroRoot();
-        if (macro) {
-          selectCelula.value = macro.id;
+        const celulaAleluia = getCelulaAleluiaReal();
+        if (celulaAleluia) {
+          selectCelula.value = celulaAleluia.id;
         }
       }
     }
@@ -2127,7 +2135,7 @@
         return;
       }
 
-      const celulasPermitidas = getCelulasVisiveis();
+      const celulasPermitidas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
       if (celulasPermitidas.length === 0) {
         alert('⚠️ Você precisa primeiro abrir uma célula em "Células & Liderança" antes de cadastrar discípulas.');
         return;
@@ -2303,6 +2311,10 @@
           </div>
         </div>
       `, `<button class="btn btn-outline" onclick="${celulaFixaId ? `abrirCelulaseMembros(${celulaFixaId})` : 'fecharModal()'}">Cancelar</button><button class="btn btn-rosa" id="btn-salvar-discipula" onclick="salvarDiscipula(${id || 'null'}, ${celulaFixaId || 'null'})">Salvar Cadastro</button>`);
+
+      if (mostrarCorInicial) {
+        verificarExibicaoCorG12();
+      }
     }
 
     async function salvarDiscipula(id, retornoCelulaId) {
@@ -2343,8 +2355,10 @@
 
       const nivelSel = document.getElementById('f-nivel-lideranca').value;
       const isG12 = nivelSel.toUpperCase().includes('G12');
-      const macroRoot = getCelulaMacroRoot();
-      const liderIdParsed = (isG12 && macroRoot) ? macroRoot.id : parseInt(liderIdRaw);
+      const celulaAleluia = getCelulaAleluiaReal();
+
+      // Se for Liderança G12, vai para a Célula Aleluia real (nunca para o registro da Macro)
+      const liderIdParsed = (isG12 && celulaAleluia) ? celulaAleluia.id : parseInt(liderIdRaw);
 
       if (!isMacroAdmin() && !podeGerenciarCelula(liderIdParsed)) {
         alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
@@ -2588,10 +2602,10 @@
 
       const disc = db.discipulas.find(d => normalizarNome(d.nome) === normalizarNome(nome));
       if (disc && perfilObj.id !== 'MACRO') {
-        const macroRoot = getCelulaMacroRoot();
+        const celulaAleluia = getCelulaAleluiaReal();
         const updateData = { nivel_lideranca: perfilObj.nome };
-        if (perfilObj.nome.toUpperCase().includes('G12') && macroRoot) {
-          updateData.lider_id = macroRoot.id;
+        if (perfilObj.nome.toUpperCase().includes('G12') && celulaAleluia) {
+          updateData.lider_id = celulaAleluia.id;
         }
         await supabaseClient.from('discipulas').update(updateData).eq('id', disc.id);
       }
@@ -2871,7 +2885,6 @@
         ? `Período: ${dataInicio ? formatDate(dataInicio) : 'Início'} até ${dataFim ? formatDate(dataFim) : 'Hoje'}` 
         : 'Todo o Período';
 
-      // Indicadores Base da Macrocélula / Cobertura na mesma ordem lógica
       const cardsBaseCobertura = [
         { label: 'Nº de Células', valor: mGlobal.numCelulas, gold: true },
         { label: 'Total de Discípulas Cadastradas', valor: mGlobal.totalDiscipulasCadastradas, gold: true },
@@ -2879,7 +2892,6 @@
         { label: 'Discípulas (Não Líderes)', valor: mGlobal.totalDiscipulasNaoLideres, gold: true }
       ];
 
-      // Movimentações por Período
       const celulasAbertasNoPeriodo = mGlobal.celulasReaisAtivas.filter(c => estaNoPeriodo(c.data_abertura, dataInicio, dataFim));
       const novasDiscipulasNoPeriodo = mGlobal.discipulasUnicas.filter(d => estaNoPeriodo(obterDataCadastroDiscipula(d), dataInicio, dataFim));
       
