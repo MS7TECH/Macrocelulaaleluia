@@ -877,6 +877,20 @@
       return na !== '' && nb !== '' && na === nb;
     }
 
+    function resolverValorIdSupabase(celulaId, registroExistente = null) {
+      const cel = db.lideres.find(c => mesmoId(c.id, celulaId));
+      const candidato = cel ? cel.id : celulaId;
+      if (registroExistente && typeof registroExistente.lider_id === 'number') {
+        const num = Number(candidato);
+        return Number.isFinite(num) ? num : registroExistente.lider_id;
+      }
+      if (typeof candidato === 'number') return candidato;
+      const str = String(candidato).trim();
+      const num = Number(str);
+      if (Number.isFinite(num) && String(num) === str && str.length < 16) return num;
+      return str;
+    }
+
     function extrairBairroEMunicipio(textoLocal) {
       if (!textoLocal || textoLocal.trim() === '') return 'Não informado';
       const limpo = textoLocal.trim();
@@ -929,7 +943,6 @@
       if (l.parent_id === null || ger === 'lider da macro' || ger.includes('macro') || nomeCel.includes('macrocelula')) {
         return true;
       }
-      // Evita tratar a célula "Aleluia" da líder Rosane Aleluia como nó macro raiz
       if (nomeCel === 'celula aleluia' && !nomeLider.includes('rosane')) {
         return true;
       }
@@ -1969,7 +1982,6 @@
       const nomeLiderNorm = normalizarNome(lider.nome);
       const registrosVisiveis = getDiscipulasVisiveis();
 
-      // Mostra todas as discípulas pertencentes à célula (e sub-células filhas ativas), sem perder quem foi transferido
       const membros = obterDiscipulasDaCelula(lider, registrosVisiveis);
       const nomesNaCelula = new Set(membros.map(d => normalizarNome(d.nome)));
 
@@ -2087,55 +2099,57 @@
         !mesmoId(d.lider_id, liderId) &&
         (nomesMarcados.has(normalizarNome(d.nome)) || idsSelecionados.some(id => mesmoId(id, d.id)))
       );
-      const idsParaAtualizar = [...new Set(registros.map(d => d.id))];
 
-      if (!idsParaAtualizar.length) {
+      if (!registros.length) {
         alert('Nenhum registro encontrado para transferir. Atualize a página e tente novamente.');
         return;
       }
 
       const liderDestino = db.lideres.find(c => mesmoId(c.id, liderId));
-      const novoLiderId = liderDestino ? liderDestino.id : liderId;
+      const novoLiderId = resolverValorIdSupabase(liderId, registros[0]);
 
       const btn = document.getElementById('btn-vincular-existente');
-      if (btn) { btn.disabled = true; btn.textContent = `Transferindo (${checkboxes.length})...`; }
+      if (btn) { btn.disabled = true; btn.textContent = `Transferindo (${registros.length})...`; }
       setSyncStatus('⏳ Transferindo discípulas...', 'loading');
 
-      try {
-        const { data: atualizadas, error } = await supabaseClient
-          .from('discipulas')
-          .update({ lider_id: novoLiderId })
-          .in('id', idsParaAtualizar)
-          .select('id, nome, lider_id');
+      let atualizadasCount = 0;
+      let ultimoErro = null;
 
-        const idsOk = new Set((atualizadas || []).map(r => normalizarId(r.id)));
-        const faltantes = idsParaAtualizar.filter(id => !idsOk.has(normalizarId(id)));
+      try {
+        for (const reg of registros) {
+          const { data: linhaAtualizada, error } = await supabaseClient
+            .from('discipulas')
+            .update({ lider_id: novoLiderId })
+            .eq('id', reg.id)
+            .select('id, nome, lider_id');
+
+          if (error) {
+            ultimoErro = error;
+            console.error('Erro ao atualizar discípula', reg.id, error);
+          } else if (linhaAtualizada && linhaAtualizada.length > 0) {
+            atualizadasCount++;
+          } else {
+            ultimoErro = new Error('Nenhuma linha afetada no Supabase (verifique política RLS de UPDATE na tabela discipulas).');
+          }
+        }
 
         await carregarDadosDoSupabase();
         atualizarInterfaceCompleta();
         abrirCelulaseMembros(liderId);
 
-        if (error) {
-          console.error('Erro ao transferir:', error);
+        if (atualizadasCount === 0) {
           setSyncStatus('🔴 Erro na transferência', 'error');
-          alert('⚠️ Erro ao transferir: ' + error.message);
-          return;
-        }
-
-        if (faltantes.length > 0) {
-          console.error('Linhas não atualizadas (provável bloqueio de RLS/permissão):', faltantes);
-          setSyncStatus('🔴 Transferência bloqueada', 'error');
           alert(
-            `⚠️ ${faltantes.length} registro(s) NÃO foram alterados no banco.\n\n` +
-            `Isso acontece quando o Supabase bloqueia a atualização (política RLS sem permissão de UPDATE na tabela "discipulas").\n\n` +
-            `Rode no SQL Editor do Supabase:\n` +
+            `⚠️ Nenhuma discípula foi salva na célula "${liderDestino ? liderDestino.celular_que_lidera : liderId}".\n\n` +
+            `Detalhe: ${ultimoErro ? ultimoErro.message : 'Sem retorno do banco'}\n\n` +
+            `Se for bloqueio de RLS no Supabase, execute no SQL Editor:\n` +
             `create policy "permitir update discipulas" on public.discipulas for update using (true) with check (true);`
           );
           return;
         }
 
         setSyncStatus('🟢 Supabase Conectado', 'online');
-        alert(`✅ ${checkboxes.length} discípula(s) transferida(s) para ${liderDestino ? liderDestino.celular_que_lidera : 'a célula'} com sucesso!`);
+        alert(`✅ ${atualizadasCount} discípula(s) transferida(s) para ${liderDestino ? liderDestino.celular_que_lidera : 'a célula'} com sucesso!`);
       } catch (err) {
         console.error('Exceção inesperada na transferência:', err);
         setSyncStatus('🔴 Erro na transferência', 'error');
@@ -2522,10 +2536,11 @@
       const nivelSel = document.getElementById('f-nivel-lideranca').value;
       const isG12 = nivelSel.toUpperCase().includes('G12');
       const celulaAleluia = getCelulaAleluiaReal();
+      const existente = id ? db.discipulas.find(x => mesmoId(x.id, id)) : null;
 
       const liderIdFinal = (isG12 && celulaAleluia)
-        ? celulaAleluia.id
-        : (isNaN(Number(liderIdRaw)) ? liderIdRaw : parseInt(liderIdRaw, 10));
+        ? resolverValorIdSupabase(celulaAleluia.id, existente)
+        : resolverValorIdSupabase(liderIdRaw, existente);
 
       if (!isMacroAdmin() && !podeGerenciarCelula(liderIdFinal)) {
         alert('🔒 Acesso Negado: Você só pode vincular discípulas às células que você lidera.');
@@ -2545,7 +2560,7 @@
       setSyncStatus('⏳ Enviando ao banco...', 'loading');
 
       const obj = {
-        id: id || gerarNovoId(),
+        id: existente ? existente.id : gerarNovoId(),
         nome: nome,
         nivel_lideranca: nivelSel,
         cor_favorita: corFavoritaVal,
@@ -2784,7 +2799,7 @@
         const celulaAleluia = getCelulaAleluiaReal();
         const updateData = { nivel_lideranca: perfilObj.nome };
         if (perfilObj.nome.toUpperCase().includes('G12') && celulaAleluia) {
-          updateData.lider_id = celulaAleluia.id;
+          updateData.lider_id = resolverValorIdSupabase(celulaAleluia.id, disc);
         }
         await supabaseClient.from('discipulas').update(updateData).eq('id', disc.id);
       }
@@ -2963,7 +2978,7 @@
         const discObj = db.discipulas.find(d => normalizarNome(d.nome) === normalizarNome(nome));
         const celDestinoObj = db.lideres.find(c => c.ativa && normalizarNome(c.celular_que_lidera) === normalizarNome(novaCelulaNome));
         if (discObj && celDestinoObj) {
-          await supabaseClient.from('discipulas').update({ lider_id: celDestinoObj.id }).eq('id', discObj.id);
+          await supabaseClient.from('discipulas').update({ lider_id: resolverValorIdSupabase(celDestinoObj.id, discObj) }).eq('id', discObj.id);
         }
       }
 
