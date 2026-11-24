@@ -1282,6 +1282,13 @@
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                   <input type="text" id="busca-discipula" placeholder="Buscar discípula por nome..." oninput="filtrarDiscipulas()" style="padding:8px 12px;border:1px solid var(--borda);border-radius:10px;font-size:0.84rem;" />
+                  <select id="filtro-hierarquia-discipulas" onchange="filtrarDiscipulas()" style="padding:8px 12px;border:1px solid var(--borda);border-radius:10px;font-size:0.84rem;">
+                    <option value="">Todas as Hierarquias</option>
+                    <option value="G12">G12</option>
+                    <option value="144">144</option>
+                    <option value="1728">1728</option>
+                    <option value="Discípula">Apenas Discípulas</option>
+                  </select>
                   <button type="button" class="btn btn-rosa" id="btn-nova-discipula" onclick="abrirModalDiscipula()">+ Nova Discípula</button>
                 </div>
               </div>
@@ -1314,10 +1321,10 @@
             <div class="section-card">
               <div class="section-header">
                 <div>
-                  <h3>🔄 Histórico de Transferências, Desistências &amp; Baixas</h3>
+                  <h3>🔄 Movimentações, Transferências &amp; Baixas</h3>
                   <p style="font-size:0.8rem;color:var(--cinza);">Auditoria pastoral de movimentações de discípulas e encerramento de células.</p>
                 </div>
-                <button type="button" class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Registrar Movimentação</button>
+                <button type="button" class="btn btn-rosa" onclick="abrirModalDesistencia()">+ Transferir / Registrar Movimentação</button>
               </div>
 
               <div class="table-wrap">
@@ -1585,6 +1592,97 @@
     };
 
     let ultimoIdGerado = 0;
+    
+    // =========================================================================
+    // LISTAS DE BAIRROS (Salvador 171 + Lauro de Freitas)
+    // =========================================================================
+    const BAIRROS_SALVADOR = [
+      "Acupe","Aeroporto","Águas Claras","Alto da Terezinha","Alto das Pombas","Alto do Cabrito","Alto do Coqueirinho","Amaralina","Areia Branca","Arenoso","Arraial do Retiro","Bairro da Paz","Baixa de Quintas","Barbalho","Barra","Barreiras","Barris","Beiru/Tancredo Neves","Boa Viagem","Boa Vista de Brotas","Boa Vista de São Caetano","Boca da Mata","Boca do Rio","Bom Juá","Bonfim","Brotas","Cabula","Cabula VI","Caixa D'Água","Cajazeiras II","Cajazeiras IV","Cajazeiras V","Cajazeiras VI","Cajazeiras VII","Cajazeiras VIII","Cajazeiras X","Cajazeiras XI","Calabar","Calabetão","Calçada","Caminho das Árvores","Caminho de Areia","Campinas de Pirajá","Canabrava","Candeal","Canela","Capelinha","Cassange","Castelo Branco","Centro","Centro Administrativo da Bahia","Centro Histórico","Chame-Chame","Chapada do Rio Vermelho","Cidade Nova","Colinas de Periperi","Comércio","Cosme de Farias","Costa Azul","Coutos","Curuzu","Dois de Julho","Dom Avelar","Engenho Velho da Federação","Engenho Velho de Brotas","Engomadeira","Fazenda Coutos","Fazenda Grande do Retiro","Federação","Garcia","Graça","Granjas Rurais Presidente Vargas","Horto Florestal","IAPI","Ilha Amarela","Ilha de Bom Jesus dos Passos","Ilha de Maré","Ilha dos Frades","Imbuí","Itacaranha","Itaigara","Itapuã","Jardim das Margaridas","Jardim Nova Esperança","Jardim Santo Inácio","Liberdade","Lobato","Luiz Anselmo","Marechal Rondon","Mares","Massaranduba","Mata Escura","Matatu","Monte Serrat","Mussurunga","Narandiba","Nordeste de Amaralina","Novo Horizonte","Ondina","Palestina","Paripe","Patamares","Pau da Lima","Pau Miúdo","Pernambués","Pero Vaz","Piatã","Pirajá","Pituaçu","Pituba","Aquarius","Plataforma","Porto Seco Pirajá","Praia do Flamengo","Praia Grande","Resgate","Ribeira","Rio Sena","Rio Vermelho","Roma","Saboeiro","Santa Cruz","Santa Mônica","Santo Antônio","São Caetano","São Cristóvão","São Gonçalo","São Marcos","São Rafael","São Tomé de Paripe","Saramandaia","Sete de Abril","Stella Maris","Stiep","Sussuarana","Tancredo Neves","Tororó","Uruguai","Valéria","Vila Canária","Vila Laura","Vila Ruy Barbosa","Vista Alegre","Vitória"
+    ];
+
+    const BAIRROS_LAURO = [
+      "Aracuí","Areia Branca","Barro Duro","Buraquinho","Caixa D'Água","Caji","Capelão","Centro","Ipitanga","Itinga","Jambeiro","Parque São Paulo","Pitangueiras","Portão","Quingoma","Recreio Ipitanga","Vida Nova","Vila Praiana","Vilas do Atlântico"
+    ];
+
+    function atualizarBairrosPorMunicipio() {
+      const mun = document.getElementById('f-municipio')?.value || '';
+      const boxSelect = document.getElementById('box-bairro-select');
+      const boxOutros = document.getElementById('box-bairro-outros');
+      const selectBairro = document.getElementById('f-bairro');
+      const inpMunOutros = document.getElementById('f-municipio-outros');
+      const inpBairroOutros = document.getElementById('f-bairro-outros');
+
+      if (!boxSelect || !boxOutros) return;
+
+      if (mun === 'Outros') {
+        boxSelect.style.display = 'none';
+        boxOutros.style.display = 'block';
+        if (inpMunOutros) inpMunOutros.required = true;
+        if (inpBairroOutros) inpBairroOutros.required = true;
+        if (selectBairro) selectBairro.required = false;
+      } else {
+        boxSelect.style.display = 'block';
+        boxOutros.style.display = 'none';
+        if (inpMunOutros) inpMunOutros.required = false;
+        if (inpBairroOutros) inpBairroOutros.required = false;
+        if (selectBairro) {
+          selectBairro.required = true;
+          const lista = mun === 'Salvador' ? BAIRROS_SALVADOR : (mun === 'Lauro de Freitas' ? BAIRROS_LAURO : []);
+          const valorAtual = selectBairro.value;
+          selectBairro.innerHTML = '<option value="">Selecione o bairro...</option>' + lista.map(b => `<option value="${b}">${b}</option>`).join('');
+          if (valorAtual && lista.includes(valorAtual)) selectBairro.value = valorAtual;
+        }
+      }
+    }
+
+    function montarEnderecoCompleto() {
+      const mun = document.getElementById('f-municipio')?.value || '';
+      if (mun === 'Outros') {
+        const m = document.getElementById('f-municipio-outros')?.value.trim() || '';
+        const b = document.getElementById('f-bairro-outros')?.value.trim() || '';
+        return b && m ? `${b}, ${m}` : (b || m || '');
+      }
+      const bairro = document.getElementById('f-bairro')?.value || '';
+      return bairro && mun ? `${bairro}, ${mun}` : (bairro || mun || '');
+    }
+
+    function preencherMunicipioBairroDoEndereco(endereco) {
+      if (!endereco) return;
+      const partes = endereco.split(',').map(p => p.trim()).filter(Boolean);
+      if (partes.length >= 2) {
+        const bairro = partes[0];
+        const mun = partes.slice(1).join(', ');
+        const selMun = document.getElementById('f-municipio');
+        if (!selMun) return;
+        if (mun.toLowerCase().includes('salvador')) {
+          selMun.value = 'Salvador';
+          atualizarBairrosPorMunicipio();
+          const selB = document.getElementById('f-bairro');
+          if (selB) {
+            const opt = Array.from(selB.options).find(o => o.value.toLowerCase() === bairro.toLowerCase());
+            if (opt) selB.value = opt.value;
+            else selB.value = bairro;
+          }
+        } else if (mun.toLowerCase().includes('lauro')) {
+          selMun.value = 'Lauro de Freitas';
+          atualizarBairrosPorMunicipio();
+          const selB = document.getElementById('f-bairro');
+          if (selB) {
+            const opt = Array.from(selB.options).find(o => o.value.toLowerCase() === bairro.toLowerCase());
+            if (opt) selB.value = opt.value;
+            else selB.value = bairro;
+          }
+        } else {
+          selMun.value = 'Outros';
+          atualizarBairrosPorMunicipio();
+          const inpM = document.getElementById('f-municipio-outros');
+          const inpB = document.getElementById('f-bairro-outros');
+          if (inpM) inpM.value = mun;
+          if (inpB) inpB.value = bairro;
+        }
+      }
+    }
+
     function gerarNovoId() {
       const agora = Date.now();
       ultimoIdGerado = agora <= ultimoIdGerado ? ultimoIdGerado + 1 : agora;
@@ -2656,6 +2754,19 @@
           <label id="label-cobertura-espiritual">Cobertura Espiritual (Líder Superior)</label>
           <select id="fl-parent"></select>
         </div>
+
+        <div id="box-linguagem-amor" class="g12-color-box" style="display:none;margin-top:14px;">
+          <label for="fl-linguagem-amor">❤️ Qual é a Linguagem de Amor da Líder? (Obrigatório para G12)</label>
+          <select id="fl-linguagem-amor">
+            <option value="">Selecione...</option>
+            <option value="Palavras de Afirmação" ${l?.linguagem_amor==='Palavras de Afirmação'?'selected':''}>Palavras de Afirmação</option>
+            <option value="Tempo de Qualidade" ${l?.linguagem_amor==='Tempo de Qualidade'?'selected':''}>Tempo de Qualidade</option>
+            <option value="Presentes" ${l?.linguagem_amor==='Presentes'?'selected':''}>Presentes</option>
+            <option value="Atos de Serviço" ${l?.linguagem_amor==='Atos de Serviço'?'selected':''}>Atos de Serviço</option>
+            <option value="Toque Físico" ${l?.linguagem_amor==='Toque Físico'?'selected':''}>Toque Físico</option>
+          </select>
+        </div>
+
         <div class="form-field" style="margin-top:14px;"><label>Observações da Abertura (Opcional)</label><textarea id="fl-obs" placeholder="Detalhes adicionais sobre o início desta célula...">${l?.obs||''}</textarea></div>
       `, `<button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button type="button" class="btn btn-rosa" id="btn-salvar-lider" onclick="salvarLider(${id ? `'${id}'` : 'null'})">${l ? 'Salvar Alterações' : 'Confirmar Abertura de Célula'}</button>`);
 
@@ -2668,6 +2779,14 @@
       const selectParent = document.getElementById('fl-parent');
       const labelCobertura = document.getElementById('label-cobertura-espiritual');
       if (!selectParent || !selectGer) return;
+
+      // Mostra/esconde Linguagem de Amor se for G12
+      const boxLang = document.getElementById('box-linguagem-amor');
+      if (boxLang) {
+        const ger = (selectGer.value || '').toUpperCase();
+        boxLang.style.display = ger.includes('G12') ? 'block' : 'none';
+      }
+
 
       const nomeLiderEscolhida = selectNome ? selectNome.value.trim() : '';
 
@@ -2800,6 +2919,7 @@
         geracao: document.getElementById('fl-ger').value,
         parent_id: parentVal ? (isNaN(Number(parentVal)) ? parentVal : parseInt(parentVal, 10)) : 1,
         obs: document.getElementById('fl-obs').value.trim(),
+        linguagem_amor: document.getElementById('fl-linguagem-amor')?.value || '',
         ativa: true
       };
 
@@ -2949,42 +3069,11 @@
       abrirModal(`🏠 ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
         <div class="celula-add-panel">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-            <strong style="font-size:0.9rem;color:var(--rosa-escuro);">➕ Adicionar ou Transferir Discípula para esta Célula</strong>
+            <strong style="font-size:0.9rem;color:var(--rosa-escuro);">➕ Adicionar Discípula a esta Célula</strong>
             <button type="button" class="btn btn-rosa btn-sm" onclick="fecharModal(); abrirModalDiscipula(null, '${lider.id}')">+ Cadastrar Nova Discípula Nesta Célula</button>
           </div>
-
-          <div style="border-top:1px dashed #E5C1D3;padding-top:10px;margin-top:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
-              <label style="font-size:0.75rem;font-weight:600;color:var(--cinza);margin:0;">
-                Transferir uma ou mais discípulas de outra célula para <strong>${lider.celular_que_lidera}</strong>:
-              </label>
-              ${outrasDiscipulas.length ? `
-                <div style="display:flex;gap:6px;">
-                  <button type="button" class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="alternarSelecaoTransferencia(true)">Marcar todas</button>
-                  <button type="button" class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="alternarSelecaoTransferencia(false)">Limpar</button>
-                </div>
-              ` : ''}
-            </div>
-            ${outrasDiscipulas.length ? `
-              <div id="lista-checkbox-transferencia" style="max-height:190px;overflow-y:auto;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
-                ${outrasDiscipulas.map(d => {
-                  const celAtual = db.lideres.find(c => mesmoId(c.id, d.lider_id));
-                  return `
-                    <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;padding:3px 0;border-bottom:1px dashed #F3E8EE;">
-                      <input type="checkbox" class="chk-transferir-discipula" data-id="${d.id}" data-nome="${String(d.nome).replace(/"/g,'&quot;')}" value="${d.id}" style="width:16px;height:16px;accent-color:var(--rosa);cursor:pointer;" />
-                      <span><strong>${d.nome}</strong> <small style="color:var(--cinza);">(${d.nivel_lideranca || 'Discípula'} • Atual: ${celAtual ? celAtual.celular_que_lidera : 'Outra Célula'})</small></span>
-                    </label>
-                  `;
-                }).join('')}
-              </div>
-              <div style="display:flex;justify-content:flex-end;">
-                <button type="button" class="btn btn-dourado btn-sm" id="btn-vincular-existente" onclick="vincularDiscipulaExistente('${lider.id}')">
-                  🔄 Transferir Selecionadas para Esta Célula
-                </button>
-              </div>
-            ` : `
-              <div style="font-size:0.82rem;color:var(--cinza);padding:8px 0;">Todas as discípulas já estão nesta célula</div>
-            `}
+          <div style="border-top:1px dashed #E5C1D3;padding-top:10px;margin-top:10px;font-size:0.82rem;color:var(--cinza);">
+            🔄 Para <strong>transferir</strong> discípulas de outras células, use a tela <strong>Movimentações &amp; Baixas</strong> no menu lateral.
           </div>
         </div>
 
@@ -3082,7 +3171,7 @@
     // =========================================================================
     // 9. DISCÍPULAS & JORNADA ESPIRITUAL
     // =========================================================================
-    function renderDiscipulas(filtro = '') {
+    function renderDiscipulas(filtro = '', hierarquia = '') {
       const duplicadas = encontrarDiscipulasDuplicadas();
       const bannerDup = document.getElementById('alerta-duplicidades-container');
       if (bannerDup) {
@@ -3104,6 +3193,11 @@
 
       let lista = getDiscipulasVisiveis();
       if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro.toLowerCase()));
+      if (hierarquia === 'Discípula') {
+        lista = lista.filter(d => !isCargoLider(d.nivel_lideranca));
+      } else if (hierarquia) {
+        lista = lista.filter(d => (d.nivel_lideranca || '').toUpperCase().includes(hierarquia.toUpperCase()));
+      }
 
       document.getElementById('tabela-discipulas').innerHTML = lista.map(d => {
         const lider = db.lideres.find(l => mesmoId(l.id, d.lider_id));
@@ -3152,7 +3246,11 @@
       }).join('') || '<tr><td colspan="9" style="text-align:center;color:#999;padding:36px;">Nenhuma discípula cadastrada ainda.</td></tr>';
     }
 
-    function filtrarDiscipulas() { renderDiscipulas(document.getElementById('busca-discipula').value); }
+    function filtrarDiscipulas() {
+      const texto = document.getElementById('busca-discipula')?.value || '';
+      const hier = document.getElementById('filtro-hierarquia-discipulas')?.value || '';
+      renderDiscipulas(texto, hier);
+    }
 
     async function removerCadastrosDuplicados() {
       const duplicadas = encontrarDiscipulasDuplicadas();
@@ -3301,7 +3399,27 @@
         </div>
 
         <div class="form-row" style="margin-top:14px;">
-          <div class="form-field"><label>Bairro / Município / Endereço</label><input id="f-endereco" value="${d?.endereco||''}" placeholder="Ex: Pituba, Salvador - BA" /></div>
+          <div class="form-field">
+            <label>Município *</label>
+            <select id="f-municipio" onchange="atualizarBairrosPorMunicipio()" required>
+              <option value="">Selecione o município...</option>
+              <option value="Salvador">Salvador</option>
+              <option value="Lauro de Freitas">Lauro de Freitas</option>
+              <option value="Outros">Outros (digitar)</option>
+            </select>
+          </div>
+          <div class="form-field" id="box-bairro-select">
+            <label>Bairro *</label>
+            <select id="f-bairro">
+              <option value="">Primeiro selecione o município...</option>
+            </select>
+          </div>
+          <div id="box-bairro-outros" style="display:none;grid-column:1/-1;">
+            <div class="form-row">
+              <div class="form-field"><label>Município (Outros) *</label><input id="f-municipio-outros" placeholder="Ex: Camaçari" /></div>
+              <div class="form-field"><label>Bairro (Outros) *</label><input id="f-bairro-outros" placeholder="Digite o bairro" /></div>
+            </div>
+          </div>
           <div class="form-field">
             <label>Estado Civil *</label>
             <select id="f-estado-civil">
@@ -3417,6 +3535,10 @@
       if (mostrarCorInicial && !id) {
         verificarExibicaoCorG12();
       }
+      // Preenche município/bairro a partir do endereço antigo (compatibilidade)
+      if (d && d.endereco) {
+        setTimeout(() => preencherMunicipioBairroDoEndereco(d.endereco), 50);
+      }
     }
 
     async function salvarDiscipula(id, retornoCelulaId) {
@@ -3434,6 +3556,17 @@
 
       if (!nome) return alert('⚠️ O Nome Completo é obrigatório!');
       if (!liderIdRaw) return alert('⚠️ É obrigatório selecionar a Célula Pertencente!');
+
+      const munSel = document.getElementById('f-municipio')?.value || '';
+      if (!munSel) return alert('⚠️ Selecione o Município!');
+      if (munSel === 'Outros') {
+        const mOut = document.getElementById('f-municipio-outros')?.value.trim() || '';
+        const bOut = document.getElementById('f-bairro-outros')?.value.trim() || '';
+        if (!mOut || !bOut) return alert('⚠️ Preencha o Município e o Bairro (Outros)!');
+      } else {
+        const bairroSel = document.getElementById('f-bairro')?.value || '';
+        if (!bairroSel) return alert('⚠️ Selecione o Bairro!');
+      }
 
       const jaExiste = db.discipulas.find(x => normalizarNome(x.nome) === normalizarNome(nome) && !mesmoId(x.id, id));
       if (jaExiste) {
@@ -3488,7 +3621,7 @@
         cor_favorita: corFavoritaVal,
         lider_id: liderIdFinal,
         data_nascimento: document.getElementById('f-nasc').value || null,
-        endereco: document.getElementById('f-endereco').value.trim(),
+        endereco: montarEnderecoCompleto(),
         estado_civil: document.getElementById('f-estado-civil').value,
         email: document.getElementById('f-email').value.trim(),
         telefone: document.getElementById('f-tel').value.trim(),
@@ -3516,6 +3649,19 @@
 
         console.log('Discípula salva no Supabase:', data);
         setSyncStatus('🟢 Supabase Conectado', 'online');
+        // Cascata de nome: se a discípula também é líder de alguma célula, atualiza o nome lá
+        if (existente && existente.nome && normalizarNome(existente.nome) !== normalizarNome(nome)) {
+          const celulasDaPessoa = db.lideres.filter(l => normalizarNome(l.nome) === normalizarNome(existente.nome));
+          for (const cel of celulasDaPessoa) {
+            await supabaseClient.from('lideres').update({ nome: nome }).eq('id', cel.id);
+          }
+          // Também atualiza usuários se houver login com o nome antigo
+          const usuariosMesmoNome = db.usuarios.filter(u => normalizarNome(u.nome) === normalizarNome(existente.nome));
+          for (const u of usuariosMesmoNome) {
+            await supabaseClient.from('usuarios').update({ nome: nome }).eq('id', u.id);
+          }
+        }
+
         await carregarDadosDoSupabase();
         if (retornoCelulaId) {
           abrirCelulaseMembros(retornoCelulaId);
@@ -3807,14 +3953,18 @@
 
     function abrirModalDesistencia() {
       const discipulasVis = getDiscipulasUnicasVisiveis();
-      const opcoesNomes = discipulasVis.map(d => `<option value="${d.nome}">${d.nome}</option>`).join('');
+      const opcoesNomes = discipulasVis.map(d => {
+        const cel = db.lideres.find(l => mesmoId(l.id, d.lider_id));
+        const nomeCel = cel ? cel.celular_que_lidera : 'Sem célula';
+        return `<option value="${d.nome}" data-lider-id="${d.lider_id || ''}">${d.nome} • ${nomeCel}</option>`;
+      }).join('');
       const celulasAtivas = getCelulasVisiveis().filter(c => !isRegistroMacroOrganizacao(c));
-      const opcoesCelulas = celulasAtivas.map(l => `<option value="${l.celular_que_lidera}">${l.celular_que_lidera} (Líder: ${l.nome})</option>`).join('');
+      const opcoesCelulas = celulasAtivas.map(l => `<option value="${l.id}">${l.celular_que_lidera} (Líder: ${l.nome})</option>`).join('');
       const autorAtual = usuarioLogado ? `${usuarioLogado.nome} (${usuarioLogado.login})` : 'Usuário Logado';
 
-      abrirModal('Registrar Transferência ou Desistência', `
+      abrirModal('🔄 Transferência de Célula ou Desistência', `
         <div style="background:#FDF7FA;border:1px solid #F2D5E4;padding:10px 14px;border-radius:10px;font-size:0.78rem;color:var(--rosa-escuro);margin-bottom:14px;">
-          🔐 <strong>Auditoria de Login Ativa:</strong> Esta movimentação será registrada automaticamente em nome de <strong>${autorAtual}</strong>.
+          🔐 <strong>Auditoria ativa:</strong> Registro em nome de <strong>${autorAtual}</strong>. Use esta tela para transferir discípulas entre células ou registrar desistência.
         </div>
 
         <div class="form-row">
@@ -3826,47 +3976,49 @@
             </select>
           </div>
           <div class="form-field">
-            <label>Célula Anterior *</label>
-            <input id="fd-ant" placeholder="Célula de origem..." required />
+            <label>Célula de Origem *</label>
+            <input id="fd-ant" placeholder="Preenchido automaticamente..." readonly style="background:#F1F5F9;" />
           </div>
         </div>
 
         <div class="form-row" style="margin-top:14px;">
           <div class="form-field">
-            <label>Tipo de Movimentação (Destino) *</label>
+            <label>Tipo de Movimentação *</label>
             <select id="fd-tipo-movimentacao" onchange="aoMudarTipoMovimentacao()" required>
-              <option value="">Selecione: Célula Nova ou Desistência...</option>
-              <option value="Célula Nova">Célula Nova (Transferência)</option>
-              <option value="Desistência">Desistência</option>
+              <option value="">Selecione...</option>
+              <option value="Célula Nova">🔄 Transferência para outra Célula</option>
+              <option value="Desistência">❌ Desistência</option>
             </select>
           </div>
 
           <div class="form-field" id="box-nova-celula-mov" style="display:none;">
-            <label>Nome da Nova Célula *</label>
-            <input id="fd-nova-celula" list="datalist-celulas-destino" placeholder="Selecione ou digite o nome da nova célula..." />
-            <datalist id="datalist-celulas-destino">${opcoesCelulas}</datalist>
+            <label>Célula de Destino *</label>
+            <select id="fd-nova-celula-id">
+              <option value="">Selecione a célula de destino...</option>
+              ${opcoesCelulas}
+            </select>
           </div>
         </div>
 
         <div class="form-field" style="margin-top:14px;">
           <label>Motivo Pastoral *</label>
-          <textarea id="fd-motivo" placeholder="Descreva obrigatoriamente o motivo pastoral..." required></textarea>
+          <textarea id="fd-motivo" placeholder="Descreva o motivo da transferência ou desistência..." required></textarea>
         </div>
-      `, `<button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button type="button" class="btn btn-rosa" id="btn-salvar-desistencia" onclick="salvarDesistencia()">Salvar Registro</button>`);
+      `, `<button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button type="button" class="btn btn-rosa" id="btn-salvar-desistencia" onclick="salvarDesistencia()">Salvar Movimentação</button>`);
     }
 
     async function salvarDesistencia() {
       const nome = document.getElementById('fd-nome').value.trim();
       const ant = document.getElementById('fd-ant').value.trim();
       const tipoMov = document.getElementById('fd-tipo-movimentacao').value;
-      const novaCelulaNome = document.getElementById('fd-nova-celula')?.value.trim() || '';
+      const novaCelulaId = document.getElementById('fd-nova-celula-id')?.value || '';
       const motivo = document.getElementById('fd-motivo').value.trim();
 
       if (!nome) return alert('⚠️ Selecione o nome da discípula!');
-      if (!tipoMov) return alert('⚠️ Selecione o Tipo de Movimentação: Célula Nova ou Desistência!');
-      if (tipoMov === 'Célula Nova' && !novaCelulaNome) {
-        alert('⚠️ Como você selecionou "Célula Nova", informe o nome da nova célula!');
-        document.getElementById('fd-nova-celula')?.focus();
+      if (!tipoMov) return alert('⚠️ Selecione o Tipo de Movimentação!');
+      if (tipoMov === 'Célula Nova' && !novaCelulaId) {
+        alert('⚠️ Selecione a Célula de Destino da transferência!');
+        document.getElementById('fd-nova-celula-id')?.focus();
         return;
       }
       if (!motivo) {
@@ -3879,7 +4031,15 @@
       if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
 
       const autorRegistro = usuarioLogado ? `${usuarioLogado.nome} (login: ${usuarioLogado.login})` : 'Sistema';
-      const destinoFinal = tipoMov === 'Célula Nova' ? `Transferida para: ${novaCelulaNome}` : 'Desistência';
+      let destinoFinal = 'Desistência';
+      let celDestinoObj = null;
+
+      if (tipoMov === 'Célula Nova') {
+        celDestinoObj = db.lideres.find(c => mesmoId(c.id, novaCelulaId));
+        destinoFinal = celDestinoObj
+          ? `Transferida para: ${celDestinoObj.celular_que_lidera}`
+          : `Transferida para célula ID ${novaCelulaId}`;
+      }
 
       const { error } = await supabaseClient.from('desistencias').insert({
         id: gerarNovoId(),
@@ -3892,22 +4052,29 @@
 
       if (error) {
         alert('Erro ao salvar registro: ' + error.message);
-        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Registro'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar Movimentação'; }
         return;
       }
 
-      if (tipoMov === 'Célula Nova') {
+      // Efetiva a transferência no banco (atualiza lider_id da discípula)
+      if (tipoMov === 'Célula Nova' && celDestinoObj) {
         const discObj = db.discipulas.find(d => normalizarNome(d.nome) === normalizarNome(nome));
-        const celDestinoObj = db.lideres.find(c => c.ativa && normalizarNome(c.celular_que_lidera) === normalizarNome(novaCelulaNome));
-        if (discObj && celDestinoObj) {
-          await supabaseClient.from('discipulas').update({ lider_id: resolverValorIdSupabase(celDestinoObj.id, discObj) }).eq('id', discObj.id);
+        if (discObj) {
+          const { error: errUpd } = await supabaseClient
+            .from('discipulas')
+            .update({ lider_id: resolverValorIdSupabase(celDestinoObj.id, discObj) })
+            .eq('id', discObj.id);
+          if (errUpd) {
+            console.error('Erro ao atualizar célula da discípula:', errUpd);
+            alert('Registro de movimentação salvo, mas falhou ao atualizar a célula da discípula: ' + errUpd.message);
+          }
         }
       }
 
       await carregarDadosDoSupabase();
       fecharModal();
       atualizarInterfaceCompleta();
-      alert(`✅ Registro salvo com sucesso em nome de ${usuarioLogado ? usuarioLogado.nome : 'usuário logado'}!`);
+      alert(`✅ ${tipoMov === 'Célula Nova' ? 'Transferência' : 'Desistência'} registrada com sucesso!`);
     }
 
     // =========================================================================
@@ -4119,8 +4286,8 @@
         ]
       } : {
         titulo: '👑 Composição da Macrocélula (Líderes vs Discípulas)',
-        labels: ['Líderes (G12/144/1728)', 'Discípulas (Não Líderes)', 'Células Ativas'],
-        valores: [mGlobal.totalLideres, mGlobal.totalDiscipulasNaoLideres, mGlobal.numCelulas]
+        labels: ['Líderes (G12 / 144 / 1728)', 'Discípulas (Não Líderes)'],
+        valores: [mGlobal.totalLideres, mGlobal.totalDiscipulasNaoLideres]
       };
 
       const cardsMovimentacao = temPeriodo ? [
