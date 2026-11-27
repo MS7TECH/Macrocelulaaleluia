@@ -3089,16 +3089,6 @@
         </div>` : '<div class="empty-state"><p>Nenhuma discípula vinculada a esta célula ainda.</p></div>';
 
       abrirModal(`🏠 ${lider.celular_que_lidera} (Líder: ${lider.nome})`, `
-        <div class="celula-add-panel">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-            <strong style="font-size:0.9rem;color:var(--rosa-escuro);">➕ Adicionar Discípula a esta Célula</strong>
-            <button type="button" class="btn btn-rosa btn-sm" onclick="fecharModal(); abrirModalDiscipula(null, '${lider.id}')">+ Cadastrar Nova Discípula Nesta Célula</button>
-          </div>
-          <div style="border-top:1px dashed #E5C1D3;padding-top:10px;margin-top:10px;font-size:0.82rem;color:var(--cinza);">
-            🔄 Para <strong>transferir</strong> discípulas de outras células, use a tela <strong>Movimentações &amp; Baixas</strong> no menu lateral.
-          </div>
-        </div>
-
         <h4 style="font-size:0.9rem;color:var(--preto);margin-bottom:10px;">👥 Discípulas Atuais desta Célula (${membros.length})</h4>
         ${htmlMembros}
       `, `<button type="button" class="btn btn-outline" onclick="fecharModal()">Fechar</button>`);
