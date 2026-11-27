@@ -1205,7 +1205,7 @@
             <div class="nav-item" data-page="discipulas">🌸 Discípulas &amp; Jornada</div>
             <div class="nav-item" data-page="desistencias">🔄 Movimentações &amp; Baixas</div>
             <div class="nav-item" data-page="aniversariantes">🎂 Aniversariantes</div>
-            <div class="nav-item" data-page="relatorios">📑 Relatórios Pastorais</div>
+            <div class="nav-item" data-page="relatorios">📑 Relatório da Liderança</div>
             <div class="nav-item" data-page="acessos" id="menu-acessos-admin" style="display:none;">🔐 Acessos &amp; Domínio</div>
           </nav>
         </div>
@@ -1371,12 +1371,12 @@
             </div>
           </section>
 
-          <!-- 6. RELATÓRIOS PASTORAIS -->
+          <!-- 6. RELATÓRIO DA LIDERANÇA -->
           <section id="page-relatorios" class="page">
             <div class="section-card">
               <div class="section-header">
                 <div>
-                  <h3>📑 Relatórios Pastorais &amp; Movimentações</h3>
+                  <h3>📑 Relatório da Liderança &amp; Movimentações</h3>
                   <p style="font-size:0.8rem;color:var(--cinza);">Filtre os dados desejados, visualize os gráficos e gere o relatório oficial em PDF ou texto.</p>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -2211,7 +2211,7 @@
         discipulas: 'Discípulas & Jornada Espiritual',
         desistencias: 'Histórico de Transferências & Baixas',
         aniversariantes: 'Aniversariantes',
-        relatorios: 'Relatórios Pastorais',
+        relatorios: 'Relatório da Liderança',
         acessos: 'Acessos & Domínio de Liderança'
       };
 
@@ -2723,7 +2723,30 @@
         </div>
 
         <div class="form-row" style="margin-top:14px;">
-          <div class="form-field"><label>Bairro / Município *</label><input id="fl-local" placeholder="Ex: Pituba, Salvador - BA" value="${l?.local||''}" required /></div>
+          <div class="form-field">
+            <label>Município *</label>
+            <select id="f-municipio" onchange="atualizarBairrosPorMunicipio()" required>
+              <option value="">Selecione o município...</option>
+              <option value="Salvador">Salvador</option>
+              <option value="Lauro de Freitas">Lauro de Freitas</option>
+              <option value="Outros">Outros (digitar)</option>
+            </select>
+          </div>
+          <div class="form-field" id="box-bairro-select">
+            <label>Bairro *</label>
+            <select id="f-bairro">
+              <option value="">Primeiro selecione o município...</option>
+            </select>
+          </div>
+          <div id="box-bairro-outros" style="display:none;grid-column:1/-1;">
+            <div class="form-row">
+              <div class="form-field"><label>Município (Outros) *</label><input id="f-municipio-outros" placeholder="Ex: Camaçari" /></div>
+              <div class="form-field"><label>Bairro (Outros) *</label><input id="f-bairro-outros" placeholder="Digite o bairro" /></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:14px;">
           <div class="form-field"><label>Dia da Célula *</label><input id="fl-dias" placeholder="Ex: Terças-feiras" value="${l?.dias||''}" required /></div>
           <div class="form-field"><label>Horário *</label><input id="fl-horarios" placeholder="Ex: 20:00" value="${l?.horarios||''}" required /></div>
         </div>
@@ -2755,22 +2778,14 @@
           <select id="fl-parent"></select>
         </div>
 
-        <div id="box-linguagem-amor" class="g12-color-box" style="display:none;margin-top:14px;">
-          <label for="fl-linguagem-amor">❤️ Qual é a Linguagem de Amor da Líder? (Obrigatório para G12)</label>
-          <select id="fl-linguagem-amor">
-            <option value="">Selecione...</option>
-            <option value="Palavras de Afirmação" ${l?.linguagem_amor==='Palavras de Afirmação'?'selected':''}>Palavras de Afirmação</option>
-            <option value="Tempo de Qualidade" ${l?.linguagem_amor==='Tempo de Qualidade'?'selected':''}>Tempo de Qualidade</option>
-            <option value="Presentes" ${l?.linguagem_amor==='Presentes'?'selected':''}>Presentes</option>
-            <option value="Atos de Serviço" ${l?.linguagem_amor==='Atos de Serviço'?'selected':''}>Atos de Serviço</option>
-            <option value="Toque Físico" ${l?.linguagem_amor==='Toque Físico'?'selected':''}>Toque Físico</option>
-          </select>
-        </div>
-
         <div class="form-field" style="margin-top:14px;"><label>Observações da Abertura (Opcional)</label><textarea id="fl-obs" placeholder="Detalhes adicionais sobre o início desta célula...">${l?.obs||''}</textarea></div>
       `, `<button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button><button type="button" class="btn btn-rosa" id="btn-salvar-lider" onclick="salvarLider(${id ? `'${id}'` : 'null'})">${l ? 'Salvar Alterações' : 'Confirmar Abertura de Célula'}</button>`);
 
       aoMudarLiderOuGeracao(id, l?.parent_id || null, true);
+      // Preenche município/bairro a partir do endereço salvo (compatibilidade)
+      if (l && l.local) {
+        setTimeout(() => preencherMunicipioBairroDoEndereco(l.local), 50);
+      }
     }
 
     function aoMudarLiderOuGeracao(celulaAtualId = null, parentSalvoId = null, inicializando = false) {
@@ -2779,14 +2794,6 @@
       const selectParent = document.getElementById('fl-parent');
       const labelCobertura = document.getElementById('label-cobertura-espiritual');
       if (!selectParent || !selectGer) return;
-
-      // Mostra/esconde Linguagem de Amor se for G12
-      const boxLang = document.getElementById('box-linguagem-amor');
-      if (boxLang) {
-        const ger = (selectGer.value || '').toUpperCase();
-        boxLang.style.display = ger.includes('G12') ? 'block' : 'none';
-      }
-
 
       const nomeLiderEscolhida = selectNome ? selectNome.value.trim() : '';
 
@@ -2893,14 +2900,30 @@
 
       const nomeLider = document.getElementById('fl-nome').value.trim();
       const celularLidera = document.getElementById('fl-cel').value.trim();
-      const local = document.getElementById('fl-local').value.trim();
       const dias = document.getElementById('fl-dias').value.trim();
       const horarios = document.getElementById('fl-horarios').value.trim();
 
-      if (!nomeLider || !celularLidera || !local || !dias || !horarios) {
+      const munSel = document.getElementById('f-municipio')?.value || '';
+      if (!nomeLider || !celularLidera || !munSel || !dias || !horarios) {
         alert('Preencha todos os campos obrigatórios da abertura da célula (*)!');
         return;
       }
+      if (munSel === 'Outros') {
+        const mOut = document.getElementById('f-municipio-outros')?.value.trim() || '';
+        const bOut = document.getElementById('f-bairro-outros')?.value.trim() || '';
+        if (!mOut || !bOut) {
+          alert('⚠️ Preencha o Município e o Bairro (Outros)!');
+          return;
+        }
+      } else {
+        const bairroSel = document.getElementById('f-bairro')?.value || '';
+        if (!bairroSel) {
+          alert('⚠️ Selecione o Bairro!');
+          return;
+        }
+      }
+
+      const local = montarEnderecoCompleto();
 
       const btn = document.getElementById('btn-salvar-lider');
       if (btn) { btn.disabled = true; btn.textContent = 'Salvando no Banco...'; }
@@ -2919,7 +2942,6 @@
         geracao: document.getElementById('fl-ger').value,
         parent_id: parentVal ? (isNaN(Number(parentVal)) ? parentVal : parseInt(parentVal, 10)) : 1,
         obs: document.getElementById('fl-obs').value.trim(),
-        linguagem_amor: document.getElementById('fl-linguagem-amor')?.value || '',
         ativa: true
       };
 
@@ -3297,15 +3319,24 @@
       }
     }
 
+    function verificarExibicaoLinguagemAmor() {
+      const selectNivel = document.getElementById('f-nivel-lideranca');
+      const boxLang = document.getElementById('box-linguagem-amor-disc');
+      if (!selectNivel || !boxLang) return;
+      boxLang.style.display = isCargoLider(selectNivel.value) ? 'block' : 'none';
+    }
+
     function verificarExibicaoHorarioCulto() {
       const selectCulto = document.getElementById('f-culto-regular');
-      const labelDiaHora = document.getElementById('label-culto-dia-horario');
-      if (!selectCulto || !labelDiaHora) return;
+      const boxDiaHora = document.getElementById('box-culto-dia-horario');
+      if (!selectCulto || !boxDiaHora) return;
 
       if (selectCulto.value === 'Sim') {
-        labelDiaHora.innerHTML = 'Qual dia e horário do culto que você frequenta? *';
+        boxDiaHora.style.display = 'block';
       } else {
-        labelDiaHora.innerHTML = 'Qual dia e horário do culto que você frequenta? (Opcional)';
+        boxDiaHora.style.display = 'none';
+        const sel = document.getElementById('f-culto-dia-horario');
+        if (sel) sel.value = '';
       }
     }
 
@@ -3375,7 +3406,7 @@
           <div class="form-field"><label>Nome Completo *</label><input id="f-nome" value="${d?.nome||''}" placeholder="Digite o nome completo" required /></div>
           <div class="form-field">
             <label>Nível Hierárquico *</label>
-            <select id="f-nivel-lideranca" onchange="verificarExibicaoCorG12()">${opcoesNivel}</select>
+            <select id="f-nivel-lideranca" onchange="verificarExibicaoCorG12(); verificarExibicaoLinguagemAmor()">${opcoesNivel}</select>
           </div>
         </div>
 
@@ -3385,6 +3416,18 @@
             <input type="text" id="f-cor-favorita" value="${d?.cor_favorita || ''}" placeholder="Ex: Rosa, Azul Royal, Dourado, Lilás..." />
             <input type="color" id="f-cor-picker" value="#D0397C" title="Escolher tonalidade visual" onchange="sincronizarSeletorCor(this.value)" />
           </div>
+        </div>
+
+        <div id="box-linguagem-amor-disc" class="g12-color-box" style="display:${isCargoLider(nivelAtualLimpo) ? 'block' : 'none'};">
+          <label for="f-linguagem-amor">❤️ Qual é a Linguagem de Amor? (Obrigatório para Líderes)</label>
+          <select id="f-linguagem-amor">
+            <option value="">Selecione...</option>
+            <option value="Palavras de Afirmação" ${d?.linguagem_amor==='Palavras de Afirmação'?'selected':''}>Palavras de Afirmação</option>
+            <option value="Tempo de Qualidade" ${d?.linguagem_amor==='Tempo de Qualidade'?'selected':''}>Tempo de Qualidade</option>
+            <option value="Presentes" ${d?.linguagem_amor==='Presentes'?'selected':''}>Presentes</option>
+            <option value="Atos de Serviço" ${d?.linguagem_amor==='Atos de Serviço'?'selected':''}>Atos de Serviço</option>
+            <option value="Toque Físico" ${d?.linguagem_amor==='Toque Físico'?'selected':''}>Toque Físico</option>
+          </select>
         </div>
 
         <div class="form-row" style="margin-top:14px;">
@@ -3473,10 +3516,17 @@
                 <option value="Não" ${valCultoRegular==='Não'?'selected':''}>Não</option>
               </select>
             </div>
-            <div class="form-field">
-              <label id="label-culto-dia-horario">Qual dia e horário do culto que você frequenta? ${valCultoRegular==='Sim' ? '*' : ''}</label>
-              <input type="text" id="f-culto-dia-horario" value="${d?.culto_dia_horario || ''}" placeholder="Ex: Domingo às 18h / Quarta às 19h30" />
-            </div>
+          </div>
+          <div id="box-culto-dia-horario" class="form-field" style="margin-top:12px;display:${valCultoRegular==='Sim' ? 'block' : 'none'};">
+            <label>Qual dia e horário do culto que você frequenta? *</label>
+            <select id="f-culto-dia-horario">
+              <option value="">Selecione o culto...</option>
+              <option value="Sábado 20h" ${d?.culto_dia_horario==='Sábado 20h'?'selected':''}>Sábado 20h</option>
+              <option value="Domingo 7h" ${d?.culto_dia_horario==='Domingo 7h'?'selected':''}>Domingo 7h</option>
+              <option value="Domingo 10h" ${d?.culto_dia_horario==='Domingo 10h'?'selected':''}>Domingo 10h</option>
+              <option value="Domingo 18h" ${d?.culto_dia_horario==='Domingo 18h'?'selected':''}>Domingo 18h</option>
+              <option value="Quarta 19h" ${d?.culto_dia_horario==='Quarta 19h'?'selected':''}>Quarta 19h</option>
+            </select>
           </div>
         </div>
 
@@ -3535,6 +3585,7 @@
       if (mostrarCorInicial && !id) {
         verificarExibicaoCorG12();
       }
+      verificarExibicaoLinguagemAmor();
       // Preenche município/bairro a partir do endereço antigo (compatibilidade)
       if (d && d.endereco) {
         setTimeout(() => preencherMunicipioBairroDoEndereco(d.endereco), 50);
@@ -3610,6 +3661,14 @@
         return;
       }
 
+      const isLiderNivel = isCargoLider(nivelSel);
+      const linguagemAmorVal = isLiderNivel ? (document.getElementById('f-linguagem-amor')?.value || '') : '';
+      if (isLiderNivel && !linguagemAmorVal) {
+        alert('Por favor, selecione a Linguagem de Amor da líder!');
+        document.getElementById('f-linguagem-amor')?.focus();
+        return;
+      }
+
       const btn = document.getElementById('btn-salvar-discipula');
       if (btn) { btn.disabled = true; btn.textContent = 'Enviando ao Supabase...'; }
       setSyncStatus('⏳ Enviando ao banco...', 'loading');
@@ -3619,6 +3678,7 @@
         nome: nome,
         nivel_lideranca: nivelSel,
         cor_favorita: corFavoritaVal,
+        linguagem_amor: linguagemAmorVal,
         lider_id: liderIdFinal,
         data_nascimento: document.getElementById('f-nasc').value || null,
         endereco: montarEnderecoCompleto(),
@@ -4078,7 +4138,7 @@
     }
 
     // =========================================================================
-    // 12. ANIVERSARIANTES & RELATÓRIOS PASTORAIS
+    // 12. ANIVERSARIANTES & RELATÓRIO DA LIDERANÇA
     // =========================================================================
     function calcularIdade(dataNasc) {
       if (!dataNasc) return '';
@@ -4622,7 +4682,7 @@
             <div class="doc-oficial-header-left">
               <img src="logo-macrocelula.png" alt="Logo Célula Aleluia" class="doc-oficial-logo" onerror="this.style.display='none'" />
               <div class="doc-oficial-title">
-                <h2>Relatório Pastoral Oficial</h2>
+                <h2>Relatório da Liderança Oficial</h2>
                 <p>Macrocélula Aleluia • PIBB Ministério Mulheres de Fé</p>
               </div>
             </div>
@@ -4665,7 +4725,7 @@
         </div>
       `;
 
-      abrirModal('📄 Documento de Relatório Pastoral (Gráficos, Texto & PDF)', htmlDocumento, `
+      abrirModal('📄 Documento de Relatório da Liderança (Gráficos, Texto & PDF)', htmlDocumento, `
         <button type="button" class="btn btn-outline" onclick="fecharModal()">Fechar</button>
         <button type="button" class="btn btn-whatsapp" onclick="copiarRelatorioTexto()">📋 Copiar Texto Completo</button>
         <button type="button" class="btn btn-rosa" id="btn-baixar-pdf-direto" onclick="baixarPDFDireto()">📥 Baixar Arquivo PDF</button>
@@ -4704,7 +4764,7 @@
       const dados = obterDadosRelatorioAtual();
       const dataHoje = new Date().toLocaleDateString('pt-BR');
 
-      let texto = `*RELATÓRIO PASTORAL - MACROCÉLULA ALELUIA*\n`;
+      let texto = `*RELATÓRIO DA LIDERANÇA - MACROCÉLULA ALELUIA*\n`;
       texto += `📅 Data: ${dataHoje}\n`;
       texto += `🔎 Seleção: ${dados.tituloFiltro}\n\n`;
 
